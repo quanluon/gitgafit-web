@@ -17,6 +17,18 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    // Enforce relative imports within same directory
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@pages/*', '@components/*'],
+            message: 'Use relative imports for files in the same directory. Use path aliases (@atoms, @molecules, etc.) for cross-directory component imports.',
+          },
+        ],
+      },
+    ],
   },
 };
 

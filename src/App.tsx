@@ -1,15 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@store/authStore';
-import { HomePage } from '@pages/HomePage';
-import { LoginPage } from '@pages/LoginPage';
-import { RegisterPage } from '@pages/RegisterPage';
-import { ProfilePage } from '@pages/ProfilePage';
-import { PlannerPage } from '@pages/PlannerPage';
-import { TrainingPage } from '@pages/TrainingPage';
-import { StatisticsPage } from '@pages/StatisticsPage';
-import { OnboardingPage } from '@pages/OnboardingPage';
-import { WorkoutPreviewPage } from '@pages/WorkoutPreviewPage';
-import { MealPlannerPage } from '@pages/MealPlannerPage';
+import { HomePage } from './pages/HomePage';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { PlannerPage } from './pages/PlannerPage';
+import { TrainingPage } from './pages/TrainingPage';
+import { StatisticsPage } from './pages/StatisticsPage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import { WorkoutPreviewPage } from './pages/WorkoutPreviewPage';
+import { MealPlannerPage } from './pages/MealPlannerPage';
 import './App.css';
 
 interface ProtectedRouteProps {

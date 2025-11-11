@@ -34,6 +34,7 @@ export function PlannerPage(): React.ReactElement {
 
   useEffect(() => {
     loadWorkoutPlan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -82,8 +83,9 @@ export function PlannerPage(): React.ReactElement {
       });
       setCurrentSession(session);
       navigate('/training');
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to start training session');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setError(error?.response?.data?.message || 'Failed to start training session');
     }
   };
 
