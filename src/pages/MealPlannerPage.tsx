@@ -64,10 +64,10 @@ export function MealPlannerPage(): React.ReactElement {
   const currentLang = language as Language;
 
   const mealTypeLabels: Record<MealType, string> = {
-    [MealType.BREAKFAST]: 'Breakfast',
-    [MealType.LUNCH]: 'Lunch',
-    [MealType.DINNER]: 'Dinner',
-    [MealType.SNACK]: 'Snack',
+    [MealType.BREAKFAST]: t('meal.breakfast'),
+    [MealType.LUNCH]: t('meal.lunch'),
+    [MealType.DINNER]: t('meal.dinner'),
+    [MealType.SNACK]: t('meal.snack'),
   };
 
   const getMealIcon = (type: MealType): string => {
@@ -116,13 +116,13 @@ export function MealPlannerPage(): React.ReactElement {
         {/* No Plan Yet */}
         {!mealPlan && !isGenerating && (
           <div className="text-center py-12 space-y-6">
-            <p className="text-muted-foreground">No meal plan generated yet.</p>
+            <p className="text-muted-foreground">{t('meal.noMealPlan')}</p>
             <div className="flex flex-col gap-3 max-w-sm mx-auto">
               <Button onClick={(): Promise<void> => handleGeneratePlan(true, true)} size="lg">
-                🤖 AI Full Week Plan
+                {t('meal.aiFullWeek')}
               </Button>
               <Button onClick={(): Promise<void> => handleGeneratePlan(true, false)} size="lg" variant="outline">
-                📋 Template Full Week
+                {t('meal.templateFullWeek')}
               </Button>
             </div>
           </div>
@@ -131,7 +131,7 @@ export function MealPlannerPage(): React.ReactElement {
         {/* Loading */}
         {isGenerating && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Generating your personalized meal plan...</p>
+            <p className="text-muted-foreground">{t('meal.generating')}</p>
           </div>
         )}
 
@@ -147,7 +147,7 @@ export function MealPlannerPage(): React.ReactElement {
                 disabled={isGenerating}
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
-                🤖 AI Full Week
+                {t('meal.aiFullWeek')}
               </Button>
               <Button
                 variant="outline"
@@ -156,13 +156,13 @@ export function MealPlannerPage(): React.ReactElement {
                 disabled={isGenerating}
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
-                📋 Template
+                {t('meal.templateFullWeek')}
               </Button>
             </div>
 
             {/* TDEE & Macros Overview */}
             <div className="space-y-4">
-              <h2 className="text-xl font-bold">Your Nutrition Targets</h2>
+              <h2 className="text-xl font-bold">{t('meal.nutritionTargets')}</h2>
               
               <div className="bg-card border rounded-lg p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -213,7 +213,7 @@ export function MealPlannerPage(): React.ReactElement {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-sm font-medium">
-                          {day.dailyTotals.calories} {t('meal.calories')}
+                          {day.dailyTotals?.calories || 0} {t('meal.calories')}
                         </span>
                         {isExpanded ? (
                           <ChevronUp className="h-5 w-5" />
@@ -232,7 +232,7 @@ export function MealPlannerPage(): React.ReactElement {
                               <span className="text-2xl">{getMealIcon(meal.type)}</span>
                               <h4 className="font-semibold">{mealTypeLabels[meal.type]}</h4>
                               <span className="text-sm text-muted-foreground">
-                                {meal.totalMacros.calories} {t('meal.calories')}
+                                {meal.totalMacros?.calories || 0} {t('meal.calories')}
                               </span>
                             </div>
 
@@ -257,16 +257,16 @@ export function MealPlannerPage(): React.ReactElement {
                                   </div>
                                   <div className="text-right text-xs">
                                     <p className="font-semibold">
-                                      {item.macros.calories} cal
+                                      {item.macros?.calories || 0} {t('meal.calories')}
                                     </p>
                                     <p className="text-muted-foreground">
-                                      P: {item.macros.protein}g
+                                      P: {item.macros?.protein || 0}g
                                     </p>
                                     <p className="text-muted-foreground">
-                                      C: {item.macros.carbs}g
+                                      C: {item.macros?.carbs || 0}g
                                     </p>
                                     <p className="text-muted-foreground">
-                                      F: {item.macros.fat}g
+                                      F: {item.macros?.fat || 0}g
                                     </p>
                                   </div>
                                 </div>
@@ -276,13 +276,13 @@ export function MealPlannerPage(): React.ReactElement {
                             {/* Meal Macros Summary */}
                             <div className="pl-10 pt-2 border-t flex gap-6 text-sm">
                               <span>
-                                <strong>P:</strong> {meal.totalMacros.protein}g
+                                <strong>P:</strong> {meal.totalMacros?.protein}g
                               </span>
                               <span>
-                                <strong>C:</strong> {meal.totalMacros.carbs}g
+                                <strong>C:</strong> {meal.totalMacros?.carbs}g
                               </span>
                               <span>
-                                <strong>F:</strong> {meal.totalMacros.fat}g
+                                <strong>F:</strong> {meal.totalMacros?.fat}g
                               </span>
                             </div>
                           </div>

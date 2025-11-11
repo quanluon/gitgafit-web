@@ -108,9 +108,18 @@ export function PlannerPage(): React.ReactElement {
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">{t('workout.planner')}</h1>
-            <Button variant="ghost" onClick={(): void => navigate('/profile')}>
-              {t('workout.manage')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(): void => navigate('/onboarding')}
+              >
+                {t('common.regenerate')}
+              </Button>
+              <Button variant="ghost" onClick={(): void => navigate('/profile')}>
+                {t('workout.manage')}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

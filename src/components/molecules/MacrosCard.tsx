@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Flame, Beef, Wheat, Droplet } from 'lucide-react';
 
 interface MacrosCardProps {
@@ -14,11 +15,14 @@ export function MacrosCard({
   protein,
   carbs,
   fat,
-  title = 'Daily Targets',
+  title,
 }: MacrosCardProps): React.ReactElement {
+  const { t } = useTranslation();
+  const displayTitle = title || t('meal.dailyTargets');
+
   return (
     <div className="bg-card border rounded-lg p-6 space-y-4">
-      <h3 className="font-semibold">{title}</h3>
+      <h3 className="font-semibold">{displayTitle}</h3>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center gap-3">
@@ -27,7 +31,7 @@ export function MacrosCard({
           </div>
           <div>
             <p className="text-2xl font-bold">{calories}</p>
-            <p className="text-xs text-muted-foreground">Calories</p>
+            <p className="text-xs text-muted-foreground">{t('meal.calories')}</p>
           </div>
         </div>
 
@@ -37,7 +41,7 @@ export function MacrosCard({
           </div>
           <div>
             <p className="text-2xl font-bold">{protein}g</p>
-            <p className="text-xs text-muted-foreground">Protein</p>
+            <p className="text-xs text-muted-foreground">{t('meal.protein')}</p>
           </div>
         </div>
 
@@ -47,7 +51,7 @@ export function MacrosCard({
           </div>
           <div>
             <p className="text-2xl font-bold">{carbs}g</p>
-            <p className="text-xs text-muted-foreground">Carbs</p>
+            <p className="text-xs text-muted-foreground">{t('meal.carbs')}</p>
           </div>
         </div>
 
@@ -57,7 +61,7 @@ export function MacrosCard({
           </div>
           <div>
             <p className="text-2xl font-bold">{fat}g</p>
-            <p className="text-xs text-muted-foreground">Fat</p>
+            <p className="text-xs text-muted-foreground">{t('meal.fat')}</p>
           </div>
         </div>
       </div>

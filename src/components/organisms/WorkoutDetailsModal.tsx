@@ -31,7 +31,7 @@ export function WorkoutDetailsModal({
           <div>
             <h2 className="text-xl font-bold">{focus}</h2>
             <p className="text-sm text-muted-foreground">
-              {workout.exercises.length} exercises
+              {workout.exercises.length} {t('workout.exercises')}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -63,10 +63,10 @@ export function WorkoutDetailsModal({
                 {/* Sets & Reps */}
                 <div className="flex items-center gap-4 text-sm">
                   <div className="px-3 py-1.5 bg-secondary rounded-md">
-                    <span className="font-semibold">{exercise.sets}</span> sets
+                    <span className="font-semibold">{exercise.sets}</span> {t('workout.sets')}
                   </div>
                   <div className="px-3 py-1.5 bg-secondary rounded-md">
-                    <span className="font-semibold">{exercise.reps}</span> reps
+                    <span className="font-semibold">{exercise.reps}</span> {t('workout.reps')}
                   </div>
                 </div>
 
@@ -79,7 +79,7 @@ export function WorkoutDetailsModal({
                     className="flex items-center gap-2 text-sm text-primary hover:underline"
                   >
                     <Play className="h-4 w-4" />
-                    Watch demonstration video
+                    {t('workout.watchVideo')}
                   </a>
                 )}
               </div>
@@ -95,7 +95,7 @@ export function WorkoutDetailsModal({
             </Button>
           )}
           <Button variant="outline" className="w-full" onClick={onClose}>
-            Close
+            {t('common.close')}
           </Button>
         </div>
       </div>

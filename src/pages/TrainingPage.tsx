@@ -31,7 +31,6 @@ export function TrainingPage(): React.ReactElement {
 
   const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress>({});
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
-  const [currentSetNumber, setCurrentSetNumber] = useState<number>(1);
   const [isCompleting, setIsCompleting] = useState<boolean>(false);
 
   useEffect(() => {
@@ -66,8 +65,6 @@ export function TrainingPage(): React.ReactElement {
 
   const handleExerciseClick = (exercise: Exercise): void => {
     setSelectedExercise(exercise);
-    const existingSets = exerciseProgress[exercise._id || ''] || [];
-    setCurrentSetNumber(existingSets.length + 1);
   };
 
   const handleSaveSets = async (sets: ExerciseSet[]): Promise<void> => {
@@ -80,13 +77,21 @@ export function TrainingPage(): React.ReactElement {
 
     setExerciseProgress(updatedProgress);
 
-    // Update session on backend
-    await trainingService.logExercise(currentSession._id, {
-      exercises: Object.entries(updatedProgress).map(([exerciseId, exerciseSets]) => ({
-        exerciseId,
-        sets: exerciseSets,
-      })),
-    });
+    try {
+      // Update session on backend
+      await trainingService.logExercise(currentSession._id, {
+        exercises: Object.entries(updatedProgress).map(([exerciseId, exerciseSets]) => ({
+          exerciseId,
+          sets: exerciseSets,
+        })),
+      });
+      
+      // Close modal after successful save
+      setSelectedExercise(null);
+    } catch (err) {
+      console.error('Failed to log exercise:', err);
+      // Keep modal open if save fails
+    }
   };
 
   const handleCompleteSession = async (): Promise<void> => {
@@ -147,7 +152,7 @@ export function TrainingPage(): React.ReactElement {
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={handleCancelSession}>
-              Cancel
+              {t('workout.cancelSession')}
             </Button>
           </div>
         </div>
@@ -172,12 +177,12 @@ export function TrainingPage(): React.ReactElement {
             onClick={handleCompleteSession}
             disabled={isCompleting || completedExercises === 0}
           >
-            {isCompleting ? t('common.loading') : 'Complete Workout'}
+            {isCompleting ? t('common.loading') : t('workout.completeSession')}
           </Button>
           <p className="text-xs text-center text-muted-foreground">
             {completedExercises === 0
-              ? 'Log at least one exercise to complete'
-              : 'You can complete the workout anytime'}
+              ? t('training.logAtLeastOne')
+              : t('training.completeAnytime')}
           </p>
         </div>
       </div>
@@ -186,7 +191,6 @@ export function TrainingPage(): React.ReactElement {
       {selectedExercise && (
         <ExerciseLogModal
           exercise={selectedExercise}
-          setNumber={currentSetNumber}
           existingSets={exerciseProgress[selectedExercise._id || ''] || []}
           onSave={handleSaveSets}
           onClose={(): void => setSelectedExercise(null)}

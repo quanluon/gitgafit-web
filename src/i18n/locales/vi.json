@@ -19,6 +19,7 @@
     "login": "Đăng nhập",
     "register": "Đăng ký",
     "logout": "Đăng xuất",
+    "signOut": "Đăng xuất khỏi tài khoản",
     "email": "Email",
     "password": "Mật khẩu",
     "confirmPassword": "Xác nhận mật khẩu",
@@ -28,6 +29,7 @@
   },
   "profile": {
     "title": "Hồ sơ",
+    "settings": "Cài đặt",
     "goal": "Mục tiêu",
     "experienceLevel": "Trình độ",
     "height": "Chiều cao (cm)",
@@ -68,6 +70,7 @@
     "startTraining": "Bắt đầu tập",
     "manage": "Quản lý",
     "change": "Thay đổi",
+    "regenerate": "Tạo lại kế hoạch",
     "exercises": "bài tập",
     "latestResult": "Kết quả gần nhất",
     "selectDay": "Chọn ngày tập",
@@ -83,7 +86,9 @@
     "weight": "Tạ (kg)",
     "addSet": "Thêm hiệp",
     "saveLog": "Lưu nhật ký",
-    "watchVideo": "Xem video hướng dẫn"
+    "watchVideo": "Xem video hướng dẫn",
+    "selectAllDays": "Chọn cả tuần",
+    "clearDays": "Xóa lựa chọn"
   },
   "training": {
     "activeSession": "Buổi tập đang diễn ra",
@@ -94,7 +99,12 @@
     "sessionCompleted": "Hoàn thành buổi tập!",
     "sessionCancelled": "Đã hủy buổi tập",
     "failedToStart": "Không thể bắt đầu buổi tập",
-    "exerciseProgress": "Tiến độ bài tập"
+    "exerciseProgress": "Tiến độ bài tập",
+    "logAtLeastOne": "Ghi nhật ký ít nhất một bài tập để hoàn thành",
+    "completeAnytime": "Bạn có thể hoàn thành buổi tập bất cứ lúc nào",
+    "loggedSets": "Các hiệp đã ghi",
+    "tapToLog": "Nhấn để ghi nhật ký",
+    "summary": "Tổng kết"
   },
   "meal": {
     "title": "Kế hoạch ăn uống",
@@ -122,11 +132,12 @@
     "lunch": "Bữa trưa",
     "dinner": "Bữa tối",
     "snack": "Bữa phụ",
-    "calories": "cal",
+    "calories": "Calories",
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Chất béo",
-    "quantity": "Khẩu phần"
+    "quantity": "Khẩu phần",
+    "dailyTargets": "Mục tiêu hàng ngày"
   },
   "navigation": {
     "home": "Trang chủ",
@@ -156,7 +167,8 @@
     "notesOptional": "Ghi chú (tùy chọn)",
     "placeholder": "70.5",
     "notesPlaceholder": "Cảm thấy tuyệt vời hôm nay!",
-    "updateButton": "Cập nhật"
+    "updateButton": "Cập nhật",
+    "target": "Mục tiêu"
   },
   "days": {
     "monday": "Thứ hai",

@@ -35,20 +35,37 @@ export function ExerciseListItem({
         </Button>
       </div>
 
-      {latestResults.length > 0 && (
-        <div>
-          <p className="text-xs text-muted-foreground mb-2">{t('workout.latestResult')}</p>
-          <div className="flex gap-2 overflow-x-auto">
+      {/* Target Sets */}
+      <div className="flex items-center gap-4 text-sm">
+        <div className="px-3 py-1.5 bg-secondary rounded-md">
+          <span className="font-semibold">{exercise.sets}</span> {t('workout.sets')}
+        </div>
+        <div className="px-3 py-1.5 bg-secondary rounded-md">
+          <span className="font-semibold">{exercise.reps}</span> {t('workout.reps')}
+        </div>
+      </div>
+
+      {/* Logged Sets */}
+      {latestResults.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground">{t('training.loggedSets')}:</p>
+          <div className="space-y-1">
             {latestResults.map((result, index) => (
               <div
-                key={index}
-                className="flex flex-col items-center min-w-[60px] px-3 py-2 bg-secondary rounded-lg"
+                key={`${index}-${result.reps}-${result.weight}`}
+                className="flex items-center justify-between p-2 bg-primary/5 rounded-md text-sm"
               >
-                <span className="text-xs text-muted-foreground">x{result.reps}</span>
-                <span className="font-semibold">{result.weight}</span>
+                <span className="text-muted-foreground">Set {index + 1}:</span>
+                <span className="font-semibold">
+                  {result.reps} {t('workout.reps')} × {result.weight} kg
+                </span>
               </div>
             ))}
           </div>
+        </div>
+      ) : (
+        <div className="text-center py-2">
+          <p className="text-xs text-muted-foreground">{t('training.tapToLog')}</p>
         </div>
       )}
     </div>

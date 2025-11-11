@@ -7,6 +7,7 @@ import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
 import { MainLayout } from '@templates/MainLayout';
+import { LanguageSelector } from '@organisms/LanguageSelector';
 import { useAuthStore } from '@store/authStore';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types/enums';
@@ -15,7 +16,7 @@ import { UserProfile } from '@/types/user';
 export function ProfilePage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, clearAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -100,8 +101,39 @@ export function ProfilePage(): React.ReactElement {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">{t('profile.title')}</h1>
           <Button variant="ghost" onClick={(): void => navigate('/')}>
-            Back
+            {t('common.back')}
           </Button>
+        </div>
+
+        {/* Settings Section */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">{t('profile.settings')}</h2>
+          
+          {/* Language Selector */}
+          <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
+            <div>
+              <h3 className="font-semibold">Language / Ngôn ngữ</h3>
+              <p className="text-sm text-muted-foreground">Change app language</p>
+            </div>
+            <LanguageSelector />
+          </div>
+
+          {/* Logout Button */}
+          <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
+            <div>
+              <h3 className="font-semibold">{t('auth.logout')}</h3>
+              <p className="text-sm text-muted-foreground">{t('auth.signOut')}</p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={(): void => {
+                clearAuth();
+                navigate('/login');
+              }}
+            >
+              {t('auth.logout')}
+            </Button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -118,14 +150,16 @@ export function ProfilePage(): React.ReactElement {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="goal">{t('profile.goal')} *</Label>
+            <Label htmlFor="goal">
+              {t('profile.goal')} <span className="text-destructive">*</span>
+            </Label>
             <Controller
               name="goal"
               control={control}
               rules={{ required: 'Goal is required' }}
               render={({ field }): React.ReactElement => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
+                  <SelectTrigger className={errors.goal ? 'border-destructive' : ''}>
                     <SelectValue placeholder="Select your goal" />
                   </SelectTrigger>
                   <SelectContent>
@@ -198,11 +232,12 @@ export function ProfilePage(): React.ReactElement {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="targetWeight">Target Weight (kg)</Label>
+            <Label htmlFor="targetWeight">{t('profile.targetWeight')}</Label>
             <Input
               id="targetWeight"
               type="number"
               placeholder="65"
+              className={errors.targetWeight ? 'border-destructive' : ''}
               {...register('targetWeight', {
                 min: { value: 1, message: 'Target weight must be positive' },
               })}
@@ -213,32 +248,33 @@ export function ProfilePage(): React.ReactElement {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="age">Age</Label>
+            <Label htmlFor="age">{t('profile.age')}</Label>
             <Input
               id="age"
               type="number"
               placeholder="25"
+              className={errors.age ? 'border-destructive' : ''}
               {...register('age', {
                 min: { value: 1, message: 'Age must be positive' },
                 max: { value: 120, message: 'Please enter a valid age' },
               })}
             />
             <p className="text-xs text-muted-foreground">
-              Required for meal plan & TDEE calculation
+              {t('profile.requiredForMealPlan')}
             </p>
             {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="gender">Gender</Label>
+              <Label htmlFor="gender">{t('profile.gender')}</Label>
               <Controller
                 name="gender"
                 control={control}
                 render={({ field }): React.ReactElement => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
+                    <SelectTrigger className={errors.gender ? 'border-destructive' : ''}>
+                      <SelectValue placeholder={t('profile.selectGender')} />
                     </SelectTrigger>
                     <SelectContent>
                       {genderOptions.map((option) => (
@@ -250,18 +286,18 @@ export function ProfilePage(): React.ReactElement {
                   </Select>
                 )}
               />
-              <p className="text-xs text-muted-foreground">For TDEE calculation</p>
+              <p className="text-xs text-muted-foreground">{t('profile.requiredForTDEE')}</p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="activityLevel">Activity Level</Label>
+              <Label htmlFor="activityLevel">{t('profile.activityLevel')}</Label>
               <Controller
                 name="activityLevel"
                 control={control}
                 render={({ field }): React.ReactElement => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select activity" />
+                    <SelectTrigger className={errors.activityLevel ? 'border-destructive' : ''}>
+                      <SelectValue placeholder={t('profile.selectActivity')} />
                     </SelectTrigger>
                     <SelectContent>
                       {activityLevelOptions.map((option) => (
@@ -276,12 +312,38 @@ export function ProfilePage(): React.ReactElement {
                   </Select>
                 )}
               />
-              <p className="text-xs text-muted-foreground">For TDEE calculation</p>
+              <p className="text-xs text-muted-foreground">{t('profile.requiredForTDEE')}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>{t('profile.scheduleDays')} *</Label>
+            <div className="flex items-center justify-between">
+              <Label>
+                {t('profile.scheduleDays')} <span className="text-destructive">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(): void => {
+                    setValue('scheduleDays', Object.values(DayOfWeek));
+                  }}
+                >
+                  {t('workout.selectAllDays')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(): void => {
+                    setValue('scheduleDays', []);
+                  }}
+                >
+                  {t('workout.clearDays')}
+                </Button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {dayOptions.map((day) => (
                 <Controller

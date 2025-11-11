@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@atoms/Button';
@@ -17,6 +18,7 @@ export function WeightChart({
   targetWeight,
   onUpdate,
 }: WeightChartProps): React.ReactElement {
+  const { t } = useTranslation();
 
   // Calculate trend
   const sortedData = [...data].sort(
@@ -45,7 +47,7 @@ export function WeightChart({
     <div className="bg-card border rounded-lg p-6 space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-sm text-muted-foreground">Weight</h3>
+          <h3 className="text-sm text-muted-foreground">{t('profile.weight')}</h3>
           <div className="flex items-baseline gap-2 mt-1">
             <h2 className="text-3xl font-bold">{currentWeight.toFixed(1)} kg</h2>
             {trend !== 0 && (
@@ -64,11 +66,13 @@ export function WeightChart({
             )}
           </div>
           {targetWeight && (
-            <p className="text-sm text-muted-foreground mt-1">Target: {targetWeight} kg</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('weight.target')}: {targetWeight} kg
+            </p>
           )}
         </div>
         <Button variant="ghost" size="sm" onClick={onUpdate}>
-          Update
+          {t('common.update')}
         </Button>
       </div>
 

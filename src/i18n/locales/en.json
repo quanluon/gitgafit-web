@@ -19,6 +19,7 @@
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
+    "signOut": "Sign out of your account",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
@@ -28,6 +29,7 @@
   },
   "profile": {
     "title": "Profile",
+    "settings": "Settings",
     "goal": "Goal",
     "experienceLevel": "Experience Level",
     "height": "Height (cm)",
@@ -68,6 +70,7 @@
     "startTraining": "Start Training",
     "manage": "Manage",
     "change": "Change",
+    "regenerate": "Regenerate Plan",
     "exercises": "exercises",
     "latestResult": "Latest result",
     "selectDay": "Select Training Day",
@@ -83,7 +86,9 @@
     "weight": "Weight (kg)",
     "addSet": "Add Set",
     "saveLog": "Save Log",
-    "watchVideo": "Watch video tutorial"
+    "watchVideo": "Watch video tutorial",
+    "selectAllDays": "Select Full Week",
+    "clearDays": "Clear Selection"
   },
   "training": {
     "activeSession": "Active Training Session",
@@ -94,7 +99,12 @@
     "sessionCompleted": "Training session completed!",
     "sessionCancelled": "Training session cancelled",
     "failedToStart": "Failed to start training session",
-    "exerciseProgress": "Exercise Progress"
+    "exerciseProgress": "Exercise Progress",
+    "logAtLeastOne": "Log at least one exercise to complete",
+    "completeAnytime": "You can complete the workout anytime",
+    "loggedSets": "Logged Sets",
+    "tapToLog": "Tap to log exercise",
+    "summary": "Summary"
   },
   "meal": {
     "title": "Meal Planner",
@@ -122,11 +132,12 @@
     "lunch": "Lunch",
     "dinner": "Dinner",
     "snack": "Snack",
-    "calories": "cal",
+    "calories": "Calories",
     "protein": "Protein",
     "carbs": "Carbs",
     "fat": "Fat",
-    "quantity": "Quantity"
+    "quantity": "Quantity",
+    "dailyTargets": "Daily Targets"
   },
   "navigation": {
     "home": "Home",
@@ -156,7 +167,8 @@
     "notesOptional": "Notes (optional)",
     "placeholder": "70.5",
     "notesPlaceholder": "Feeling great today!",
-    "updateButton": "Update"
+    "updateButton": "Update",
+    "target": "Target"
   },
   "days": {
     "monday": "Monday",
