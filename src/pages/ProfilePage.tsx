@@ -26,6 +26,7 @@ export function ProfilePage(): React.ReactElement {
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<UserProfile>();
 
@@ -321,28 +322,29 @@ export function ProfilePage(): React.ReactElement {
               <Label>
                 {t('profile.scheduleDays')} <span className="text-destructive">*</span>
               </Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={(): void => {
-                    setValue('scheduleDays', Object.values(DayOfWeek));
-                  }}
-                >
-                  {t('workout.selectAllDays')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={(): void => {
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={(): void => {
+                  const currentDays = watch('scheduleDays') || [];
+                  const allDays = Object.values(DayOfWeek);
+                  const allSelected = allDays.length === currentDays.length;
+                  
+                  if (allSelected) {
                     setValue('scheduleDays', []);
-                  }}
-                >
-                  {t('workout.clearDays')}
-                </Button>
-              </div>
+                  } else {
+                    setValue('scheduleDays', allDays);
+                  }
+                }}
+              >
+                {((): string => {
+                  const currentDays = watch('scheduleDays') || [];
+                  const allDays = Object.values(DayOfWeek);
+                  const allSelected = allDays.length === currentDays.length;
+                  return allSelected ? t('workout.clearDays') : t('workout.selectAllDays');
+                })()}
+              </Button>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {dayOptions.map((day) => (

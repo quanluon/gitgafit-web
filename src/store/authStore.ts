@@ -45,3 +45,11 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
+// Listen for token refresh events from axios interceptor
+if (typeof window !== 'undefined') {
+  window.addEventListener('token-refreshed', ((event: CustomEvent) => {
+    const { accessToken, refreshToken } = event.detail;
+    useAuthStore.getState().setTokens(accessToken, refreshToken);
+  }) as EventListener);
+}
+
