@@ -4,9 +4,11 @@ import { User } from '@/types/user';
 
 interface AuthState {
   token: string | null;
+  refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  setAuth: (token: string, user: User) => void;
+  setAuth: (token: string, refreshToken: string, user: User) => void;
+  setTokens: (token: string, refreshToken: string) => void;
   clearAuth: () => void;
   updateUser: (user: User) => void;
 }
@@ -15,15 +17,23 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       token: null,
+      refreshToken: null,
       user: null,
       isAuthenticated: false,
-      setAuth: (token: string, user: User): void => {
+      setAuth: (token: string, refreshToken: string, user: User): void => {
         localStorage.setItem('auth_token', token);
-        set({ token, user, isAuthenticated: true });
+        localStorage.setItem('refresh_token', refreshToken);
+        set({ token, refreshToken, user, isAuthenticated: true });
+      },
+      setTokens: (token: string, refreshToken: string): void => {
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('refresh_token', refreshToken);
+        set({ token, refreshToken });
       },
       clearAuth: (): void => {
         localStorage.removeItem('auth_token');
-        set({ token: null, user: null, isAuthenticated: false });
+        localStorage.removeItem('refresh_token');
+        set({ token: null, refreshToken: null, user: null, isAuthenticated: false });
       },
       updateUser: (user: User): void => {
         set({ user });

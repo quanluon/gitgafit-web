@@ -14,8 +14,13 @@ interface LoginRequest {
 
 interface AuthResponse {
   accessToken: string;
-  refreshToken?: string;
+  refreshToken: string;
   user: User;
+}
+
+interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
 }
 
 class AuthServiceClass {
@@ -26,6 +31,13 @@ class AuthServiceClass {
 
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/login', data);
+    return response.data.data!;
+  }
+
+  async refreshToken(refreshToken: string): Promise<RefreshResponse> {
+    const response = await apiClient.post<ApiResponse<RefreshResponse>>('/auth/refresh', {
+      refreshToken,
+    });
     return response.data.data!;
   }
 }
