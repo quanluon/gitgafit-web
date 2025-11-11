@@ -37,7 +37,7 @@ export function RegisterPage(): React.ReactElement {
         email: data.email,
         password: data.password,
       });
-      setAuth(response.accessToken, response.user);
+      setAuth(response.accessToken, response.refreshToken, response.user);
       navigate('/onboarding');
     } catch (err) {
       setError('Registration failed. Please try again.');

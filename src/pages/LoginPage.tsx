@@ -30,7 +30,7 @@ export function LoginPage(): React.ReactElement {
       setIsLoading(true);
       setError('');
       const response = await authService.login(data);
-      setAuth(response.accessToken, response.user);
+      setAuth(response.accessToken, response.refreshToken, response.user);
       navigate('/');
     } catch (err) {
       setError('Invalid email or password');
