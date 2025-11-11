@@ -12,6 +12,7 @@ import { indexedDBService } from '@services/indexeddb';
 import { Exercise } from '@/types/workout';
 import { Language } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
+import toast from 'react-hot-toast';
 
 interface ExerciseSet {
   reps: number;
@@ -19,7 +20,11 @@ interface ExerciseSet {
 }
 
 interface ExerciseProgress {
-  [exerciseId: string]: ExerciseSet[];
+  [exerciseIndex: string]: ExerciseSet[];
+}
+
+interface ExerciseWithIndex extends Exercise {
+  index: number;
 }
 
 export function TrainingPage(): React.ReactElement {
@@ -30,7 +35,7 @@ export function TrainingPage(): React.ReactElement {
   const { currentSession, clearSession } = useTrainingStore();
 
   const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress>({});
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<ExerciseWithIndex | null>(null);
   const [isCompleting, setIsCompleting] = useState<boolean>(false);
 
   useEffect(() => {
@@ -63,34 +68,44 @@ export function TrainingPage(): React.ReactElement {
   const currentLang = language as Language;
   const workoutFocus = todaysWorkout.focus[currentLang];
 
-  const handleExerciseClick = (exercise: Exercise): void => {
-    setSelectedExercise(exercise);
+  const handleExerciseClick = (exercise: Exercise, index: number): void => {
+    setSelectedExercise({ ...exercise, index });
   };
 
   const handleSaveSets = async (sets: ExerciseSet[]): Promise<void> => {
-    if (!selectedExercise?._id) return;
+    if (selectedExercise === null) {
+      console.error('No exercise selected');
+      return;
+    }
 
+    if (!currentSession?._id) {
+      console.error('No active session');
+      return;
+    }
+
+    const exerciseKey = `exercise_${selectedExercise.index}`;
     const updatedProgress = {
       ...exerciseProgress,
-      [selectedExercise._id]: sets,
+      [exerciseKey]: sets,
     };
 
     setExerciseProgress(updatedProgress);
 
+    const logData = {
+      exercises: Object.entries(updatedProgress).map(([exerciseKey, exerciseSets]) => ({
+        exerciseId: exerciseKey,
+        sets: exerciseSets,
+      })),
+    };
+
     try {
       // Update session on backend
-      await trainingService.logExercise(currentSession._id, {
-        exercises: Object.entries(updatedProgress).map(([exerciseId, exerciseSets]) => ({
-          exerciseId,
-          sets: exerciseSets,
-        })),
-      });
-      
-      // Close modal after successful save
+      await trainingService.logExercise(currentSession._id, logData);
       setSelectedExercise(null);
     } catch (err) {
-      console.error('Failed to log exercise:', err);
-      // Keep modal open if save fails
+      const error = err as { response?: { data?: { message?: string } } };
+      const errorMessage = error?.response?.data?.message || t('training.failedToLog') || 'Failed to log exercise. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
@@ -160,14 +175,17 @@ export function TrainingPage(): React.ReactElement {
 
       <div className="max-w-4xl mx-auto p-4 space-y-4">
         {/* Exercise List */}
-        {todaysWorkout.exercises.map((exercise) => (
-          <ExerciseListItem
-            key={exercise._id}
-            exercise={exercise}
-            latestResults={exerciseProgress[exercise._id || ''] || []}
-            onExerciseClick={(): void => handleExerciseClick(exercise)}
-          />
-        ))}
+        {todaysWorkout.exercises.map((exercise, index) => {
+          const exerciseKey = `exercise_${index}`;
+          return (
+            <ExerciseListItem
+              key={exerciseKey}
+              exercise={exercise}
+              latestResults={exerciseProgress[exerciseKey] || []}
+              onExerciseClick={(): void => handleExerciseClick(exercise, index)}
+            />
+          );
+        })}
 
         {/* Complete Button */}
         <div className="pt-4 space-y-3">
@@ -191,7 +209,7 @@ export function TrainingPage(): React.ReactElement {
       {selectedExercise && (
         <ExerciseLogModal
           exercise={selectedExercise}
-          existingSets={exerciseProgress[selectedExercise._id || ''] || []}
+          existingSets={exerciseProgress[`exercise_${selectedExercise.index}`] || []}
           onSave={handleSaveSets}
           onClose={(): void => setSelectedExercise(null)}
         />

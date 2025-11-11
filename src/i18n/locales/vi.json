@@ -24,8 +24,11 @@
     "password": "Mật khẩu",
     "confirmPassword": "Xác nhận mật khẩu",
     "forgotPassword": "Quên mật khẩu?",
-    "loginSuccess": "Đăng nhập thành công",
-    "registerSuccess": "Đăng ký thành công"
+    "loginSuccess": "Đăng nhập thành công! Chào mừng trở lại.",
+    "loginError": "Email hoặc mật khẩu không hợp lệ",
+    "registerSuccess": "Đăng ký thành công! Hãy thiết lập hồ sơ của bạn.",
+    "registerError": "Đăng ký thất bại. Email có thể đã được sử dụng.",
+    "passwordMismatch": "Mật khẩu không khớp"
   },
   "profile": {
     "title": "Hồ sơ",

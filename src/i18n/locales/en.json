@@ -24,8 +24,11 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "forgotPassword": "Forgot Password?",
-    "loginSuccess": "Login successful",
-    "registerSuccess": "Registration successful"
+    "loginSuccess": "Login successful! Welcome back.",
+    "loginError": "Invalid email or password",
+    "registerSuccess": "Registration successful! Let's set up your profile.",
+    "registerError": "Registration failed. Email might already be in use.",
+    "passwordMismatch": "Passwords do not match"
   },
   "profile": {
     "title": "Profile",

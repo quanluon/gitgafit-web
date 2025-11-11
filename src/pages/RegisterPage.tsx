@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { Button } from '@atoms/Button';
 import { FormField } from '@molecules/FormField';
 import { useAuthStore } from '@store/authStore';
@@ -17,7 +18,6 @@ export function RegisterPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
-  const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
@@ -32,15 +32,17 @@ export function RegisterPage(): React.ReactElement {
   const onSubmit = async (data: RegisterFormData): Promise<void> => {
     try {
       setIsLoading(true);
-      setError('');
       const response = await authService.register({
         email: data.email,
         password: data.password,
       });
       setAuth(response.accessToken, response.refreshToken, response.user);
+      toast.success(t('auth.registerSuccess'));
       navigate('/onboarding');
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      const error = err as { response?: { data?: { message?: string } } };
+      const errorMessage = error?.response?.data?.message || t('auth.registerError') || 'Registration failed. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -55,12 +57,6 @@ export function RegisterPage(): React.ReactElement {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {error && (
-            <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-
           <FormField
             label={t('auth.email')}
             name="email"
