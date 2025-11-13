@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export enum GenerationType {
   WORKOUT = 'workout',
@@ -13,7 +12,7 @@ export enum GenerationStatus {
   ERROR = 'error',
 }
 
-interface GenerationJob {
+export interface GenerationJob {
   jobId: string;
   type: GenerationType;
   status: GenerationStatus;
@@ -21,7 +20,6 @@ interface GenerationJob {
   message: string;
   error?: string;
   resultId?: string;
-  startedAt: number; // Timestamp
 }
 
 interface GenerationState {
@@ -33,22 +31,16 @@ interface GenerationState {
   failGeneration: (jobId: string, error: string) => void;
   clearJob: (jobId: string) => void;
   clearCompletedJobs: () => void;
-  clearStaleJobs: () => void;
+  setJobs: (jobs: GenerationJob[]) => void;
   toggleExpanded: () => void;
   setExpanded: (expanded: boolean) => void;
-  hydrate: () => void;
 }
 
-const STORAGE_KEY = 'generation-jobs';
-const MAX_JOB_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const useGenerationStore = create<GenerationState>((set) => ({
+  jobs: [],
+  isExpanded: false,
 
-export const useGenerationStore = create<GenerationState>()(
-  persist(
-    (set, get) => ({
-      jobs: [],
-      isExpanded: false,
-
-      startGeneration: (jobId: string, type: GenerationType): void => {
+  startGeneration: (jobId: string, type: GenerationType): void => {
     set((state) => ({
       jobs: [
         ...state.jobs,
@@ -58,7 +50,6 @@ export const useGenerationStore = create<GenerationState>()(
           status: GenerationStatus.GENERATING,
           progress: 0,
           message: 'Starting generation...',
-          startedAt: Date.now(),
         },
       ],
       isExpanded: false,
@@ -125,14 +116,8 @@ export const useGenerationStore = create<GenerationState>()(
     }));
   },
 
-  clearStaleJobs: (): void => {
-    const now = Date.now();
-    set((state) => ({
-      jobs: state.jobs.filter((job) => {
-        const age = now - job.startedAt;
-        return age < MAX_JOB_AGE_MS;
-      }),
-    }));
+  setJobs: (jobs: GenerationJob[]): void => {
+    set({ jobs });
   },
 
   toggleExpanded: (): void => {
@@ -142,19 +127,5 @@ export const useGenerationStore = create<GenerationState>()(
   setExpanded: (expanded: boolean): void => {
     set({ isExpanded: expanded });
   },
-
-      hydrate: (): void => {
-        // Clear stale jobs on hydration
-        get().clearStaleJobs();
-      },
-    }),
-    {
-      name: STORAGE_KEY,
-      partialize: (state: GenerationState) => ({
-        jobs: state.jobs.filter((job: GenerationJob) => job.status === GenerationStatus.GENERATING),
-        isExpanded: false,
-      }),
-    }
-  )
-);
+}));
 

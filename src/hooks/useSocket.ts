@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@store/authStore';
-import { useGenerationStore } from '@store/generationStore';
+import { useGenerationStore, GenerationStatus } from '@store/generationStore';
 import { socketService, WebSocketEvent } from '@services/socketService';
+import { queueService } from '@services/queueService';
 
 interface NotificationPayload {
   jobId: string | number;
@@ -19,12 +20,34 @@ type EventHandler = (data: NotificationPayload) => void;
  */
 export function useSocket(): void {
   const { user, isAuthenticated } = useAuthStore();
-  const { updateProgress, completeGeneration, failGeneration, clearStaleJobs } = useGenerationStore();
+  const { updateProgress, completeGeneration, failGeneration, setJobs } = useGenerationStore();
 
-  // Clear stale jobs on mount
+
+  // Fetch active jobs from backend on mount
   useEffect(() => {
-    clearStaleJobs();
-  }, [clearStaleJobs]);
+    const fetchActiveJobs = async (): Promise<void> => {
+      if (isAuthenticated && user?._id) {
+        try {
+          const activeJobs = await queueService.getActiveJobs();
+          
+          // Convert to generation store format
+          const jobs = activeJobs.map((job) => ({
+            jobId: job.jobId,
+            type: job.type,
+            status: GenerationStatus.GENERATING,
+            progress: job.progress,
+            message: job.message || 'Generating...',
+          }));
+          
+          setJobs(jobs);
+        } catch (error) {
+          console.error('Failed to fetch active jobs:', error);
+        }
+      }
+    };
+
+    fetchActiveJobs();
+  }, [isAuthenticated, user?._id, setJobs]);
 
   useEffect(() => {
     if (isAuthenticated && user?._id) {
