@@ -7,7 +7,7 @@ import { Button } from '@atoms/Button';
 import { MacrosCard } from '@molecules/MacrosCard';
 import { MainLayout } from '@templates/MainLayout';
 import { useAuthStore } from '@store/authStore';
-import { useGenerationStore, GenerationType } from '@store/generationStore';
+import { useGenerationStore, GenerationType, GenerationStatus } from '@store/generationStore';
 import { mealService } from '@services/mealService';
 import { MealPlan, DailyMealPlan, Meal } from '@/types/meal';
 import { Language, MealType } from '@/types/enums';
@@ -28,7 +28,7 @@ export function MealPlannerPage(): React.ReactElement {
 
   // Check if there's already a meal generation in progress
   const hasActiveMealGeneration = jobs.some(
-    (job) => job.type === GenerationType.MEAL && job.status === 'generating'
+    (job) => job.type === GenerationType.MEAL && job.status === GenerationStatus.GENERATING
   );
 
   useEffect(() => {

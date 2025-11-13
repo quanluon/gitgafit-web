@@ -22,63 +22,95 @@ export function GenerationProgress(): React.ReactElement | null {
   const { t } = useTranslation();
   const { jobs, isExpanded, toggleExpanded, clearJob, setExpanded } = useGenerationStore();
 
+  // Track which jobs have shown toasts to prevent duplicates
+  const [notifiedJobs, setNotifiedJobs] = React.useState<Set<string>>(new Set());
+
   // Get active jobs (generating)
   const activeJobs = jobs.filter((job) => job.status === GenerationStatus.GENERATING);
   
   // Get the most recent job to display
   const currentJob = jobs.length > 0 ? jobs[jobs.length - 1] : null;
 
-  // Auto-handle completed jobs
+  // Auto-handle completed and error jobs
   useEffect(() => {
-    jobs.forEach((job) => {
-      if (job.status === GenerationStatus.COMPLETED) {
-        // Show notification with action
-        const readyMessage = job.type === GenerationType.WORKOUT
+    const completedJobs = jobs.filter((job) => job.status === GenerationStatus.COMPLETED);
+    const errorJobs = jobs.filter((job) => job.status === GenerationStatus.ERROR);
+
+    // Handle completed jobs
+    completedJobs.forEach((job) => {
+      // Skip if already notified
+      if (notifiedJobs.has(job.jobId)) {
+        return;
+      }
+
+      const readyMessage =
+        job.type === GenerationType.WORKOUT
           ? t('generation.workoutReady')
           : t('generation.mealReady');
-        const route = job.type === GenerationType.WORKOUT ? '/workout-preview' : '/meal-planner';
+      const route = job.type === GenerationType.WORKOUT ? '/workout-preview' : '/meal-planner';
 
-        toast.success(
-          (toastInstance) => (
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <p className="font-semibold">{readyMessage}</p>
-                <p className="text-sm text-muted-foreground">{t('generation.clickToView')}</p>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => {
-                  toast.dismiss(toastInstance.id);
-                  navigate(route);
-                  clearJob(job.jobId);
-                }}
-              >
-                {t('generation.viewPlan')}
-              </Button>
+      // Mark as notified
+      setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
+
+      // Show toast
+      toast.success(
+        (toastInstance) => (
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <p className="font-semibold">{readyMessage}</p>
+              <p className="text-sm text-muted-foreground">{t('generation.clickToView')}</p>
             </div>
-          ),
-          {
-            duration: 8000,
-            position: 'top-center',
-            id: `completed-${job.jobId}`, // Prevent duplicate toasts
-          }
-        );
+            <Button
+              size="sm"
+              onClick={() => {
+                toast.dismiss(toastInstance.id);
+                navigate(route);
+                clearJob(job.jobId);
+              }}
+            >
+              {t('generation.viewPlan')}
+            </Button>
+          </div>
+        ),
+        {
+          duration: 8000,
+          position: 'top-center',
+          id: `completed-${job.jobId}`,
+        }
+      );
 
-        // Auto-clear after 3 seconds
-        setTimeout(() => {
-          clearJob(job.jobId);
-        }, 3000);
-      }
-
-      // Auto-handle errors
-      if (job.status === GenerationStatus.ERROR) {
-        setExpanded(true);
-        setTimeout(() => {
-          clearJob(job.jobId);
-        }, 5000);
-      }
+      // Auto-clear after 5 seconds
+      setTimeout(() => {
+        clearJob(job.jobId);
+      }, 5000);
     });
-  }, [jobs, navigate, clearJob, setExpanded, t]);
+
+    // Handle error jobs
+    errorJobs.forEach((job) => {
+      // Skip if already notified
+      if (notifiedJobs.has(job.jobId)) {
+        return;
+      }
+
+      // Mark as notified
+      setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
+
+      // Show error toast
+      toast.error(job.error || t('generation.failed'), {
+        duration: 5000,
+        position: 'top-center',
+        id: `error-${job.jobId}`,
+      });
+
+      // Expand to show error
+      setExpanded(true);
+
+      // Auto-clear after 5 seconds
+      setTimeout(() => {
+        clearJob(job.jobId);
+      }, 5000);
+    });
+  }, [jobs, navigate, clearJob, setExpanded, t, notifiedJobs]);
 
   if (jobs.length === 0) {
     return null;

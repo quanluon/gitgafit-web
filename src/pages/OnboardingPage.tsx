@@ -7,7 +7,7 @@ import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { useAuthStore } from '@store/authStore';
-import { useGenerationStore, GenerationType } from '@store/generationStore';
+import { useGenerationStore, GenerationType, GenerationStatus } from '@store/generationStore';
 import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
@@ -25,7 +25,7 @@ export function OnboardingPage(): React.ReactElement {
 
   // Check if there's already a workout generation in progress
   const hasActiveWorkoutGeneration = jobs.some(
-    (job) => job.type === GenerationType.WORKOUT && job.status === 'generating'
+    (job) => job.type === GenerationType.WORKOUT && job.status === GenerationStatus.GENERATING
   );
 
   const {
