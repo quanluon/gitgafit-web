@@ -9,6 +9,7 @@ import { Label } from '@atoms/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
 import { MainLayout } from '@templates/MainLayout';
 import { LanguageSelector } from '@organisms/LanguageSelector';
+import { SubscriptionCard } from '@organisms/SubscriptionCard';
 import { useAuthStore } from '@store/authStore';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types/enums';
@@ -23,7 +24,7 @@ export function ProfilePage(): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
-  const [expandedSection, setExpandedSection] = useState<CollapsibleSection>('personal');
+  const [expandedSection, setExpandedSection] = useState<CollapsibleSection>(null);
 
   const {
     register,
@@ -123,6 +124,9 @@ export function ProfilePage(): React.ReactElement {
             </div>
             <LanguageSelector />
           </div>
+
+          {/* Subscription Card */}
+          <SubscriptionCard />
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
