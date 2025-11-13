@@ -9,9 +9,14 @@ interface GenerateMealPlanRequest {
   fullWeek?: boolean;
 }
 
+interface JobResponse {
+  jobId: string;
+  message: string;
+}
+
 class MealServiceClass {
-  async generateMealPlan(data?: GenerateMealPlanRequest): Promise<MealPlan> {
-    const response = await apiClient.post<ApiResponse<MealPlan>>('/meal/plan/generate', data || {});
+  async generateMealPlan(data?: GenerateMealPlanRequest): Promise<JobResponse> {
+    const response = await apiClient.post<ApiResponse<JobResponse>>('/meal/plan/generate', data || {});
     return response.data.data!;
   }
 

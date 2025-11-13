@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { useAuthStore } from '@store/authStore';
+import { useGenerationStore, GenerationType } from '@store/generationStore';
 import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
@@ -14,7 +17,9 @@ type OnboardingStep = 'goal' | 'experience' | 'body' | 'schedule' | 'summary';
 
 export function OnboardingPage(): React.ReactElement {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user, updateUser } = useAuthStore();
+  const { startGeneration } = useGenerationStore();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('goal');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -42,6 +47,7 @@ export function OnboardingPage(): React.ReactElement {
       }
     }
   }, [user, setValue]);
+
 
   const goalOptions = [
     { value: Goal.MUSCLE_GAIN, label: 'Build Muscle', description: 'Gain strength and size' },
@@ -95,8 +101,8 @@ export function OnboardingPage(): React.ReactElement {
       const updatedUser = await userService.updateProfile(data);
       updateUser(updatedUser);
 
-      // Generate workout plan
-      await workoutService.generatePlan({
+      // Start background workout generation
+      const response = await workoutService.generatePlan({
         goal: data.goal,
         experienceLevel: data.experienceLevel,
         scheduleDays: data.scheduleDays,
@@ -105,10 +111,16 @@ export function OnboardingPage(): React.ReactElement {
         targetWeight: data.targetWeight,
       });
 
-      // Navigate to preview page instead of home
-      navigate('/workout-preview');
+      // Start generation tracking in the floating bubble
+      if (response.jobId) {
+        startGeneration(response.jobId, GenerationType.WORKOUT);
+        toast.success(t('generation.workoutPlan') + ' ' + t('generation.generationStarted'));
+        // Navigate to home - user can continue using the app
+        navigate('/');
+      }
     } catch (err) {
       console.error('Onboarding failed:', err);
+      toast.error('Failed to start workout generation');
     } finally {
       setIsLoading(false);
     }
@@ -405,6 +417,7 @@ export function OnboardingPage(): React.ReactElement {
               </div>
             </div>
           )}
+
         </form>
       </div>
     </div>

@@ -13,7 +13,6 @@ export function WorkoutPreviewPage(): React.ReactElement {
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
   const { currentPlan, setCurrentPlan } = useWorkoutStore();
-  const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
@@ -38,25 +37,8 @@ export function WorkoutPreviewPage(): React.ReactElement {
       return;
     }
 
-    try {
-      setIsRegenerating(true);
-      setError('');
-
-      const newPlan = await workoutService.generatePlan({
-        goal: user.goal,
-        experienceLevel: user.experienceLevel,
-        scheduleDays: user.scheduleDays,
-        weight: user.weight,
-        height: user.height,
-        targetWeight: user.targetWeight,
-      });
-
-      setCurrentPlan(newPlan);
-    } catch (err) {
-      setError('Failed to regenerate plan. Please try again.');
-    } finally {
-      setIsRegenerating(false);
-    }
+    // Navigate to onboarding to start background generation
+    navigate('/onboarding');
   };
 
   const handleAccept = (): void => {
@@ -179,10 +161,9 @@ export function WorkoutPreviewPage(): React.ReactElement {
             variant="outline"
             className="flex-1"
             onClick={handleRegenerate}
-            disabled={isRegenerating}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
-            {isRegenerating ? 'Regenerating...' : 'Regenerate Plan'}
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Regenerate Plan
           </Button>
           <Button className="flex-1" onClick={handleAccept}>
             <Check className="h-4 w-4 mr-2" />

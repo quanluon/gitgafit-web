@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@atoms/Button';
 import { MacrosCard } from '@molecules/MacrosCard';
 import { MainLayout } from '@templates/MainLayout';
 import { useAuthStore } from '@store/authStore';
+import { useGenerationStore, GenerationType } from '@store/generationStore';
 import { mealService } from '@services/mealService';
 import { MealPlan, DailyMealPlan, Meal } from '@/types/meal';
 import { Language, MealType } from '@/types/enums';
@@ -17,9 +19,9 @@ export function MealPlannerPage(): React.ReactElement {
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
 
+  const { startGeneration } = useGenerationStore();
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
 
@@ -50,14 +52,17 @@ export function MealPlannerPage(): React.ReactElement {
     }
 
     try {
-      setIsGenerating(true);
       setError('');
-      const plan = await mealService.generateMealPlan({ fullWeek, useAI });
-      setMealPlan(plan);
+      
+      // Start background generation
+      const response = await mealService.generateMealPlan({ fullWeek, useAI });
+      
+      if (response.jobId) {
+        startGeneration(response.jobId, GenerationType.MEAL);
+        toast.success(t('generation.mealPlan') + ' ' + t('generation.generationStarted'));
+      }
     } catch (err) {
-      setError('Failed to generate meal plan');
-    } finally {
-      setIsGenerating(false);
+      setError('Failed to start meal plan generation');
     }
   };
 
@@ -114,7 +119,7 @@ export function MealPlannerPage(): React.ReactElement {
         )}
 
         {/* No Plan Yet */}
-        {!mealPlan && !isGenerating && (
+        {!mealPlan && (
           <div className="text-center py-12 space-y-6">
             <p className="text-muted-foreground">{t('meal.noMealPlan')}</p>
             <div className="flex flex-col gap-3 max-w-sm mx-auto">
@@ -128,15 +133,8 @@ export function MealPlannerPage(): React.ReactElement {
           </div>
         )}
 
-        {/* Loading */}
-        {isGenerating && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">{t('meal.generating')}</p>
-          </div>
-        )}
-
           {/* Meal Plan Display */}
-        {mealPlan && !isGenerating && (
+        {mealPlan && (
           <>
             {/* Regenerate Options */}
             <div className="flex gap-2 justify-end flex-wrap">
@@ -144,18 +142,16 @@ export function MealPlannerPage(): React.ReactElement {
                 variant="outline"
                 size="sm"
                 onClick={(): Promise<void> => handleGeneratePlan(true, true)}
-                disabled={isGenerating}
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                <RefreshCw className="h-4 w-4 mr-2" />
                 {t('meal.aiFullWeek')}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={(): Promise<void> => handleGeneratePlan(false, false)}
-                disabled={isGenerating}
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating ? 'animate-spin' : ''}`} />
+                <RefreshCw className="h-4 w-4 mr-2" />
                 {t('meal.templateFullWeek')}
               </Button>
             </div>

@@ -195,5 +195,30 @@
     "targetWeightPositive": "Target weight must be positive",
     "agePositive": "Age must be positive",
     "selectAtLeastOne": "Select at least one day"
+  },
+  "generation": {
+    "generating": "Generating...",
+    "complete": "Complete!",
+    "failed": "Failed",
+    "workoutPlan": "Workout Plan",
+    "mealPlan": "Meal Plan",
+    "multipleGenerating": "Generating...",
+    "generationsInProgress": "generations in progress",
+    "startingGeneration": "Starting generation...",
+    "analyzingProfile": "Analyzing your profile...",
+    "creatingExercises": "Creating exercises...",
+    "finalizingPlan": "Finalizing your plan...",
+    "analyzingNutrition": "Analyzing your nutrition needs...",
+    "creatingMeals": "Creating meal plans...",
+    "generationStarted": "generation started in background!",
+    "workoutReady": "Workout Plan Ready!",
+    "mealReady": "Meal Plan Ready!",
+    "clickToView": "Click to view your plan",
+    "viewPlan": "View",
+    "dismiss": "Dismiss",
+    "continueUsing": "You can continue using the app. We'll notify you when it's ready!",
+    "continueUsingMultiple": "You can continue using the app. We'll notify you when they're ready!",
+    "generationFailed": "Generation failed",
+    "progress": "Progress"
   }
 }

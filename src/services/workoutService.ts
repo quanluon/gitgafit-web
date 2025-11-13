@@ -12,9 +12,14 @@ interface GeneratePlanRequest {
   targetWeight?: number;
 }
 
+interface JobResponse {
+  jobId: string;
+  message: string;
+}
+
 class WorkoutServiceClass {
-  async generatePlan(data: GeneratePlanRequest): Promise<WorkoutPlan> {
-    const response = await apiClient.post<ApiResponse<WorkoutPlan>>('/workout/plan/generate', data);
+  async generatePlan(data: GeneratePlanRequest): Promise<JobResponse> {
+    const response = await apiClient.post<ApiResponse<JobResponse>>('/workout/plan/generate', data);
     return response.data.data!;
   }
 

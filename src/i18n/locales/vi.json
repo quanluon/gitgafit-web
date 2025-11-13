@@ -195,5 +195,30 @@
     "targetWeightPositive": "Cân nặng mục tiêu phải dương",
     "agePositive": "Tuổi phải dương",
     "selectAtLeastOne": "Chọn ít nhất một ngày"
+  },
+  "generation": {
+    "generating": "Đang tạo...",
+    "complete": "Hoàn thành!",
+    "failed": "Thất bại",
+    "workoutPlan": "Kế hoạch tập luyện",
+    "mealPlan": "Kế hoạch ăn uống",
+    "multipleGenerating": "Đang tạo...",
+    "generationsInProgress": "đang tạo",
+    "startingGeneration": "Bắt đầu tạo...",
+    "analyzingProfile": "Phân tích hồ sơ của bạn...",
+    "creatingExercises": "Tạo bài tập...",
+    "finalizingPlan": "Hoàn thiện kế hoạch...",
+    "analyzingNutrition": "Phân tích nhu cầu dinh dưỡng...",
+    "creatingMeals": "Tạo thực đơn...",
+    "generationStarted": "đã bắt đầu tạo ở chế độ nền!",
+    "workoutReady": "Kế hoạch tập sẵn sàng!",
+    "mealReady": "Kế hoạch ăn sẵn sàng!",
+    "clickToView": "Nhấn để xem kế hoạch",
+    "viewPlan": "Xem",
+    "dismiss": "Đóng",
+    "continueUsing": "Bạn có thể tiếp tục sử dụng ứng dụng. Chúng tôi sẽ thông báo khi hoàn thành!",
+    "continueUsingMultiple": "Bạn có thể tiếp tục sử dụng ứng dụng. Chúng tôi sẽ thông báo khi chúng hoàn thành!",
+    "generationFailed": "Tạo thất bại",
+    "progress": "Tiến độ"
   }
 }
