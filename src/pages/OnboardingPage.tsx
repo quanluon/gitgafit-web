@@ -19,9 +19,14 @@ export function OnboardingPage(): React.ReactElement {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, updateUser } = useAuthStore();
-  const { startGeneration } = useGenerationStore();
+  const { startGeneration, jobs } = useGenerationStore();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('goal');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Check if there's already a workout generation in progress
+  const hasActiveWorkoutGeneration = jobs.some(
+    (job) => job.type === GenerationType.WORKOUT && job.status === 'generating'
+  );
 
   const {
     register,
@@ -94,6 +99,12 @@ export function OnboardingPage(): React.ReactElement {
   };
 
   const onSubmit = async (data: UserProfile): Promise<void> => {
+    // Prevent multiple submissions
+    if (isLoading || hasActiveWorkoutGeneration) {
+      toast.error(t('generation.alreadyGenerating') || 'A workout plan is already being generated');
+      return;
+    }
+
     try {
       setIsLoading(true);
 
@@ -411,8 +422,14 @@ export function OnboardingPage(): React.ReactElement {
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
                   Back
                 </Button>
-                <Button type="submit" className="flex-1" disabled={isLoading}>
-                  {isLoading ? 'Generating Plan...' : 'Generate My Plan'}
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={isLoading || hasActiveWorkoutGeneration}
+                >
+                  {isLoading || hasActiveWorkoutGeneration
+                    ? t('generation.generating') || 'Generating...'
+                    : t('generation.generatePlan') || 'Generate My Plan'}
                 </Button>
               </div>
             </div>

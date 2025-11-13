@@ -198,6 +198,8 @@
   },
   "generation": {
     "generating": "Đang tạo...",
+    "generatePlan": "Tạo kế hoạch",
+    "alreadyGenerating": "Kế hoạch đang được tạo. Vui lòng đợi.",
     "complete": "Hoàn thành!",
     "failed": "Thất bại",
     "workoutPlan": "Kế hoạch tập luyện",

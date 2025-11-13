@@ -198,6 +198,8 @@
   },
   "generation": {
     "generating": "Generating...",
+    "generatePlan": "Generate My Plan",
+    "alreadyGenerating": "A plan is already being generated. Please wait.",
     "complete": "Complete!",
     "failed": "Failed",
     "workoutPlan": "Workout Plan",

@@ -19,11 +19,17 @@ export function MealPlannerPage(): React.ReactElement {
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
 
-  const { startGeneration } = useGenerationStore();
+  const { startGeneration, jobs } = useGenerationStore();
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
+
+  // Check if there's already a meal generation in progress
+  const hasActiveMealGeneration = jobs.some(
+    (job) => job.type === GenerationType.MEAL && job.status === 'generating'
+  );
 
   useEffect(() => {
     loadMealPlan();
@@ -44,6 +50,12 @@ export function MealPlannerPage(): React.ReactElement {
   };
 
   const handleGeneratePlan = async (fullWeek = false, useAI = false): Promise<void> => {
+    // Prevent multiple generations
+    if (isGenerating || hasActiveMealGeneration) {
+      toast.error(t('generation.alreadyGenerating') || 'A meal plan is already being generated');
+      return;
+    }
+
     // Check if user has required data
     if (!user?.weight || !user?.height || !user?.age || !user?.gender || !user?.activityLevel) {
       setError('Please complete your profile first (age, gender, activity level required)');
@@ -52,6 +64,7 @@ export function MealPlannerPage(): React.ReactElement {
     }
 
     try {
+      setIsGenerating(true);
       setError('');
       
       // Start background generation
@@ -63,6 +76,9 @@ export function MealPlannerPage(): React.ReactElement {
       }
     } catch (err) {
       setError('Failed to start meal plan generation');
+      toast.error('Failed to start meal plan generation');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -123,11 +139,24 @@ export function MealPlannerPage(): React.ReactElement {
           <div className="text-center py-12 space-y-6">
             <p className="text-muted-foreground">{t('meal.noMealPlan')}</p>
             <div className="flex flex-col gap-3 max-w-sm mx-auto">
-              <Button onClick={(): Promise<void> => handleGeneratePlan(true, true)} size="lg">
-                {t('meal.aiFullWeek')}
+              <Button
+                onClick={(): Promise<void> => handleGeneratePlan(true, true)}
+                size="lg"
+                disabled={isGenerating || hasActiveMealGeneration}
+              >
+                {isGenerating || hasActiveMealGeneration
+                  ? t('generation.generating') || 'Generating...'
+                  : t('meal.aiFullWeek')}
               </Button>
-              <Button onClick={(): Promise<void> => handleGeneratePlan(true, false)} size="lg" variant="outline">
-                {t('meal.templateFullWeek')}
+              <Button
+                onClick={(): Promise<void> => handleGeneratePlan(true, false)}
+                size="lg"
+                variant="outline"
+                disabled={isGenerating || hasActiveMealGeneration}
+              >
+                {isGenerating || hasActiveMealGeneration
+                  ? t('generation.generating') || 'Generating...'
+                  : t('meal.templateFullWeek')}
               </Button>
             </div>
           </div>
@@ -142,17 +171,23 @@ export function MealPlannerPage(): React.ReactElement {
                 variant="outline"
                 size="sm"
                 onClick={(): Promise<void> => handleGeneratePlan(true, true)}
+                disabled={isGenerating || hasActiveMealGeneration}
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {t('meal.aiFullWeek')}
+                <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`} />
+                {isGenerating || hasActiveMealGeneration
+                  ? t('generation.generating') || 'Generating...'
+                  : t('meal.aiFullWeek')}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={(): Promise<void> => handleGeneratePlan(false, false)}
+                disabled={isGenerating || hasActiveMealGeneration}
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {t('meal.templateFullWeek')}
+                <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`} />
+                {isGenerating || hasActiveMealGeneration
+                  ? t('generation.generating') || 'Generating...'
+                  : t('meal.templateFullWeek')}
               </Button>
             </div>
 
