@@ -196,6 +196,24 @@
     "agePositive": "Tuổi phải dương",
     "selectAtLeastOne": "Chọn ít nhất một ngày"
   },
+  "pwa": {
+    "installTitle": "Cài đặt ứng dụng GigaFit",
+    "installDescription": "Trải nghiệm tốt nhất với ứng dụng di động!",
+    "installButton": "Cài đặt ngay",
+    "installApp": "Cài đặt ứng dụng",
+    "notNow": "Để sau",
+    "gotIt": "Đã hiểu!",
+    "feature1": "Hoạt động offline",
+    "feature2": "Nhanh & giống ứng dụng gốc",
+    "feature3": "Truy cập nhanh từ màn hình chính",
+    "iosInstallTitle": "Thêm vào Màn hình chính",
+    "iosInstallDescription": "Cài đặt GigaFit để có trải nghiệm di động tốt nhất:",
+    "iosStep1": "Nhấn nút Chia sẻ",
+    "iosStep1Icon": "ở phía dưới",
+    "iosStep2": "Cuộn và nhấn 'Thêm vào Màn hình chính'",
+    "iosStep2Icon": "",
+    "iosStep3": "Nhấn 'Thêm' để cài đặt ứng dụng"
+  },
   "generation": {
     "generating": "Đang tạo...",
     "generatePlan": "Tạo kế hoạch",

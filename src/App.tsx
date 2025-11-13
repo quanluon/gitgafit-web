@@ -3,6 +3,8 @@ import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
 import { useSocket } from './hooks/useSocket';
 import { GenerationProgress } from './components/organisms/GenerationProgress';
+import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
+import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -58,6 +60,10 @@ function App(): React.ReactElement {
       <Router>
         {/* Floating generation progress bubble - must be inside Router for useNavigate */}
         <GenerationProgress />
+        {/* PWA install prompts - shows when installable (Android/Chrome) */}
+        <PWAInstallPrompt />
+        {/* iOS Safari install instructions */}
+        <IOSInstallPrompt />
         <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

@@ -196,6 +196,24 @@
     "agePositive": "Age must be positive",
     "selectAtLeastOne": "Select at least one day"
   },
+  "pwa": {
+    "installTitle": "Install GigaFit App",
+    "installDescription": "Get the best experience with our mobile app!",
+    "installButton": "Install Now",
+    "installApp": "Install App",
+    "notNow": "Not Now",
+    "gotIt": "Got it!",
+    "feature1": "Works offline",
+    "feature2": "Fast & native-like",
+    "feature3": "Quick access from home screen",
+    "iosInstallTitle": "Add to Home Screen",
+    "iosInstallDescription": "Install GigaFit for the best mobile experience:",
+    "iosStep1": "Tap the Share button",
+    "iosStep1Icon": "at the bottom",
+    "iosStep2": "Scroll and tap 'Add to Home Screen'",
+    "iosStep2Icon": "",
+    "iosStep3": "Tap 'Add' to install the app"
+  },
   "generation": {
     "generating": "Generating...",
     "generatePlan": "Generate My Plan",
