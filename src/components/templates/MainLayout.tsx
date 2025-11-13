@@ -14,8 +14,13 @@ export function MainLayout({
   showPWAButton = false,
 }: MainLayoutProps): React.ReactElement {
   return (
-    <div className="min-h-screen bg-background">
-      <main className={showBottomNav ? 'pb-16' : ''}>
+    <div className="min-h-screen bg-background flex flex-col">
+      <main 
+        className={`flex-1 overflow-y-auto ${showBottomNav ? 'pb-20' : 'pb-4'}`}
+        style={{
+          paddingBottom: showBottomNav ? 'calc(5rem + env(safe-area-inset-bottom))' : 'env(safe-area-inset-bottom)',
+        }}
+      >
         {children}
         {/* Optional PWA Install Button in header/nav */}
         {showPWAButton && (

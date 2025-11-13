@@ -23,7 +23,12 @@ export function BottomNavigation(): React.ReactElement {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-background border-t z-40">
+    <nav 
+      className="fixed bottom-0 left-0 right-0 bg-background border-t z-40"
+      style={{ 
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
       <div className="max-w-4xl mx-auto flex items-center justify-around h-16">
         {navItems.map((item) => (
           <button
@@ -40,7 +45,7 @@ export function BottomNavigation(): React.ReactElement {
           </button>
         ))}
       </div>
-    </div>
+    </nav>
   );
 }
 

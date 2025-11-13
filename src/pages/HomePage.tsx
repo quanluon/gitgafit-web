@@ -87,8 +87,8 @@ export function HomePage(): React.ReactElement {
 
   return (
     <MainLayout>
-      <div className="p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="p-4 pb-8">
+        <div className="max-w-4xl mx-auto space-y-6 mb-8">
           {/* Header */}
           <div>
             <h1 className="text-3xl font-bold">{t('home.appName')}</h1>
