@@ -29,12 +29,12 @@ export function BottomNavigation(): React.ReactElement {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
-      <div className="max-w-4xl mx-auto flex items-center justify-around h-16">
+      <div className="max-w-4xl mx-auto flex items-center justify-around h-14">
         {navItems.map((item) => (
           <button
             key={item.path}
             onClick={(): void => navigate(item.path)}
-            className={`flex flex-col items-center gap-1 px-4 py-2 transition-colors ${
+            className={`flex flex-col items-center gap-0.5 px-3 py-1.5 transition-colors ${
               isActive(item.path)
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'

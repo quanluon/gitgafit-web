@@ -14,11 +14,11 @@ export function MainLayout({
   showPWAButton = false,
 }: MainLayoutProps): React.ReactElement {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       <main 
-        className={`flex-1 overflow-y-auto ${showBottomNav ? 'pb-20' : 'pb-4'}`}
+        className={`flex-1 overflow-y-auto ${showBottomNav ? 'pb-16' : 'pb-4'}`}
         style={{
-          paddingBottom: showBottomNav ? 'calc(5rem + env(safe-area-inset-bottom))' : 'env(safe-area-inset-bottom)',
+          paddingBottom: showBottomNav ? 'calc(4rem + env(safe-area-inset-bottom))' : 'env(safe-area-inset-bottom)',
         }}
       >
         {children}

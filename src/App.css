@@ -34,20 +34,17 @@
   
   html {
     height: 100%;
-    overflow: hidden;
   }
   
   body {
     @apply bg-background text-foreground;
     height: 100%;
-    overflow: hidden;
     /* Support for iOS safe areas and notch */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
   }
   
   #root {
     height: 100%;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
   }
@@ -67,6 +64,13 @@
   textarea:focus,
   select:focus {
     scroll-margin-bottom: 150px;
+  }
+  
+  /* Allow scrolling in dialogs and nested containers */
+  [role="dialog"],
+  [data-radix-dialog-content],
+  .scrollable {
+    overflow-y: auto !important;
   }
 }
 
