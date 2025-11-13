@@ -226,6 +226,9 @@ export function MealPlannerPage(): React.ReactElement {
                 const dayName =
                   day.dayOfWeek.charAt(0).toUpperCase() + day.dayOfWeek.slice(1);
                 const isExpanded = expandedDay === day.dayOfWeek;
+                
+                // Safe guard: Ensure meals array exists
+                const meals = day.meals || [];
 
                 return (
                   <div key={day.dayOfWeek} className="bg-card border rounded-lg overflow-hidden">
@@ -239,7 +242,7 @@ export function MealPlannerPage(): React.ReactElement {
                       <div className="flex items-center gap-3">
                         <h3 className="font-semibold text-lg">{dayName}</h3>
                         <span className="text-sm text-muted-foreground">
-                          {day.meals.length} {t('meal.meals')}
+                          {meals.length} {t('meal.meals')}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
@@ -257,7 +260,7 @@ export function MealPlannerPage(): React.ReactElement {
                     {/* Expanded Meals */}
                     {isExpanded && (
                       <div className="border-t p-4 space-y-4">
-                        {day.meals.map((meal: Meal, mealIndex: number) => (
+                        {meals.map((meal: Meal, mealIndex: number) => (
                           <div key={mealIndex} className="space-y-3">
                             <div className="flex items-center gap-2">
                               <span className="text-2xl">{getMealIcon(meal.type)}</span>
