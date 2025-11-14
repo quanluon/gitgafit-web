@@ -34,6 +34,22 @@ class WorkoutServiceClass {
     });
     return response.data.data!;
   }
+
+  async updatePlan(planId: string, updateData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+    const response = await apiClient.patch<ApiResponse<WorkoutPlan>>(
+      `/workout/plan/${planId}`,
+      updateData,
+    );
+    return response.data.data!;
+  }
+
+  async createCustomPlan(planData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+    const response = await apiClient.post<ApiResponse<WorkoutPlan>>(
+      '/workout/plan/custom',
+      planData,
+    );
+    return response.data.data!;
+  }
 }
 
 export const workoutService = new WorkoutServiceClass();

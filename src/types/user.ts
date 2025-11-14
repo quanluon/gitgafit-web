@@ -1,4 +1,4 @@
-import { Goal, ExperienceLevel, DayOfWeek, ActivityLevel, Gender } from './enums';
+import { Goal, ExperienceLevel, DayOfWeek, ActivityLevel, Gender, Language } from './enums';
 
 export interface User {
   _id: string;
@@ -12,6 +12,7 @@ export interface User {
   gender?: Gender;
   activityLevel?: ActivityLevel;
   scheduleDays: DayOfWeek[];
+  language: Language;
   createdAt: string;
   updatedAt: string;
 }

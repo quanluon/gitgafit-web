@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { DayOfWeek } from '@/types/enums';
 import { cn } from '@utils/cn';
 
@@ -9,23 +10,48 @@ interface DaySelectorProps {
   onDaySelect: (day: DayOfWeek) => void;
 }
 
-const dayLabels: Record<DayOfWeek, { short: string; full: string; date?: number }> = {
-  [DayOfWeek.MONDAY]: { short: 'Mon', full: 'Monday' },
-  [DayOfWeek.TUESDAY]: { short: 'Tue', full: 'Tuesday' },
-  [DayOfWeek.WEDNESDAY]: { short: 'Wed', full: 'Wednesday' },
-  [DayOfWeek.THURSDAY]: { short: 'Thu', full: 'Thursday' },
-  [DayOfWeek.FRIDAY]: { short: 'Fri', full: 'Friday' },
-  [DayOfWeek.SATURDAY]: { short: 'Sat', full: 'Saturday' },
-  [DayOfWeek.SUNDAY]: { short: 'Sun', full: 'Sunday' },
-};
-
 export function DaySelector({
   selectedDay,
   availableDays,
   completedDays = [],
   onDaySelect,
 }: DaySelectorProps): React.ReactElement {
+  const { t } = useTranslation();
   const allDays = Object.values(DayOfWeek);
+
+  const getDayLabel = (day: DayOfWeek): { short: string; full: string } => {
+    const dayMap: Record<DayOfWeek, { short: string; full: string }> = {
+      [DayOfWeek.MONDAY]: {
+        short: t('common.days.monday').slice(0, 3),
+        full: t('common.days.monday'),
+      },
+      [DayOfWeek.TUESDAY]: {
+        short: t('common.days.tuesday').slice(0, 3),
+        full: t('common.days.tuesday'),
+      },
+      [DayOfWeek.WEDNESDAY]: {
+        short: t('common.days.wednesday').slice(0, 3),
+        full: t('common.days.wednesday'),
+      },
+      [DayOfWeek.THURSDAY]: {
+        short: t('common.days.thursday').slice(0, 3),
+        full: t('common.days.thursday'),
+      },
+      [DayOfWeek.FRIDAY]: {
+        short: t('common.days.friday').slice(0, 3),
+        full: t('common.days.friday'),
+      },
+      [DayOfWeek.SATURDAY]: {
+        short: t('common.days.saturday').slice(0, 3),
+        full: t('common.days.saturday'),
+      },
+      [DayOfWeek.SUNDAY]: {
+        short: t('common.days.sunday').slice(0, 3),
+        full: t('common.days.sunday'),
+      },
+    };
+    return dayMap[day];
+  };
 
   // Get current date info for display
   const today = new Date();
@@ -38,6 +64,7 @@ export function DaySelector({
         const isSelected = selectedDay === day;
         const isCompleted = completedDays.includes(day);
         const isToday = day === currentDayOfWeek;
+        const dayLabel = getDayLabel(day);
 
         return (
           <button
@@ -54,7 +81,7 @@ export function DaySelector({
               isCompleted && !isSelected && 'bg-green-500/10 border-green-500',
             )}
           >
-            <span className="text-xs font-medium">{dayLabels[day].short}</span>
+            <span className="text-xs font-medium">{dayLabel.short}</span>
             {isToday && (
               <div className="w-1.5 h-1.5 rounded-full bg-current mt-1" />
             )}
@@ -67,4 +94,3 @@ export function DaySelector({
     </div>
   );
 }
-

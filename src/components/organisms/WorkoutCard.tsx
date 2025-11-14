@@ -16,7 +16,6 @@ interface WorkoutCardProps {
 export function WorkoutCard({
   workout,
   onStartTraining,
-  onManage,
   onViewDetails,
   disabled = false,
 }: WorkoutCardProps): React.ReactElement {
@@ -40,11 +39,6 @@ export function WorkoutCard({
           <h3 className="text-sm text-muted-foreground">{t('workout.todaysTraining')}</h3>
           <h2 className="text-2xl font-bold mt-1">{focus}</h2>
         </div>
-        {onManage && (
-          <Button variant="ghost" size="sm" onClick={onManage}>
-            {t('workout.change')}
-          </Button>
-        )}
       </div>
 
       <div className="flex items-center gap-4 text-sm text-muted-foreground">

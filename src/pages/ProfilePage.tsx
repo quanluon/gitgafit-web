@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ActivityLevel, DayOfWeek, ExperienceLevel, Gender, Goal } from '@/types/enums';
+import { UserProfile } from '@/types/user';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
-import { MainLayout } from '@templates/MainLayout';
 import { LanguageSelector } from '@organisms/LanguageSelector';
 import { SubscriptionCard } from '@organisms/SubscriptionCard';
-import { useAuthStore } from '@store/authStore';
 import { userService } from '@services/userService';
-import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types/enums';
-import { UserProfile } from '@/types/user';
+import { useAuthStore } from '@store/authStore';
+import { MainLayout } from '@templates/MainLayout';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 type CollapsibleSection = 'personal' | 'fitness' | 'schedule' | null;
 
@@ -22,8 +23,6 @@ export function ProfilePage(): React.ReactElement {
   const navigate = useNavigate();
   const { user, updateUser, clearAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<string>('');
   const [expandedSection, setExpandedSection] = useState<CollapsibleSection>(null);
 
   const {
@@ -52,13 +51,11 @@ export function ProfilePage(): React.ReactElement {
   const onSubmit = async (data: UserProfile): Promise<void> => {
     try {
       setIsLoading(true);
-      setError('');
-      setSuccess('');
       const updatedUser = await userService.updateProfile(data);
       updateUser(updatedUser);
-      setSuccess(t('profile.updateSuccess'));
+      toast.success(t('profile.updateSuccess'));
     } catch (err) {
-      setError(t('profile.updateError'));
+      toast.error(t('profile.updateError'));
     } finally {
       setIsLoading(false);
     }
@@ -111,9 +108,6 @@ export function ProfilePage(): React.ReactElement {
           {/* Header */}
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">{t('profile.title')}</h1>
-            <Button variant="ghost" onClick={(): void => navigate('/')}>
-              {t('common.back')}
-            </Button>
           </div>
 
           {/* Language Selector */}
@@ -130,18 +124,6 @@ export function ProfilePage(): React.ReactElement {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="bg-green-500/10 text-green-600 px-4 py-3 rounded-md text-sm">
-                {success}
-              </div>
-            )}
-
             {/* Personal Information Section */}
             <div className="bg-card border rounded-lg overflow-hidden">
               <button

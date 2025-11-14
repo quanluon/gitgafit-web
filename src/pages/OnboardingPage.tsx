@@ -25,7 +25,7 @@ export function OnboardingPage(): React.ReactElement {
 
   // Check if there's already a workout generation in progress
   const hasActiveWorkoutGeneration = jobs.some(
-    (job) => job.type === GenerationType.WORKOUT && job.status === GenerationStatus.GENERATING
+    (job) => job.type === GenerationType.WORKOUT && job.status === GenerationStatus.GENERATING,
   );
 
   const {
@@ -53,31 +53,50 @@ export function OnboardingPage(): React.ReactElement {
     }
   }, [user, setValue]);
 
-
   const goalOptions = [
-    { value: Goal.MUSCLE_GAIN, label: 'Build Muscle', description: 'Gain strength and size' },
-    { value: Goal.WEIGHT_LOSS, label: 'Lose Weight', description: 'Burn fat and get lean' },
-    { value: Goal.MAINTENANCE, label: 'Stay Fit', description: 'Maintain current fitness' },
+    {
+      value: Goal.MUSCLE_GAIN,
+      label: t('onboarding.goalMuscleGain'),
+      description: t('onboarding.goalMuscleGainDesc'),
+    },
+    {
+      value: Goal.WEIGHT_LOSS,
+      label: t('onboarding.goalWeightLoss'),
+      description: t('onboarding.goalWeightLossDesc'),
+    },
+    {
+      value: Goal.MAINTENANCE,
+      label: t('onboarding.goalMaintenance'),
+      description: t('onboarding.goalMaintenanceDesc'),
+    },
   ];
 
   const experienceLevelOptions = [
-    { value: ExperienceLevel.BEGINNER, label: 'Beginner', description: '0-1 year experience' },
+    {
+      value: ExperienceLevel.BEGINNER,
+      label: t('onboarding.levelBeginner'),
+      description: t('onboarding.levelBeginnerDesc'),
+    },
     {
       value: ExperienceLevel.INTERMEDIATE,
-      label: 'Intermediate',
-      description: '1-3 years experience',
+      label: t('onboarding.levelIntermediate'),
+      description: t('onboarding.levelIntermediateDesc'),
     },
-    { value: ExperienceLevel.ADVANCED, label: 'Advanced', description: '3+ years experience' },
+    {
+      value: ExperienceLevel.ADVANCED,
+      label: t('onboarding.levelAdvanced'),
+      description: t('onboarding.levelAdvancedDesc'),
+    },
   ];
 
   const dayOptions = [
-    { value: DayOfWeek.MONDAY, label: 'Mon' },
-    { value: DayOfWeek.TUESDAY, label: 'Tue' },
-    { value: DayOfWeek.WEDNESDAY, label: 'Wed' },
-    { value: DayOfWeek.THURSDAY, label: 'Thu' },
-    { value: DayOfWeek.FRIDAY, label: 'Fri' },
-    { value: DayOfWeek.SATURDAY, label: 'Sat' },
-    { value: DayOfWeek.SUNDAY, label: 'Sun' },
+    { value: DayOfWeek.MONDAY, label: t('common.days.monday').slice(0, 3) },
+    { value: DayOfWeek.TUESDAY, label: t('common.days.tuesday').slice(0, 3) },
+    { value: DayOfWeek.WEDNESDAY, label: t('common.days.wednesday').slice(0, 3) },
+    { value: DayOfWeek.THURSDAY, label: t('common.days.thursday').slice(0, 3) },
+    { value: DayOfWeek.FRIDAY, label: t('common.days.friday').slice(0, 3) },
+    { value: DayOfWeek.SATURDAY, label: t('common.days.saturday').slice(0, 3) },
+    { value: DayOfWeek.SUNDAY, label: t('common.days.sunday').slice(0, 3) },
   ];
 
   const steps: OnboardingStep[] = ['goal', 'experience', 'body', 'schedule', 'summary'];
@@ -131,7 +150,7 @@ export function OnboardingPage(): React.ReactElement {
       }
     } catch (err) {
       console.error('Onboarding failed:', err);
-      toast.error('Failed to start workout generation');
+      toast.error(t('onboarding.generationFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -139,12 +158,16 @@ export function OnboardingPage(): React.ReactElement {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="max-w-2xl mx-auto space-t-8">
         {/* Progress Bar */}
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Step {currentStepIndex + 1} of {steps.length}</span>
-            <span>{Math.round(progress)}%</span>
+          <div className="flex justify-between items-center text-sm text-muted-foreground">
+            <span>
+              {t('onboarding.step')} {currentStepIndex + 1} {t('onboarding.of')} {steps.length}
+            </span>
+            <div className="flex items-center gap-4">
+              <span>{Math.round(progress)}%</span>
+            </div>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
             <div
@@ -159,14 +182,14 @@ export function OnboardingPage(): React.ReactElement {
           {currentStep === 'goal' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold">What's your goal?</h2>
-                <p className="text-muted-foreground">Choose your primary fitness objective</p>
+                <h2 className="text-2xl font-bold">{t('onboarding.goalTitle')}</h2>
+                <p className="text-muted-foreground">{t('onboarding.goalDesc')}</p>
               </div>
 
               <Controller
                 name="goal"
                 control={control}
-                rules={{ required: 'Please select a goal' }}
+                rules={{ required: t('onboarding.selectGoalError') }}
                 render={({ field }): React.ReactElement => (
                   <div className="space-y-3">
                     {goalOptions.map((option) => (
@@ -189,7 +212,7 @@ export function OnboardingPage(): React.ReactElement {
               {errors.goal && <p className="text-sm text-destructive">{errors.goal.message}</p>}
 
               <Button type="button" onClick={nextStep} className="w-full" disabled={!formData.goal}>
-                Continue
+                {t('onboarding.continue')}
               </Button>
             </div>
           )}
@@ -198,14 +221,14 @@ export function OnboardingPage(): React.ReactElement {
           {currentStep === 'experience' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold">Experience Level</h2>
-                <p className="text-muted-foreground">How long have you been training?</p>
+                <h2 className="text-2xl font-bold">{t('onboarding.experienceTitle')}</h2>
+                <p className="text-muted-foreground">{t('onboarding.experienceDesc')}</p>
               </div>
 
               <Controller
                 name="experienceLevel"
                 control={control}
-                rules={{ required: 'Please select experience level' }}
+                rules={{ required: t('onboarding.selectExperienceError') }}
                 render={({ field }): React.ReactElement => (
                   <div className="space-y-3">
                     {experienceLevelOptions.map((option) => (
@@ -228,7 +251,7 @@ export function OnboardingPage(): React.ReactElement {
 
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  Back
+                  {t('onboarding.back')}
                 </Button>
                 <Button
                   type="button"
@@ -236,7 +259,7 @@ export function OnboardingPage(): React.ReactElement {
                   className="flex-1"
                   disabled={!formData.experienceLevel}
                 >
-                  Continue
+                  {t('onboarding.continue')}
                 </Button>
               </div>
             </div>
@@ -246,20 +269,20 @@ export function OnboardingPage(): React.ReactElement {
           {currentStep === 'body' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold">Body Metrics</h2>
-                <p className="text-muted-foreground">Help us personalize your plan</p>
+                <h2 className="text-2xl font-bold">{t('onboarding.bodyTitle')}</h2>
+                <p className="text-muted-foreground">{t('onboarding.bodyDesc')}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="height">Height (cm) *</Label>
+                  <Label htmlFor="height">{t('onboarding.heightLabel')} *</Label>
                   <Input
                     id="height"
                     type="number"
-                    placeholder={user?.height?.toString() || "175"}
+                    placeholder={user?.height?.toString() || '175'}
                     {...register('height', {
-                      required: 'Height is required',
-                      min: { value: 1, message: 'Height must be positive' },
+                      required: t('onboarding.heightRequired'),
+                      min: { value: 1, message: t('onboarding.heightPositive') },
                     })}
                   />
                   {errors.height && (
@@ -268,14 +291,14 @@ export function OnboardingPage(): React.ReactElement {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="weight">Weight (kg) *</Label>
+                  <Label htmlFor="weight">{t('onboarding.weightLabel')} *</Label>
                   <Input
                     id="weight"
                     type="number"
-                    placeholder={user?.weight?.toString() || "70"}
+                    placeholder={user?.weight?.toString() || '70'}
                     {...register('weight', {
-                      required: 'Weight is required',
-                      min: { value: 1, message: 'Weight must be positive' },
+                      required: t('onboarding.weightRequired'),
+                      min: { value: 1, message: t('onboarding.weightPositive') },
                     })}
                   />
                   {errors.weight && (
@@ -285,17 +308,17 @@ export function OnboardingPage(): React.ReactElement {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetWeight">Target Weight (kg)</Label>
+                <Label htmlFor="targetWeight">{t('onboarding.targetWeightLabel')}</Label>
                 <Input
                   id="targetWeight"
                   type="number"
-                  placeholder={user?.targetWeight?.toString() || "65"}
+                  placeholder={user?.targetWeight?.toString() || '65'}
                   {...register('targetWeight', {
-                    min: { value: 1, message: 'Target weight must be positive' },
+                    min: { value: 1, message: t('onboarding.targetWeightPositive') },
                   })}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Optional: Set your goal weight for tracking
+                  {t('onboarding.targetWeightHelper')}
                 </p>
                 {errors.targetWeight && (
                   <p className="text-sm text-destructive">{errors.targetWeight.message}</p>
@@ -304,7 +327,7 @@ export function OnboardingPage(): React.ReactElement {
 
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  Back
+                  {t('onboarding.back')}
                 </Button>
                 <Button
                   type="button"
@@ -312,7 +335,7 @@ export function OnboardingPage(): React.ReactElement {
                   className="flex-1"
                   disabled={!formData.height || !formData.weight}
                 >
-                  Continue
+                  {t('onboarding.continue')}
                 </Button>
               </div>
             </div>
@@ -322,8 +345,8 @@ export function OnboardingPage(): React.ReactElement {
           {currentStep === 'schedule' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold">Training Schedule</h2>
-                <p className="text-muted-foreground">Which days can you train?</p>
+                <h2 className="text-2xl font-bold">{t('onboarding.scheduleTitle')}</h2>
+                <p className="text-muted-foreground">{t('onboarding.scheduleDesc')}</p>
               </div>
 
               <div className="space-y-2">
@@ -333,7 +356,7 @@ export function OnboardingPage(): React.ReactElement {
                       key={day.value}
                       name="scheduleDays"
                       control={control}
-                      rules={{ required: 'Select at least one day' }}
+                      rules={{ required: t('onboarding.selectDayError') }}
                       render={({ field }): React.ReactElement => {
                         const isSelected = field.value?.includes(day.value);
                         return (
@@ -362,7 +385,7 @@ export function OnboardingPage(): React.ReactElement {
 
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  Back
+                  {t('onboarding.back')}
                 </Button>
                 <Button
                   type="button"
@@ -370,7 +393,7 @@ export function OnboardingPage(): React.ReactElement {
                   className="flex-1"
                   disabled={!formData.scheduleDays || formData.scheduleDays.length === 0}
                 >
-                  Continue
+                  {t('onboarding.continue')}
                 </Button>
               </div>
             </div>
@@ -380,20 +403,24 @@ export function OnboardingPage(): React.ReactElement {
           {currentStep === 'summary' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold">Ready to Start!</h2>
-                <p className="text-muted-foreground">Review your information</p>
+                <h2 className="text-2xl font-bold">{t('onboarding.summaryTitle')}</h2>
+                <p className="text-muted-foreground">{t('onboarding.summaryDesc')}</p>
               </div>
 
               <div className="space-y-4 p-6 bg-secondary rounded-lg">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-sm text-muted-foreground">Goal</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryGoal')}
+                    </div>
                     <div className="font-semibold">
                       {goalOptions.find((o) => o.value === formData.goal)?.label}
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Experience</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryExperience')}
+                    </div>
                     <div className="font-semibold">
                       {
                         experienceLevelOptions.find((o) => o.value === formData.experienceLevel)
@@ -402,17 +429,23 @@ export function OnboardingPage(): React.ReactElement {
                     </div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Height</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryHeight')}
+                    </div>
                     <div className="font-semibold">{formData.height} cm</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Weight</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryWeight')}
+                    </div>
                     <div className="font-semibold">{formData.weight} kg</div>
                   </div>
                   <div className="col-span-2">
-                    <div className="text-sm text-muted-foreground">Training Days</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryDays')}
+                    </div>
                     <div className="font-semibold">
-                      {formData.scheduleDays?.length || 0} days per week
+                      {formData.scheduleDays?.length || 0} {t('onboarding.daysPerWeek')}
                     </div>
                   </div>
                 </div>
@@ -420,7 +453,7 @@ export function OnboardingPage(): React.ReactElement {
 
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
-                  Back
+                  {t('onboarding.back')}
                 </Button>
                 <Button
                   type="submit"
@@ -428,16 +461,21 @@ export function OnboardingPage(): React.ReactElement {
                   disabled={isLoading || hasActiveWorkoutGeneration}
                 >
                   {isLoading || hasActiveWorkoutGeneration
-                    ? t('generation.generating') || 'Generating...'
-                    : t('generation.generatePlan') || 'Generate My Plan'}
+                    ? t('generation.generating')
+                    : t('onboarding.generateMyPlan')}
                 </Button>
               </div>
             </div>
           )}
-
         </form>
+        <button
+          type="button"
+          onClick={(): void => navigate('/')}
+          className="text-xs text-primary hover:underline text-end w-full"
+        >
+          {t('onboarding.skipNow')}
+        </button>
       </div>
     </div>
   );
 }
-

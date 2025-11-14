@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Plus, RefreshCw } from 'lucide-react';
 import { Button } from '@atoms/Button';
 import { DaySelector } from '@molecules/DaySelector';
 import { WorkoutCard } from '@organisms/WorkoutCard';
 import { WorkoutDetailsModal } from '@organisms/WorkoutDetailsModal';
+import { CreateCustomPlanModal } from '@organisms/CreateCustomPlanModal';
 import { MainLayout } from '@templates/MainLayout';
 import { useWorkoutStore } from '@store/workoutStore';
 import { useTrainingStore } from '@store/trainingStore';
@@ -12,6 +14,7 @@ import { workoutService } from '@services/workoutService';
 import { trainingService } from '@services/trainingService';
 import { DayOfWeek } from '@/types/enums';
 import { WorkoutDay } from '@/types/workout';
+import toast from 'react-hot-toast';
 
 export function PlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -24,6 +27,7 @@ export function PlannerPage(): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
+  const [showCustomPlanModal, setShowCustomPlanModal] = useState<boolean>(false);
 
   // Get current day
   const getCurrentDay = (): DayOfWeek => {
@@ -52,7 +56,7 @@ export function PlannerPage(): React.ReactElement {
         workoutService.getCurrentPlan(),
         trainingService.getActiveSession(),
       ]);
-      
+
       setCurrentPlan(plan);
       setCurrentSession(activeSession);
 
@@ -60,7 +64,7 @@ export function PlannerPage(): React.ReactElement {
       const currentDay = getCurrentDay();
       setSelectedDay(currentDay);
     } catch (err) {
-      setError('No workout plan found. Please complete onboarding.');
+      setError(t('workout.noPlanFound'));
       setTimeout(() => navigate('/onboarding'), 2000);
     } finally {
       setIsLoading(false);
@@ -72,7 +76,7 @@ export function PlannerPage(): React.ReactElement {
 
     // Check if there's an active session
     if (currentSession) {
-      setError('You have an active training session. Please complete or cancel it first.');
+      setError(t('training.completeFirst'));
       return;
     }
 
@@ -85,7 +89,21 @@ export function PlannerPage(): React.ReactElement {
       navigate('/training');
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error?.response?.data?.message || 'Failed to start training session');
+      setError(error?.response?.data?.message || t('training.failedToStart'));
+    }
+  };
+
+  const handleCreateCustomPlan = async (schedule: WorkoutDay[]): Promise<void> => {
+    try {
+      const plan = await workoutService.createCustomPlan({ schedule });
+      setCurrentPlan(plan);
+      toast.success(t('workout.customPlanCreated'));
+      setShowCustomPlanModal(false);
+      // Refresh page to show new plan
+      loadWorkoutPlan();
+    } catch (error) {
+      console.error('Failed to create custom plan:', error);
+      toast.error(t('workout.failedToCreatePlan'));
     }
   };
 
@@ -112,12 +130,14 @@ export function PlannerPage(): React.ReactElement {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={(): void => navigate('/onboarding')}
+                onClick={(): void => setShowCustomPlanModal(true)}
+                disabled
               >
-                {t('common.regenerate')}
+                <Plus className="h-4 w-4 mr-1" />
+                {t('workout.createCustom')}
               </Button>
-              <Button variant="ghost" onClick={(): void => navigate('/profile')}>
-                {t('workout.manage')}
+              <Button variant="outline" size="sm" onClick={(): void => navigate('/onboarding')}>
+                <RefreshCw className={`h-4 w-4 mr-2`} />
               </Button>
             </div>
           </div>
@@ -191,7 +211,13 @@ export function PlannerPage(): React.ReactElement {
           }}
         />
       )}
+
+      {/* Create Custom Plan Modal */}
+      <CreateCustomPlanModal
+        isOpen={showCustomPlanModal}
+        onClose={(): void => setShowCustomPlanModal(false)}
+        onSave={handleCreateCustomPlan}
+      />
     </MainLayout>
   );
 }
-

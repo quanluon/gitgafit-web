@@ -30,15 +30,13 @@ export function ExerciseLogModal({
   const { language } = useLocaleStore();
   const currentLang = language as Language;
 
-  // Initialize with existing sets or create empty sets based on exercise definition
+  // Initialize with existing sets or create one empty set for first time
   const initializeSets = (): ExerciseSet[] => {
     if (existingSets.length > 0) {
       return existingSets;
     }
-    // Create sets based on exercise definition
-    return Array(exercise.sets || 3)
-      .fill(null)
-      .map(() => ({ reps: 0, weight: 0 }));
+    // Create only one empty set for first time
+    return [{ reps: 0, weight: 0 }];
   };
 
   const [sets, setSets] = useState<ExerciseSet[]>(initializeSets());
@@ -83,11 +81,11 @@ export function ExerciseLogModal({
 
     sets.forEach((set, index) => {
       if (set.reps <= 0) {
-        newErrors[`${index}-reps`] = 'Reps must be greater than 0';
+        newErrors[`${index}-reps`] = t('training.repsRequired');
         isValid = false;
       }
       if (set.weight < 0) {
-        newErrors[`${index}-weight`] = 'Weight cannot be negative';
+        newErrors[`${index}-weight`] = t('training.weightNonNegative');
         isValid = false;
       }
     });
@@ -104,7 +102,7 @@ export function ExerciseLogModal({
     // Filter out empty sets
     const validSets = sets.filter((set) => set.reps > 0);
     if (validSets.length === 0) {
-      setErrors({ general: 'Please log at least one set' });
+      setErrors({ general: t('training.logAtLeastOneSet') });
       return;
     }
 
@@ -145,10 +143,10 @@ export function ExerciseLogModal({
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-sm">
-                    Set {index + 1}
+                    {t('workout.set')} {index + 1}
                     {index < exercise.sets && (
                       <span className="ml-2 text-xs text-muted-foreground">
-                        (Target: {exercise.reps} {t('workout.reps')})
+                        ({t('training.target')}: {exercise.reps} {t('workout.reps')})
                       </span>
                     )}
                   </h3>
@@ -167,7 +165,7 @@ export function ExerciseLogModal({
                   {/* Reps Input */}
                   <div className="space-y-1">
                     <Label htmlFor={`reps-${index}`} className="text-sm">
-                      Reps <span className="text-destructive">*</span>
+                      {t('workout.reps')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id={`reps-${index}`}
@@ -185,7 +183,7 @@ export function ExerciseLogModal({
                   {/* Weight Input */}
                   <div className="space-y-1">
                     <Label htmlFor={`weight-${index}`} className="text-sm">
-                      Weight (kg) <span className="text-destructive">*</span>
+                      {t('workout.weight')} <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id={`weight-${index}`}
@@ -206,7 +204,7 @@ export function ExerciseLogModal({
                 {set.reps > 0 && set.weight > 0 && (
                   <div className="text-sm text-center p-2 bg-primary/10 rounded-md">
                     <span className="font-semibold">
-                      {set.reps} reps × {set.weight} kg
+                      {set.reps} {t('workout.reps')} × {set.weight} kg
                     </span>
                   </div>
                 )}
@@ -232,9 +230,9 @@ export function ExerciseLogModal({
                 {sets.map((set, index) =>
                   set.reps > 0 ? (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Set {index + 1}:</span>
+                      <span className="text-muted-foreground">{t('workout.set')} {index + 1}:</span>
                       <span className="font-medium">
-                        {set.reps} reps × {set.weight} kg
+                        {set.reps} {t('workout.reps')} × {set.weight} kg
                       </span>
                     </div>
                   ) : null,

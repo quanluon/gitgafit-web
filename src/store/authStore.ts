@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { User } from '@/types/user';
+import { useLocaleStore } from './localeStore';
+import { Language } from '@/types/enums';
 
 interface AuthState {
   token: string | null;
@@ -24,6 +26,11 @@ export const useAuthStore = create<AuthState>()(
         localStorage.setItem('auth_token', token);
         localStorage.setItem('refresh_token', refreshToken);
         set({ token, refreshToken, user, isAuthenticated: true });
+        
+        // Set language from user profile
+        if (user.language) {
+          useLocaleStore.getState().setLanguage(user.language as Language);
+        }
       },
       setTokens: (token: string, refreshToken: string): void => {
         localStorage.setItem('auth_token', token);
@@ -34,9 +41,17 @@ export const useAuthStore = create<AuthState>()(
         localStorage.removeItem('auth_token');
         localStorage.removeItem('refresh_token');
         set({ token: null, refreshToken: null, user: null, isAuthenticated: false });
+        
+        // Reset language to default (en)
+        useLocaleStore.getState().setLanguage(Language.EN);
       },
       updateUser: (user: User): void => {
         set({ user });
+        
+        // Update language when user profile is updated
+        if (user.language) {
+          useLocaleStore.getState().setLanguage(user.language as Language);
+        }
       },
     }),
     {

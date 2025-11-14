@@ -46,16 +46,25 @@ export function TrainingPage(): React.ReactElement {
 
   useEffect(() => {
     // Save to IndexedDB whenever progress changes
-    if (currentSession) {
+    if (currentSession && todaysWorkout) {
       indexedDBService.saveTrainingSession({
         ...currentSession,
-        exercises: Object.entries(exerciseProgress).map(([exerciseId, sets]) => ({
-          exerciseId,
-          sets,
-        })),
+        exercises: Object.entries(exerciseProgress).map(([exerciseId, sets]) => {
+          const exerciseIndex = parseInt(exerciseId.replace('exercise_', ''), 10);
+          const exercise = todaysWorkout.exercises[exerciseIndex];
+          return {
+            exerciseId,
+            name: exercise?.name || { en: 'Unknown', vi: 'Không xác định' },
+            description: exercise?.description,
+            muscleGroup: undefined,
+            sets,
+            notes: undefined,
+            videoUrl: exercise?.videoUrl,
+          };
+        }),
       });
     }
-  }, [exerciseProgress, currentSession]);
+  }, [exerciseProgress, currentSession, todaysWorkout]);
 
   if (!todaysWorkout || !currentSession) {
     return (
@@ -71,6 +80,9 @@ export function TrainingPage(): React.ReactElement {
   const handleExerciseClick = (exercise: Exercise, index: number): void => {
     setSelectedExercise({ ...exercise, index });
   };
+
+  console.log('selectedExercise',selectedExercise);
+  
 
   const handleSaveSets = async (sets: ExerciseSet[]): Promise<void> => {
     if (selectedExercise === null) {
@@ -92,10 +104,20 @@ export function TrainingPage(): React.ReactElement {
     setExerciseProgress(updatedProgress);
 
     const logData = {
-      exercises: Object.entries(updatedProgress).map(([exerciseKey, exerciseSets]) => ({
-        exerciseId: exerciseKey,
-        sets: exerciseSets,
-      })),
+      exercises: Object.entries(updatedProgress).map(([exerciseKey, exerciseSets]) => {
+        const exerciseIndex = parseInt(exerciseKey.replace('exercise_', ''), 10);
+        const exercise = todaysWorkout?.exercises[exerciseIndex];
+
+        return {
+          exerciseId: exerciseKey,
+          name: exercise?.name || { en: 'Unknown', vi: 'Không xác định' },
+          description: exercise?.description,
+          // muscleGroup: undefined,
+          sets: exerciseSets,
+          // notes: undefined,
+          videoUrl: exercise?.videoUrl,
+        };
+      }),
     };
 
     try {

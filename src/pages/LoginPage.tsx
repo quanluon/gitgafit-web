@@ -56,7 +56,13 @@ export function LoginPage(): React.ReactElement {
             type="email"
             placeholder="name@example.com"
             error={errors.email?.message}
-            register={register('email', { required: 'Email is required' })}
+            register={register('email', { 
+              required: t('errors.required'),
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: t('errors.invalidEmail')
+              }
+            })}
             required
           />
 
@@ -65,7 +71,13 @@ export function LoginPage(): React.ReactElement {
             name="password"
             type="password"
             error={errors.password?.message}
-            register={register('password', { required: 'Password is required' })}
+            register={register('password', { 
+              required: t('errors.required'),
+              minLength: {
+                value: 6,
+                message: t('auth.passwordMinLength')
+              }
+            })}
             required
           />
 
@@ -75,7 +87,7 @@ export function LoginPage(): React.ReactElement {
         </form>
 
         <div className="text-center text-sm">
-          <span className="text-muted-foreground">Don't have an account? </span>
+          <span className="text-muted-foreground">{t('auth.noAccount')} </span>
           <Link to="/register" className="text-primary hover:underline">
             {t('auth.register')}
           </Link>

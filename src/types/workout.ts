@@ -26,12 +26,19 @@ export interface WorkoutPlan {
   updatedAt: string;
 }
 
+export interface ExerciseSet {
+  reps: number;
+  weight: number;
+}
+
 export interface ExerciseLog {
   exerciseId: string;
-  sets: Array<{
-    reps: number;
-    weight: number;
-  }>;
+  name: Translatable;
+  description?: Translatable;
+  muscleGroup?: string;
+  sets: ExerciseSet[];
+  notes?: string;
+  videoUrl?: string;
 }
 
 export interface TrainingSession {
@@ -39,10 +46,15 @@ export interface TrainingSession {
   userId: string;
   planId: string;
   dayOfWeek: DayOfWeek;
+  workoutFocus?: Translatable;
   startTime: string;
   endTime?: string;
   exercises: ExerciseLog[];
   status: SessionStatus;
+  totalVolume?: number;
+  totalSets?: number;
+  duration?: number;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }

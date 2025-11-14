@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { ArrowLeft, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@atoms/Button';
 import { MacrosCard } from '@molecules/MacrosCard';
 import { MainLayout } from '@templates/MainLayout';
@@ -28,7 +28,7 @@ export function MealPlannerPage(): React.ReactElement {
 
   // Check if there's already a meal generation in progress
   const hasActiveMealGeneration = jobs.some(
-    (job) => job.type === GenerationType.MEAL && job.status === GenerationStatus.GENERATING
+    (job) => job.type === GenerationType.MEAL && job.status === GenerationStatus.GENERATING,
   );
 
   useEffect(() => {
@@ -66,10 +66,10 @@ export function MealPlannerPage(): React.ReactElement {
     try {
       setIsGenerating(true);
       setError('');
-      
+
       // Start background generation
       const response = await mealService.generateMealPlan({ fullWeek, useAI });
-      
+
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.MEAL);
         toast.success(t('generation.mealPlan') + ' ' + t('generation.generationStarted'));
@@ -118,10 +118,20 @@ export function MealPlannerPage(): React.ReactElement {
         <div className="max-w-4xl mx-auto p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={(): void => navigate('/')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
               <h1 className="text-2xl font-bold">{t('navigation.mealPlanner')}</h1>
+            </div>
+            {/* Regenerate Options */}
+            <div className="flex gap-2 justify-end flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(): Promise<void> => handleGeneratePlan(true, true)}
+                disabled={isGenerating || hasActiveMealGeneration}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`}
+                />
+              </Button>
             </div>
           </div>
         </div>
@@ -162,39 +172,13 @@ export function MealPlannerPage(): React.ReactElement {
           </div>
         )}
 
-          {/* Meal Plan Display */}
+        {/* Meal Plan Display */}
         {mealPlan && (
           <>
-            {/* Regenerate Options */}
-            <div className="flex gap-2 justify-end flex-wrap">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(): Promise<void> => handleGeneratePlan(true, true)}
-                disabled={isGenerating || hasActiveMealGeneration}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`} />
-                {isGenerating || hasActiveMealGeneration
-                  ? t('generation.generating') || 'Generating...'
-                  : t('meal.aiFullWeek')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(): Promise<void> => handleGeneratePlan(false, false)}
-                disabled={isGenerating || hasActiveMealGeneration}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`} />
-                {isGenerating || hasActiveMealGeneration
-                  ? t('generation.generating') || 'Generating...'
-                  : t('meal.templateFullWeek')}
-              </Button>
-            </div>
-
             {/* TDEE & Macros Overview */}
             <div className="space-y-4">
               <h2 className="text-xl font-bold">{t('meal.nutritionTargets')}</h2>
-              
+
               <div className="bg-card border rounded-lg p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
@@ -223,10 +207,9 @@ export function MealPlannerPage(): React.ReactElement {
               <h2 className="text-xl font-bold">{t('meal.weeklyPlan')}</h2>
 
               {mealPlan.schedule.map((day: DailyMealPlan) => {
-                const dayName =
-                  day.dayOfWeek.charAt(0).toUpperCase() + day.dayOfWeek.slice(1);
+                const dayName = day.dayOfWeek.charAt(0).toUpperCase() + day.dayOfWeek.slice(1);
                 const isExpanded = expandedDay === day.dayOfWeek;
-                
+
                 // Safe guard: Ensure meals array exists
                 const meals = day.meals || [];
 
@@ -234,9 +217,7 @@ export function MealPlannerPage(): React.ReactElement {
                   <div key={day.dayOfWeek} className="bg-card border rounded-lg overflow-hidden">
                     {/* Day Header */}
                     <button
-                      onClick={(): void =>
-                        setExpandedDay(isExpanded ? null : day.dayOfWeek)
-                      }
+                      onClick={(): void => setExpandedDay(isExpanded ? null : day.dayOfWeek)}
                       className="w-full p-4 flex items-center justify-between hover:bg-accent transition-colors"
                     >
                       <div className="flex items-center gap-3">
@@ -277,9 +258,7 @@ export function MealPlannerPage(): React.ReactElement {
                                   className="flex items-start justify-between p-3 bg-secondary rounded-lg"
                                 >
                                   <div className="flex-1">
-                                    <p className="font-medium text-sm">
-                                      {item.name[currentLang]}
-                                    </p>
+                                    <p className="font-medium text-sm">{item.name[currentLang]}</p>
                                     {item.description && (
                                       <p className="text-xs text-muted-foreground mt-1">
                                         {item.description[currentLang]}
@@ -333,4 +312,3 @@ export function MealPlannerPage(): React.ReactElement {
     </MainLayout>
   );
 }
-

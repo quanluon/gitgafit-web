@@ -1,7 +1,11 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
+import { useLocaleStore } from '@store/localeStore';
 import { useSocket } from './hooks/useSocket';
+import { userService } from '@services/userService';
+import { Language } from '@/types/enums';
 import { GenerationProgress } from './components/organisms/GenerationProgress';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
@@ -27,8 +31,32 @@ function ProtectedRoute({ children }: ProtectedRouteProps): React.ReactElement {
 }
 
 function App(): React.ReactElement {
+  const { isAuthenticated, updateUser } = useAuthStore();
+  const { setLanguage } = useLocaleStore();
+  
   // Initialize Socket.IO connection
   useSocket();
+
+  // Fetch user profile and set language on app load
+  useEffect(() => {
+    const initializeApp = async (): Promise<void> => {
+      if (isAuthenticated) {
+        try {
+          const user = await userService.getProfile();
+          updateUser(user);
+          
+          // Set language from user profile
+          if (user.language) {
+            setLanguage(user.language as Language);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+        }
+      }
+    };
+
+    initializeApp();
+  }, [isAuthenticated, updateUser, setLanguage]);
 
   return (
     <>
