@@ -8,6 +8,7 @@ export interface GenerationStats {
   used: number;
   limit: number;
   remaining: number;
+  resetsOn: string;
 }
 
 export interface SubscriptionStats {

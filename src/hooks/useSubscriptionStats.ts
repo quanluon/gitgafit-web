@@ -53,13 +53,14 @@ export function useSubscriptionStats(
   const getQuotaInfo = useCallback(
     (type: GenerationTypeKey): QuotaInfo | null => {
       if (!stats) return null;
-      const { remaining, limit } = stats[type] as GenerationStats;
+      const { remaining, limit, resetsOn, used } = stats[type] as GenerationStats;
       const isUnlimited = limit === -1;
       const limitLabel = isUnlimited ? '∞' : String(limit);
       return {
+        used,
         remaining,
         limit,
-        resetsOn: stats[type].resetsOn,
+        resetsOn,
         isUnlimited,
         isDepleted: remaining <= 0,
         limitLabel,
