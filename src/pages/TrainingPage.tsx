@@ -81,9 +81,6 @@ export function TrainingPage(): React.ReactElement {
     setSelectedExercise({ ...exercise, index });
   };
 
-  console.log('selectedExercise',selectedExercise);
-  
-
   const handleSaveSets = async (sets: ExerciseSet[]): Promise<void> => {
     if (selectedExercise === null) {
       console.error('No exercise selected');

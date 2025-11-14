@@ -1,6 +1,6 @@
 import { apiClient } from './api';
 import { ApiResponse } from '@/types/common';
-import { WorkoutPlan, WorkoutDay } from '@/types/workout';
+import { CustomPlanPayload, WorkoutPlan, WorkoutDay } from '@/types/workout';
 import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
 
 interface GeneratePlanRequest {
@@ -35,7 +35,7 @@ class WorkoutServiceClass {
     return response.data.data!;
   }
 
-  async updatePlan(planId: string, updateData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+  async updatePlan(planId: string, updateData: CustomPlanPayload): Promise<WorkoutPlan> {
     const response = await apiClient.patch<ApiResponse<WorkoutPlan>>(
       `/workout/plan/${planId}`,
       updateData,
@@ -43,12 +43,16 @@ class WorkoutServiceClass {
     return response.data.data!;
   }
 
-  async createCustomPlan(planData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+  async createCustomPlan(planData: CustomPlanPayload): Promise<WorkoutPlan> {
     const response = await apiClient.post<ApiResponse<WorkoutPlan>>(
       '/workout/plan/custom',
       planData,
     );
     return response.data.data!;
+  }
+
+  async deletePlan(planId: string): Promise<void> {
+    await apiClient.delete<ApiResponse<{ success: boolean }>>(`/workout/plan/${planId}`);
   }
 }
 

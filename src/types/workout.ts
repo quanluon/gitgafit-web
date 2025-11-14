@@ -1,8 +1,9 @@
-import { DayOfWeek, SessionStatus } from './enums';
+import { DayOfWeek, SessionStatus, PlanSource } from './enums';
 import { Translatable } from './common';
 
 export interface Exercise {
   _id?: string;
+  exerciseId?: string;
   name: Translatable;
   description: Translatable;
   sets: number;
@@ -19,11 +20,18 @@ export interface WorkoutDay {
 export interface WorkoutPlan {
   _id: string;
   userId: string;
+  source: PlanSource;
+  title?: string;
   week: number;
   year: number;
   schedule: WorkoutDay[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CustomPlanPayload {
+  title?: string;
+  schedule: WorkoutDay[];
 }
 
 export interface ExerciseSet {

@@ -1,6 +1,8 @@
 import React from 'react';
 import { Trophy } from 'lucide-react';
 import { Award } from '@/types/analytics';
+import { useTranslation } from 'react-i18next';
+import { useLocaleStore } from '@store/localeStore';
 
 interface AwardCardProps {
   award: Award;
@@ -16,12 +18,14 @@ const colorClasses: Record<string, string> = {
 };
 
 export function AwardCard({ award, color = 'green' }: AwardCardProps): React.ReactElement {
+  const { t } = useTranslation();
+  const { language } = useLocaleStore();
   const bgClass = colorClasses[color] || colorClasses.green;
 
-  const formattedDate = new Date(award.date).toLocaleDateString('en-US', {
+  const formattedDate = new Date(award.date).toLocaleDateString(language, {
     month: 'short',
     day: 'numeric',
-    year: '2-digit',
+    year: 'numeric',
   });
 
   return (
@@ -35,11 +39,13 @@ export function AwardCard({ award, color = 'green' }: AwardCardProps): React.Rea
       </div>
 
       <div>
-        <div className="text-5xl font-bold">{award.value} kg</div>
+        <div className="text-5xl font-bold">
+          {award.value} {t('workout.weightUnit', 'kg')}
+        </div>
       </div>
 
       <div className="text-sm opacity-90">
-        Better than {award.percentile}% of users
+        {t('statistics.awardPercentile', { percentile: award.percentile })}
       </div>
     </div>
   );

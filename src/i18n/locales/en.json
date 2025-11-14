@@ -11,6 +11,7 @@
     "back": "Back",
     "regenerate": "Regenerate",
     "generate": "Generate",
+      "search": "Search",
     "update": "Update",
     "close": "Close",
     "optional": "optional",
@@ -189,7 +190,7 @@
     "limitReached": "Monthly limit reached",
     "upgradeToGenerate": "Upgrade your plan to get more personalized plans"
   },
-  "workout": {
+    "workout": {
     "planner": "Planner",
     "todaysTraining": "Today's training",
     "startTraining": "Start Training",
@@ -209,13 +210,15 @@
     "sets": "sets",
     "set": "Set",
     "reps": "reps",
-    "weight": "Weight (kg)",
+      "weight": "Weight (kg)",
+      "weightUnit": "kg",
     "addSet": "Add Set",
     "saveLog": "Save Log",
     "watchVideo": "Watch video tutorial",
     "selectAllDays": "Select Full Week",
     "clearDays": "Clear Selection",
     "createCustomPlan": "Create Custom Workout Plan",
+      "customPlanDescription": "Use our exercise library or add your own moves.",
     "noWorkoutDays": "No workout days added yet",
     "clickAddDay": "Click 'Add Day' to start building your plan",
     "day": "Day",
@@ -230,9 +233,35 @@
     "addDay": "Add Day",
     "noPlanFound": "No workout plan found. Please complete onboarding.",
     "createCustom": "Create Custom",
+      "planTitle": "Plan title",
+      "planTitlePlaceholder": "e.g., Push/Pull Split",
+      "customPlanTag": "Custom plan",
+      "editCustomPlan": "Edit custom plan",
+      "deletePlan": "Delete plan",
+      "customPlanDeleted": "Custom plan deleted",
+      "failedToDeletePlan": "Failed to delete plan",
     "customPlanCreated": "Custom workout plan created successfully!",
     "failedToCreatePlan": "Failed to create custom plan",
-    "workout": "Workout"
+      "workout": "Workout",
+      "libraryTag": "Library",
+      "browseLibrary": "Browse library",
+      "exerciseLibraryForDay": "Exercises for {{day}}",
+      "libraryHint": "Search or filter and add exercises to your day.",
+      "closeLibrary": "Close library",
+      "searchExercises": "Search exercises",
+      "muscleGroup": "Muscle group",
+      "exerciseLibraryEmpty": "No exercises found. Try different filters.",
+      "addToDay": "Add to day",
+      "libraryAdded": "{{exercise}} added to your day",
+      "validation": {
+        "addDay": "Add at least one training day.",
+        "focusEn": "Please add an English focus label.",
+        "focusVi": "Please add a Vietnamese focus label.",
+        "exerciseRequired": "Add at least one exercise per day.",
+        "exerciseName": "Exercise name (EN) is required.",
+        "exerciseSets": "Sets must be a positive number.",
+        "exerciseReps": "Reps description is required."
+      }
   },
   "training": {
     "activeSession": "Active Training Session",
@@ -296,13 +325,14 @@
     "statistics": "Statistics",
     "profile": "Profile"
   },
-  "statistics": {
+    "statistics": {
     "totalWorkouts": "Total Workouts",
     "currentStreak": "Current Streak",
     "totalTime": "Total Time",
     "avgDuration": "Avg Duration",
     "trainingHistory": "Training History",
     "awards": "Awards",
+      "awardPercentile": "Better than {{percentile}}% of members",
     "today": "Today",
     "workout": "workout",
     "workouts": "workouts",
@@ -335,6 +365,16 @@
     "updateButton": "Update",
     "target": "Target"
   },
+    "muscles": {
+      "chest": "Chest",
+      "back": "Back",
+      "legs": "Legs",
+      "shoulders": "Shoulders",
+      "arms": "Arms",
+      "core": "Core",
+      "cardio": "Cardio",
+      "full_body": "Full body"
+    },
   "days": {
     "monday": "Monday",
     "tuesday": "Tuesday",

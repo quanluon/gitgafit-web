@@ -81,7 +81,7 @@ export function DaySelector({
               isCompleted && !isSelected && 'bg-green-500/10 border-green-500',
             )}
           >
-            <span className="text-xs font-medium">{dayLabel.short}</span>
+            <span className="text-xs font-medium">{dayLabel.full}</span>
             {isToday && (
               <div className="w-1.5 h-1.5 rounded-full bg-current mt-1" />
             )}

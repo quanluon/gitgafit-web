@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Plus, RefreshCw } from 'lucide-react';
+import { DayOfWeek, PlanSource } from '@/types/enums';
+import { CustomPlanPayload, WorkoutDay, WorkoutPlan } from '@/types/workout';
 import { Button } from '@atoms/Button';
+import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { DaySelector } from '@molecules/DaySelector';
+import { CreateCustomPlanModal } from '@organisms/CreateCustomPlanModal';
 import { WorkoutCard } from '@organisms/WorkoutCard';
 import { WorkoutDetailsModal } from '@organisms/WorkoutDetailsModal';
-import { CreateCustomPlanModal } from '@organisms/CreateCustomPlanModal';
-import { MainLayout } from '@templates/MainLayout';
-import { useWorkoutStore } from '@store/workoutStore';
-import { useTrainingStore } from '@store/trainingStore';
-import { workoutService } from '@services/workoutService';
 import { trainingService } from '@services/trainingService';
-import { DayOfWeek } from '@/types/enums';
-import { WorkoutDay } from '@/types/workout';
-import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
+import { workoutService } from '@services/workoutService';
+import { useTrainingStore } from '@store/trainingStore';
+import { useWorkoutStore } from '@store/workoutStore';
+import { MainLayout } from '@templates/MainLayout';
+import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 export function PlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -28,7 +28,8 @@ export function PlannerPage(): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
-  const [showCustomPlanModal, setShowCustomPlanModal] = useState<boolean>(false);
+  const [isCustomPlanModalOpen, setCustomPlanModalOpen] = useState<boolean>(false);
+  const [editingPlan, setEditingPlan] = useState<WorkoutPlan | null>(null);
   const {
     stats: subscriptionStats,
     refresh: refreshSubscriptionStats,
@@ -99,19 +100,44 @@ export function PlannerPage(): React.ReactElement {
     }
   };
 
-  const handleCreateCustomPlan = async (schedule: WorkoutDay[]): Promise<void> => {
+  const handleSaveCustomPlan = async (payload: CustomPlanPayload): Promise<void> => {
     try {
-      const plan = await workoutService.createCustomPlan({ schedule });
+      const plan = await workoutService.createCustomPlan(payload);
       setCurrentPlan(plan);
+      setSelectedDay(plan.schedule[0]?.dayOfWeek ?? null);
+      setTodaysWorkoutLocal(plan.schedule[0] ?? null);
+      setTodaysWorkout(plan.schedule[0] ?? null);
       toast.success(t('workout.customPlanCreated'));
-      setShowCustomPlanModal(false);
-      // Refresh page to show new plan
-      loadWorkoutPlan();
-      void refreshSubscriptionStats();
+      setCustomPlanModalOpen(false);
+      setEditingPlan(null);
+      await refreshSubscriptionStats();
     } catch (error) {
       console.error('Failed to create custom plan:', error);
       toast.error(t('workout.failedToCreatePlan'));
     }
+  };
+
+  const handleDeletePlan = async (): Promise<void> => {
+    if (!currentPlan) return;
+    try {
+      await workoutService.deletePlan(currentPlan._id);
+      toast.success(t('workout.customPlanDeleted'));
+      await loadWorkoutPlan();
+    } catch (error) {
+      console.error('Failed to delete plan:', error);
+      toast.error(t('workout.failedToDeletePlan'));
+    }
+  };
+
+  const openCustomPlanner = (): void => {
+    setEditingPlan(null);
+    setCustomPlanModalOpen(true);
+  };
+
+  const openEditCustomPlan = (): void => {
+    if (!currentPlan) return;
+    setEditingPlan(currentPlan);
+    setCustomPlanModalOpen(true);
   };
 
   const availableDays = currentPlan?.schedule.map((w) => w.dayOfWeek) || [];
@@ -132,32 +158,57 @@ export function PlannerPage(): React.ReactElement {
       {/* Header */}
       <div className="border-b sticky top-0 bg-background z-10">
         <div className="max-w-4xl mx-auto p-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">{t('workout.planner')}</h1>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={(): void => setShowCustomPlanModal(true)}
-                disabled
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                {t('workout.createCustom')}
-              </Button>
-              <div className="flex flex-col items-end gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(): void => navigate('/onboarding')}
-                  disabled={subscriptionStats !== null && subscriptionStats.workout.remaining <= 0}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2`} />
-                  {t('common.regenerate')}
-                  {workoutQuotaDisplay && (
-                    <div className="text-xs text-muted-foreground ml-1">{workoutQuotaDisplay}</div>
-                  )}
-                </Button>
+          <div className="flex justify-between">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold">{t('workout.planner')}</h1>
+                {currentPlan?.source === PlanSource.CUSTOM && (
+                  <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+                    {t('workout.customPlanTag')}
+                  </span>
+                )}
               </div>
+              {currentPlan?.title && (
+                <p className="text-sm text-muted-foreground">{currentPlan.title}</p>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {currentPlan?.source === PlanSource.CUSTOM ? (
+                <>
+                  <Button variant="outline" size="sm" onClick={openEditCustomPlan}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    {t('workout.editCustomPlan')}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleDeletePlan}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t('workout.deletePlan')}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" onClick={openCustomPlanner}>
+                    <Plus className="mr-2 h-4 w-4" />
+                  </Button>
+                  <div className="flex flex-col items-end gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(): void => navigate('/onboarding')}
+                      disabled={
+                        subscriptionStats !== null && subscriptionStats.workout.remaining <= 0
+                      }
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      {t('common.regenerate')}
+                      {workoutQuotaDisplay && (
+                        <div className="ml-1 text-xs text-muted-foreground">
+                          {workoutQuotaDisplay}
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -233,9 +284,13 @@ export function PlannerPage(): React.ReactElement {
 
       {/* Create Custom Plan Modal */}
       <CreateCustomPlanModal
-        isOpen={showCustomPlanModal}
-        onClose={(): void => setShowCustomPlanModal(false)}
-        onSave={handleCreateCustomPlan}
+        isOpen={isCustomPlanModalOpen}
+        initialPlan={editingPlan}
+        onClose={(): void => {
+          setCustomPlanModalOpen(false);
+          setEditingPlan(null);
+        }}
+        onSave={handleSaveCustomPlan}
       />
     </MainLayout>
   );
