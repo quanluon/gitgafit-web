@@ -12,10 +12,9 @@ import { useWorkoutStore } from '@store/workoutStore';
 import { useTrainingStore } from '@store/trainingStore';
 import { workoutService } from '@services/workoutService';
 import { trainingService } from '@services/trainingService';
-import { userService } from '@services/userService';
 import { DayOfWeek } from '@/types/enums';
 import { WorkoutDay } from '@/types/workout';
-import { SubscriptionStats } from '@/types/subscription';
+import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import toast from 'react-hot-toast';
 
 export function PlannerPage(): React.ReactElement {
@@ -30,7 +29,11 @@ export function PlannerPage(): React.ReactElement {
   const [error, setError] = useState<string>('');
   const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
   const [showCustomPlanModal, setShowCustomPlanModal] = useState<boolean>(false);
-  const [subscriptionStats, setSubscriptionStats] = useState<SubscriptionStats | null>(null);
+  const {
+    stats: subscriptionStats,
+    refresh: refreshSubscriptionStats,
+    formatQuotaDisplay,
+  } = useSubscriptionStats();
 
   // Get current day
   const getCurrentDay = (): DayOfWeek => {
@@ -41,7 +44,6 @@ export function PlannerPage(): React.ReactElement {
 
   useEffect(() => {
     loadWorkoutPlan();
-    loadSubscriptionStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -52,15 +54,6 @@ export function PlannerPage(): React.ReactElement {
       setTodaysWorkout(workout || null);
     }
   }, [selectedDay, currentPlan, setTodaysWorkout]);
-
-  const loadSubscriptionStats = async (): Promise<void> => {
-    try {
-      const stats = await userService.getSubscriptionStats();
-      setSubscriptionStats(stats);
-    } catch (error) {
-      console.error('Failed to load subscription stats:', error);
-    }
-  };
 
   const loadWorkoutPlan = async (): Promise<void> => {
     try {
@@ -114,6 +107,7 @@ export function PlannerPage(): React.ReactElement {
       setShowCustomPlanModal(false);
       // Refresh page to show new plan
       loadWorkoutPlan();
+      void refreshSubscriptionStats();
     } catch (error) {
       console.error('Failed to create custom plan:', error);
       toast.error(t('workout.failedToCreatePlan'));
@@ -121,6 +115,7 @@ export function PlannerPage(): React.ReactElement {
   };
 
   const availableDays = currentPlan?.schedule.map((w) => w.dayOfWeek) || [];
+  const workoutQuotaDisplay = formatQuotaDisplay('workout');
 
   if (isLoading) {
     return (
@@ -150,19 +145,17 @@ export function PlannerPage(): React.ReactElement {
                 {t('workout.createCustom')}
               </Button>
               <div className="flex flex-col items-end gap-1">
-                {subscriptionStats && (
-                  <div className="text-xs text-muted-foreground">
-                    {subscriptionStats.workout.remaining} / {subscriptionStats.workout.limit === -1 ? '∞' : subscriptionStats.workout.limit}
-                  </div>
-                )}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={(): void => navigate('/onboarding')}
                   disabled={subscriptionStats !== null && subscriptionStats.workout.remaining <= 0}
                 >
                   <RefreshCw className={`h-4 w-4 mr-2`} />
                   {t('common.regenerate')}
+                  {workoutQuotaDisplay && (
+                    <div className="text-xs text-muted-foreground ml-1">{workoutQuotaDisplay}</div>
+                  )}
                 </Button>
               </div>
             </div>

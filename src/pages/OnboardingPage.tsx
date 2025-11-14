@@ -12,7 +12,7 @@ import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
 import { UserProfile } from '@/types/user';
-import { SubscriptionStats } from '@/types/subscription';
+import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 
 type OnboardingStep = 'goal' | 'experience' | 'body' | 'schedule' | 'summary';
 
@@ -23,25 +23,12 @@ export function OnboardingPage(): React.ReactElement {
   const { startGeneration, jobs } = useGenerationStore();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('goal');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [subscriptionStats, setSubscriptionStats] = useState<SubscriptionStats | null>(null);
+  const { stats: subscriptionStats } = useSubscriptionStats();
 
   // Check if there's already a workout generation in progress
   const hasActiveWorkoutGeneration = jobs.some(
     (job) => job.type === GenerationType.WORKOUT && job.status === GenerationStatus.GENERATING,
   );
-
-  // Load subscription stats
-  React.useEffect(() => {
-    const loadSubscriptionStats = async (): Promise<void> => {
-      try {
-        const stats = await userService.getSubscriptionStats();
-        setSubscriptionStats(stats);
-      } catch (error) {
-        console.error('Failed to load subscription stats:', error);
-      }
-    };
-    loadSubscriptionStats();
-  }, []);
 
   const {
     register,

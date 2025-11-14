@@ -1,14 +1,11 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { X, Loader2, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@atoms/Button';
-import {
-  useGenerationStore,
-  GenerationType,
-  GenerationStatus,
-} from '@store/generationStore';
+import { GenerationStatus, GenerationType, useGenerationStore } from '@store/generationStore';
+import { CheckCircle, ChevronDown, Loader2, X, XCircle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import Draggable from 'react-draggable';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Floating progress bubble for AI generation
@@ -24,10 +21,11 @@ export function GenerationProgress(): React.ReactElement | null {
 
   // Track which jobs have shown toasts to prevent duplicates
   const [notifiedJobs, setNotifiedJobs] = React.useState<Set<string>>(new Set());
+  const bubbleRef = React.useRef<HTMLDivElement>(null);
 
   // Get active jobs (generating)
   const activeJobs = jobs.filter((job) => job.status === GenerationStatus.GENERATING);
-  
+
   // Get the most recent job to display
   const currentJob = jobs.length > 0 ? jobs[jobs.length - 1] : null;
 
@@ -76,7 +74,7 @@ export function GenerationProgress(): React.ReactElement | null {
           duration: 8000,
           position: 'top-center',
           id: `completed-${job.jobId}`,
-        }
+        },
       );
 
       // Auto-clear after 5 seconds
@@ -121,7 +119,7 @@ export function GenerationProgress(): React.ReactElement | null {
   const isError = currentJob?.status === GenerationStatus.ERROR;
 
   const jobTypeLabel =
-    currentJob?.type === GenerationType.WORKOUT 
+    currentJob?.type === GenerationType.WORKOUT
       ? t('generation.workoutPlan')
       : t('generation.mealPlan');
 
@@ -129,76 +127,65 @@ export function GenerationProgress(): React.ReactElement | null {
   const activeCount = activeJobs.length;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Collapsed Bubble */}
+    <div className="z-50">
       {!isExpanded && (
-        <button
-          onClick={toggleExpanded}
-          className="group relative flex items-center gap-3 bg-primary text-primary-foreground rounded-full pl-4 pr-5 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-        >
-          {/* Icon */}
-          <div className="relative">
-            {isGenerating && (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            )}
-            {isCompleted && (
-              <CheckCircle className="h-5 w-5" />
-            )}
-            {isError && (
-              <XCircle className="h-5 w-5" />
-            )}
-            
-            {/* Progress ring for generating state */}
-            {isGenerating && (
-              <svg
-                className="absolute inset-0 -m-1 h-7 w-7 transform -rotate-90"
-                viewBox="0 0 36 36"
-              >
-                <circle
-                  cx="18"
-                  cy="18"
-                  r="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  opacity="0.3"
-                />
-                <circle
-                  cx="18"
-                  cy="18"
-                  r="16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeDasharray={`${currentJob.progress}, 100`}
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-          </div>
+        <Draggable nodeRef={bubbleRef} bounds="body" defaultPosition={{ x: 0, y: 0 }}>
+          <div ref={bubbleRef} className="fixed bottom-24 right-4" style={{ touchAction: 'none' }}>
+            <button
+              onClick={toggleExpanded}
+              className="group relative flex h-14 w-14 items-center justify-center bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-transform duration-300"
+              aria-label={t('generation.progress')}
+            >
+              <div className="relative">
+                {isGenerating && <Loader2 className="h-5 w-5 animate-spin" />}
+                {isCompleted && <CheckCircle className="h-5 w-5" />}
+                {isError && <XCircle className="h-5 w-5" />}
+                {isGenerating && (
+                  <svg
+                    className="absolute inset-0 -m-1 h-7 w-7 transform -rotate-90"
+                    viewBox="0 0 36 36"
+                  >
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      opacity="0.3"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeDasharray={`${currentJob?.progress || 0}, 100`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                )}
+              </div>
 
-          {/* Text */}
-          <div className="flex flex-col items-start">
-            <span className="text-sm font-semibold">
-              {isGenerating && `${currentJob?.progress || 0}%`}
-              {isCompleted && t('generation.complete')}
-              {isError && t('generation.failed')}
-            </span>
-            <span className="text-xs opacity-90">
-              {activeCount > 1 
-                ? `${activeCount} ${t('generation.generationsInProgress')}`
-                : jobTypeLabel}
-            </span>
-          </div>
+              <span className="absolute -bottom-1 text-[10px] font-semibold opacity-90">
+                {isGenerating && `${currentJob?.progress || 0}%`}
+                {isCompleted && 'OK'}
+                {isError && 'ERR'}
+              </span>
 
-          {/* Expand indicator */}
-          <ChevronUp className="h-4 w-4 opacity-70 group-hover:opacity-100" />
-        </button>
+              {activeCount > 1 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary-foreground text-primary text-[10px] font-bold shadow">
+                  {activeCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </Draggable>
       )}
 
-      {/* Expanded Card */}
       {isExpanded && (
-        <div className="bg-card border rounded-lg shadow-xl w-80 overflow-hidden animate-in slide-in-from-bottom-4">
+        <div className="fixed bottom-4 right-4 w-80 bg-card border rounded-lg shadow-xl overflow-hidden animate-in slide-in-from-bottom-4">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b bg-muted/50">
             <div className="flex items-center gap-2">
@@ -212,12 +199,7 @@ export function GenerationProgress(): React.ReactElement | null {
               </h3>
             </div>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={toggleExpanded}
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleExpanded}>
                 <ChevronDown className="h-4 w-4" />
               </Button>
               <Button
@@ -242,7 +224,7 @@ export function GenerationProgress(): React.ReactElement | null {
                 {activeJobs.map((job) => (
                   <div key={job.jobId} className="flex items-center justify-between text-xs">
                     <span>
-                      {job.type === GenerationType.WORKOUT 
+                      {job.type === GenerationType.WORKOUT
                         ? `🏋️ ${t('generation.workoutPlan')}`
                         : `🍽️ ${t('generation.mealPlan')}`}
                     </span>
@@ -313,7 +295,7 @@ export function GenerationProgress(): React.ReactElement | null {
                 {/* Info Text */}
                 {isGenerating && (
                   <p className="text-xs text-muted-foreground text-center">
-                    {activeCount > 1 
+                    {activeCount > 1
                       ? t('generation.continueUsingMultiple')
                       : t('generation.continueUsing')}
                   </p>
@@ -326,4 +308,3 @@ export function GenerationProgress(): React.ReactElement | null {
     </div>
   );
 }
-

@@ -9,11 +9,10 @@ import { MainLayout } from '@templates/MainLayout';
 import { useAuthStore } from '@store/authStore';
 import { useGenerationStore, GenerationType, GenerationStatus } from '@store/generationStore';
 import { mealService } from '@services/mealService';
-import { userService } from '@services/userService';
 import { MealPlan, DailyMealPlan, Meal } from '@/types/meal';
 import { Language, MealType } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
-import { SubscriptionStats } from '@/types/subscription';
+import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 
 export function MealPlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -27,7 +26,12 @@ export function MealPlannerPage(): React.ReactElement {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
-  const [subscriptionStats, setSubscriptionStats] = useState<SubscriptionStats | null>(null);
+  const {
+    stats: subscriptionStats,
+    refresh: refreshSubscriptionStats,
+    formatQuotaDisplay,
+    getQuotaInfo,
+  } = useSubscriptionStats();
 
   // Check if there's already a meal generation in progress
   const hasActiveMealGeneration = jobs.some(
@@ -36,17 +40,7 @@ export function MealPlannerPage(): React.ReactElement {
 
   useEffect(() => {
     loadMealPlan();
-    loadSubscriptionStats();
   }, []);
-
-  const loadSubscriptionStats = async (): Promise<void> => {
-    try {
-      const stats = await userService.getSubscriptionStats();
-      setSubscriptionStats(stats);
-    } catch (error) {
-      console.error('Failed to load subscription stats:', error);
-    }
-  };
 
   const loadMealPlan = async (): Promise<void> => {
     try {
@@ -65,7 +59,10 @@ export function MealPlannerPage(): React.ReactElement {
   const handleGeneratePlan = async (fullWeek = false, useAI = false): Promise<void> => {
     // Prevent multiple generations
     if (isGenerating || hasActiveMealGeneration) {
-      toast.error(t('generation.alreadyGenerating') || 'Your trainer is already creating a plan. Please wait.');
+      toast.error(
+        t('generation.alreadyGenerating') ||
+          'Your trainer is already creating a plan. Please wait.',
+      );
       return;
     }
 
@@ -93,7 +90,7 @@ export function MealPlannerPage(): React.ReactElement {
         startGeneration(response.jobId, GenerationType.MEAL);
         toast.success(t('generation.mealPlan') + ' ' + t('generation.generationStarted'));
         // Reload subscription stats after starting generation
-        loadSubscriptionStats();
+        void refreshSubscriptionStats();
       }
     } catch (err) {
       setError('Failed to start meal plan generation');
@@ -111,6 +108,9 @@ export function MealPlannerPage(): React.ReactElement {
     [MealType.DINNER]: t('meal.dinner'),
     [MealType.SNACK]: t('meal.snack'),
   };
+
+  const mealQuotaDisplay = formatQuotaDisplay('meal');
+  const mealQuotaInfo = getQuotaInfo('meal');
 
   const getMealIcon = (type: MealType): string => {
     const icons: Record<MealType, string> = {
@@ -144,25 +144,25 @@ export function MealPlannerPage(): React.ReactElement {
             {/* Regenerate Options */}
             {mealPlan && (
               <div className="flex flex-col items-end gap-1">
-                {subscriptionStats && (
-                  <div className="text-xs text-muted-foreground">
-                    {subscriptionStats.meal.remaining} / {subscriptionStats.meal.limit === -1 ? '∞' : subscriptionStats.meal.limit}
-                  </div>
-                )}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={(): Promise<void> => handleGeneratePlan(true, true)}
                   disabled={
-                    isGenerating || 
-                    hasActiveMealGeneration || 
+                    isGenerating ||
+                    hasActiveMealGeneration ||
                     (subscriptionStats !== null && subscriptionStats.meal.remaining <= 0)
                   }
                 >
                   <RefreshCw
                     className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`}
                   />
-                  {t('common.regenerate')}
+                  {t('common.regenerate')}{' '}
+                  {mealQuotaDisplay && (
+                    <div className="text-xs text-muted-foreground ml-1">
+                      {mealQuotaDisplay}
+                    </div>
+                  )}
                 </Button>
               </div>
             )}
@@ -181,18 +181,21 @@ export function MealPlannerPage(): React.ReactElement {
         {!mealPlan && (
           <div className="text-center py-12 space-y-6">
             <p className="text-muted-foreground">{t('meal.noMealPlan')}</p>
-            
+
             {/* Subscription Info */}
-            {subscriptionStats && (
+            {mealQuotaInfo && (
               <div className="text-sm">
-                <span className="text-muted-foreground">
-                  {t('subscription.mealGenerations')}:{' '}
+                <span className="text-muted-foreground">{t('subscription.mealGenerations')}: </span>
+                <span
+                  className={
+                    mealQuotaInfo.isDepleted ? 'text-destructive font-semibold' : 'text-primary font-semibold'
+                  }
+                >
+                  {mealQuotaInfo.remaining} {t('subscription.remaining')}
                 </span>
-                <span className={subscriptionStats.meal.remaining > 0 ? 'text-primary font-semibold' : 'text-destructive font-semibold'}>
-                  {subscriptionStats.meal.remaining} {t('subscription.remaining')}
-                </span>
                 <span className="text-muted-foreground">
-                  {' '}/ {subscriptionStats.meal.limit === -1 ? t('subscription.unlimited') : subscriptionStats.meal.limit}
+                  {' '}
+                  / {mealQuotaInfo.isUnlimited ? t('subscription.unlimited') : mealQuotaInfo.limit}
                 </span>
               </div>
             )}
@@ -202,8 +205,8 @@ export function MealPlannerPage(): React.ReactElement {
                 onClick={(): Promise<void> => handleGeneratePlan(true, true)}
                 size="lg"
                 disabled={
-                  isGenerating || 
-                  hasActiveMealGeneration || 
+                  isGenerating ||
+                  hasActiveMealGeneration ||
                   (subscriptionStats !== null && subscriptionStats.meal.remaining <= 0)
                 }
               >

@@ -1,8 +1,8 @@
+import { SubscriptionPlan, SubscriptionStats } from '@/types/subscription';
+import { subscriptionService } from '@services/subscriptionService';
+import { Check, Crown, TrendingUp, Zap } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Crown, Zap, Check, TrendingUp } from 'lucide-react';
-import { subscriptionService } from '@services/subscriptionService';
-import { SubscriptionStats, SubscriptionPlan } from '@/types/subscription';
 
 export function SubscriptionCard(): React.ReactElement {
   const { t } = useTranslation();
@@ -118,9 +118,7 @@ export function SubscriptionCard(): React.ReactElement {
               />
             </div>
             <span className="text-xs text-muted-foreground text-right">
-              {stats.workout.limit === -1
-                ? '∞'
-                : `${stats.workout.used}/${stats.workout.limit}`}
+              {stats.workout.limit === -1 ? '∞' : `${stats.workout.used}/${stats.workout.limit}`}
             </span>
           </div>
         </div>
@@ -221,5 +219,3 @@ export function SubscriptionCard(): React.ReactElement {
     </div>
   );
 }
-
-
