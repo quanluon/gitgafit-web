@@ -12,6 +12,7 @@ import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
 import { UserProfile } from '@/types/user';
+import { SubscriptionStats } from '@/types/subscription';
 
 type OnboardingStep = 'goal' | 'experience' | 'body' | 'schedule' | 'summary';
 
@@ -22,11 +23,25 @@ export function OnboardingPage(): React.ReactElement {
   const { startGeneration, jobs } = useGenerationStore();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('goal');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [subscriptionStats, setSubscriptionStats] = useState<SubscriptionStats | null>(null);
 
   // Check if there's already a workout generation in progress
   const hasActiveWorkoutGeneration = jobs.some(
     (job) => job.type === GenerationType.WORKOUT && job.status === GenerationStatus.GENERATING,
   );
+
+  // Load subscription stats
+  React.useEffect(() => {
+    const loadSubscriptionStats = async (): Promise<void> => {
+      try {
+        const stats = await userService.getSubscriptionStats();
+        setSubscriptionStats(stats);
+      } catch (error) {
+        console.error('Failed to load subscription stats:', error);
+      }
+    };
+    loadSubscriptionStats();
+  }, []);
 
   const {
     register,
@@ -120,7 +135,13 @@ export function OnboardingPage(): React.ReactElement {
   const onSubmit = async (data: UserProfile): Promise<void> => {
     // Prevent multiple submissions
     if (isLoading || hasActiveWorkoutGeneration) {
-      toast.error(t('generation.alreadyGenerating') || 'A workout plan is already being generated');
+      toast.error(t('generation.alreadyGenerating') || 'Your trainer is already creating a plan. Please wait.');
+      return;
+    }
+
+    // Check subscription quota
+    if (subscriptionStats && subscriptionStats.workout.remaining <= 0) {
+      toast.error(t('subscription.limitReached'));
       return;
     }
 
@@ -451,6 +472,27 @@ export function OnboardingPage(): React.ReactElement {
                 </div>
               </div>
 
+              {/* Subscription Info */}
+              {subscriptionStats && (
+                <div className="text-sm text-center">
+                  <span className="text-muted-foreground">
+                    {t('subscription.workoutGenerations')}:{' '}
+                  </span>
+                  <span className={subscriptionStats.workout.remaining > 0 ? 'text-primary font-semibold' : 'text-destructive font-semibold'}>
+                    {subscriptionStats.workout.remaining} {t('subscription.remaining')}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {' '}/ {subscriptionStats.workout.limit === -1 ? t('subscription.unlimited') : subscriptionStats.workout.limit}
+                  </span>
+                </div>
+              )}
+
+              {subscriptionStats && subscriptionStats.workout.remaining <= 0 && (
+                <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm text-center">
+                  {t('subscription.upgradeToGenerate')}
+                </div>
+              )}
+
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
                   {t('onboarding.back')}
@@ -458,7 +500,11 @@ export function OnboardingPage(): React.ReactElement {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={isLoading || hasActiveWorkoutGeneration}
+                  disabled={
+                    isLoading || 
+                    hasActiveWorkoutGeneration || 
+                    (subscriptionStats !== null && subscriptionStats.workout.remaining <= 0)
+                  }
                 >
                   {isLoading || hasActiveWorkoutGeneration
                     ? t('generation.generating')

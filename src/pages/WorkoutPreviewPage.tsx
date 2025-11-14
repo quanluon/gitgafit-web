@@ -77,7 +77,7 @@ export function WorkoutPreviewPage(): React.ReactElement {
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-bold">Your Personalized Workout Plan</h1>
             <p className="text-muted-foreground">
-              Review your AI-generated plan. You can regenerate if needed.
+              Review your customized plan. You can regenerate if needed.
             </p>
           </div>
         </div>

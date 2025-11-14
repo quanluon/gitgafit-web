@@ -1,6 +1,7 @@
 import { apiClient } from './api';
 import { ApiResponse } from '@/types/common';
 import { User, UserProfile } from '@/types/user';
+import { SubscriptionStats } from '@/types/subscription';
 
 class UserServiceClass {
   async getProfile(): Promise<User> {
@@ -18,6 +19,11 @@ class UserServiceClass {
       '/user/profile/complete',
     );
     return response.data.data!.isComplete;
+  }
+
+  async getSubscriptionStats(): Promise<SubscriptionStats> {
+    const response = await apiClient.get<ApiResponse<SubscriptionStats>>('/user/subscription/stats');
+    return response.data.data!;
   }
 }
 

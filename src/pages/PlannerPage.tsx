@@ -12,8 +12,10 @@ import { useWorkoutStore } from '@store/workoutStore';
 import { useTrainingStore } from '@store/trainingStore';
 import { workoutService } from '@services/workoutService';
 import { trainingService } from '@services/trainingService';
+import { userService } from '@services/userService';
 import { DayOfWeek } from '@/types/enums';
 import { WorkoutDay } from '@/types/workout';
+import { SubscriptionStats } from '@/types/subscription';
 import toast from 'react-hot-toast';
 
 export function PlannerPage(): React.ReactElement {
@@ -28,6 +30,7 @@ export function PlannerPage(): React.ReactElement {
   const [error, setError] = useState<string>('');
   const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
   const [showCustomPlanModal, setShowCustomPlanModal] = useState<boolean>(false);
+  const [subscriptionStats, setSubscriptionStats] = useState<SubscriptionStats | null>(null);
 
   // Get current day
   const getCurrentDay = (): DayOfWeek => {
@@ -38,6 +41,7 @@ export function PlannerPage(): React.ReactElement {
 
   useEffect(() => {
     loadWorkoutPlan();
+    loadSubscriptionStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -48,6 +52,15 @@ export function PlannerPage(): React.ReactElement {
       setTodaysWorkout(workout || null);
     }
   }, [selectedDay, currentPlan, setTodaysWorkout]);
+
+  const loadSubscriptionStats = async (): Promise<void> => {
+    try {
+      const stats = await userService.getSubscriptionStats();
+      setSubscriptionStats(stats);
+    } catch (error) {
+      console.error('Failed to load subscription stats:', error);
+    }
+  };
 
   const loadWorkoutPlan = async (): Promise<void> => {
     try {
@@ -136,9 +149,22 @@ export function PlannerPage(): React.ReactElement {
                 <Plus className="h-4 w-4 mr-1" />
                 {t('workout.createCustom')}
               </Button>
-              <Button variant="outline" size="sm" onClick={(): void => navigate('/onboarding')}>
-                <RefreshCw className={`h-4 w-4 mr-2`} />
-              </Button>
+              <div className="flex flex-col items-end gap-1">
+                {subscriptionStats && (
+                  <div className="text-xs text-muted-foreground">
+                    {subscriptionStats.workout.remaining} / {subscriptionStats.workout.limit === -1 ? '∞' : subscriptionStats.workout.limit}
+                  </div>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={(): void => navigate('/onboarding')}
+                  disabled={subscriptionStats !== null && subscriptionStats.workout.remaining <= 0}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2`} />
+                  {t('common.regenerate')}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
