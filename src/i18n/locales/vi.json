@@ -239,7 +239,7 @@
     "sessionDurationHelper": "Chúng tôi sẽ điều chỉnh số bài tập để phù hợp (mặc định 60 phút).",
     "notesLabel": "Ghi chú cho huấn luyện viên",
     "notesPlaceholder": "Thiết bị sẵn có, chấn thương, khu vực muốn tập trung...",
-    "notesHelper": "Tùy chọn; giúp cá nhân hóa kế hoạch luyện tập.",
+    "notesHelper": "Tùy chọn: giúp cá nhân hóa kế hoạch luyện tập.",
     "planTitle": "Tên kế hoạch",
     "planTitlePlaceholder": "ví dụ: Lịch Push/Pull",
     "customPlanTag": "Kế hoạch riêng",
@@ -325,7 +325,7 @@
     "dailyTargets": "Mục tiêu hàng ngày",
     "notesLabel": "Ghi chú cho bữa ăn",
     "notesPlaceholder": "Nguyên liệu muốn thêm/bớt, khẩu vị, lưu ý ăn kiêng...",
-    "notesHelper": "Tùy chọn; giúp đầu bếp cá nhân hóa thực đơn."
+    "notesHelper": "Tùy chọn: giúp đầu bếp cá nhân hóa thực đơn."
   },
   "navigation": {
     "home": "Trang chủ",
