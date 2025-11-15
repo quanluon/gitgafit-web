@@ -10,7 +10,7 @@ import { GenerationStatus, GenerationType, useGenerationStore } from '@store/gen
 import { useLocaleStore } from '@store/localeStore';
 import { MainLayout } from '@templates/MainLayout';
 import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -39,11 +39,7 @@ export function MealPlannerPage(): React.ReactElement {
     (job) => job.type === GenerationType.MEAL && job.status === GenerationStatus.GENERATING,
   );
 
-  useEffect(() => {
-    loadMealPlan();
-  }, []);
-
-  const loadMealPlan = async (): Promise<void> => {
+  const loadMealPlan = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       setError('');
@@ -55,7 +51,27 @@ export function MealPlannerPage(): React.ReactElement {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void loadMealPlan();
+  }, [loadMealPlan]);
+
+  const refreshedMealJobs = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    jobs.forEach((job) => {
+      if (
+        job.type === GenerationType.MEAL &&
+        job.status === GenerationStatus.COMPLETED &&
+        !refreshedMealJobs.current.has(job.jobId)
+      ) {
+        refreshedMealJobs.current.add(job.jobId);
+        void loadMealPlan();
+        void refreshSubscriptionStats();
+      }
+    });
+  }, [jobs, loadMealPlan, refreshSubscriptionStats]);
 
   const handleGeneratePlan = async (fullWeek = false, useAI = false): Promise<void> => {
     // Prevent multiple generations

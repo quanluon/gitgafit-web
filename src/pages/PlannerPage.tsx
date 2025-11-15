@@ -1,4 +1,4 @@
-import { GenerationType } from '@/store/generationStore';
+import { GenerationStatus, GenerationType, useGenerationStore } from '@/store/generationStore';
 import { DayOfWeek, PlanSource } from '@/types/enums';
 import { CustomPlanPayload, WorkoutDay, WorkoutPlan } from '@/types/workout';
 import { Button } from '@atoms/Button';
@@ -13,7 +13,7 @@ import { useTrainingStore } from '@store/trainingStore';
 import { useWorkoutStore } from '@store/workoutStore';
 import { MainLayout } from '@templates/MainLayout';
 import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +23,7 @@ export function PlannerPage(): React.ReactElement {
   const navigate = useNavigate();
   const { currentPlan, setCurrentPlan, setTodaysWorkout } = useWorkoutStore();
   const { currentSession, setCurrentSession } = useTrainingStore();
+  const { jobs } = useGenerationStore();
 
   const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(null);
   const [todaysWorkout, setTodaysWorkoutLocal] = useState<WorkoutDay | null>(null);
@@ -44,20 +45,7 @@ export function PlannerPage(): React.ReactElement {
     return Object.values(DayOfWeek)[dayIndex];
   };
 
-  useEffect(() => {
-    loadWorkoutPlan();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (selectedDay && currentPlan) {
-      const workout = currentPlan.schedule.find((w) => w.dayOfWeek === selectedDay);
-      setTodaysWorkoutLocal(workout || null);
-      setTodaysWorkout(workout || null);
-    }
-  }, [selectedDay, currentPlan, setTodaysWorkout]);
-
-  const loadWorkoutPlan = async (): Promise<void> => {
+  const loadWorkoutPlan = useCallback(async (): Promise<void> => {
     try {
       setIsLoading(true);
       const [plan, activeSession] = await Promise.all([
@@ -77,7 +65,35 @@ export function PlannerPage(): React.ReactElement {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate, setCurrentPlan, setCurrentSession, t]);
+
+  useEffect(() => {
+    void loadWorkoutPlan();
+  }, [loadWorkoutPlan]);
+
+  useEffect(() => {
+    if (selectedDay && currentPlan) {
+      const workout = currentPlan.schedule.find((w) => w.dayOfWeek === selectedDay);
+      setTodaysWorkoutLocal(workout || null);
+      setTodaysWorkout(workout || null);
+    }
+  }, [selectedDay, currentPlan, setTodaysWorkout]);
+
+  const refreshedJobIds = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    jobs.forEach((job) => {
+      if (
+        job.type === GenerationType.WORKOUT &&
+        job.status === GenerationStatus.COMPLETED &&
+        !refreshedJobIds.current.has(job.jobId)
+      ) {
+        refreshedJobIds.current.add(job.jobId);
+        void loadWorkoutPlan();
+        void refreshSubscriptionStats();
+      }
+    });
+  }, [jobs, loadWorkoutPlan, refreshSubscriptionStats]);
 
   const handleStartTraining = async (): Promise<void> => {
     if (!currentPlan || !selectedDay) return;
