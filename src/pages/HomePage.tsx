@@ -18,6 +18,7 @@ import { userService } from '@services/userService';
 import { trainingService } from '@services/trainingService';
 import { DayOfWeek } from '@/types/enums';
 import { WeightHistory, Award } from '@/types/analytics';
+import { AppRoutePath } from '@/routes/paths';
 
 export function HomePage(): React.ReactElement {
   const { t } = useTranslation();
@@ -82,7 +83,7 @@ export function HomePage(): React.ReactElement {
 
   const handleStartTraining = async (): Promise<void> => {
     if (!todaysWorkout) return;
-    navigate('/planner');
+    navigate(AppRoutePath.Planner);
   };
 
   return (
@@ -98,21 +99,21 @@ export function HomePage(): React.ReactElement {
           {/* Quick Actions */}
           <div className="grid grid-cols-3 gap-3">
             <button
-              onClick={(): void => navigate('/planner')}
+              onClick={(): void => navigate(AppRoutePath.Planner)}
               className="flex flex-col items-center gap-2 p-4 bg-card border rounded-lg hover:bg-accent transition-colors"
             >
               <CalendarDays className="h-6 w-6 text-primary" />
               <span className="text-sm font-medium">{t('home.workouts')}</span>
             </button>
             <button
-              onClick={(): void => navigate('/meal-planner')}
+              onClick={(): void => navigate(AppRoutePath.MealPlanner)}
               className="flex flex-col items-center gap-2 p-4 bg-card border rounded-lg hover:bg-accent transition-colors"
             >
               <Utensils className="h-6 w-6 text-primary" />
               <span className="text-sm font-medium">{t('home.meals')}</span>
             </button>
             <button
-              onClick={(): void => navigate('/statistics')}
+              onClick={(): void => navigate(AppRoutePath.Statistics)}
               className="flex flex-col items-center gap-2 p-4 bg-card border rounded-lg hover:bg-accent transition-colors"
             >
               <TrendingUp className="h-6 w-6 text-primary" />
@@ -130,7 +131,7 @@ export function HomePage(): React.ReactElement {
                     {t('training.ongoingSession')}
                   </p>
                 </div>
-                <Button onClick={(): void => navigate('/training')}>
+                <Button onClick={(): void => navigate(AppRoutePath.Training)}>
                   {t('common.continue')}
                 </Button>
               </div>
@@ -158,7 +159,7 @@ export function HomePage(): React.ReactElement {
           {!isLoading && !todaysWorkout && (
             <div className="bg-card border rounded-lg p-6 text-center">
               <p className="text-muted-foreground">{t('workout.noWorkoutToday')}</p>
-              <Button className="mt-4" onClick={(): void => navigate('/planner')}>
+              <Button className="mt-4" onClick={(): void => navigate(AppRoutePath.Planner)}>
                 {t('workout.viewPlanner')}
               </Button>
             </div>
@@ -188,7 +189,7 @@ export function HomePage(): React.ReactElement {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">{t('home.awards')}</h2>
-                <Button variant="ghost" size="sm" onClick={(): void => navigate('/statistics')}>
+                <Button variant="ghost" size="sm" onClick={(): void => navigate(AppRoutePath.Statistics)}>
                   {t('home.all')}
                 </Button>
               </div>
@@ -222,7 +223,7 @@ export function HomePage(): React.ReactElement {
           onClose={(): void => setShowWorkoutDetails(false)}
           onStartTraining={(): void => {
             setShowWorkoutDetails(false);
-            navigate('/planner');
+            navigate(AppRoutePath.Planner);
           }}
         />
       )}

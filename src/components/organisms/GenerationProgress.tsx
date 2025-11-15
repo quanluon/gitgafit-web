@@ -1,3 +1,4 @@
+import { AppRoutePath } from '@/routes/paths';
 import { Button } from '@atoms/Button';
 import { GenerationStatus, GenerationType, useGenerationStore } from '@store/generationStore';
 import { CheckCircle, ChevronDown, Loader2, X, XCircle } from 'lucide-react';
@@ -45,7 +46,7 @@ export function GenerationProgress(): React.ReactElement | null {
         job.type === GenerationType.WORKOUT
           ? t('generation.workoutReady')
           : t('generation.mealReady');
-      const route = job.type === GenerationType.WORKOUT ? '/workout-preview' : '/meal-planner';
+      const route = job.type === GenerationType.WORKOUT ? AppRoutePath.WorkoutPreview : AppRoutePath.MealPlanner;
 
       // Mark as notified
       setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
@@ -272,8 +273,8 @@ export function GenerationProgress(): React.ReactElement | null {
                     onClick={() => {
                       const route =
                         currentJob.type === GenerationType.WORKOUT
-                          ? '/workout-preview'
-                          : '/meal-planner';
+                          ? AppRoutePath.WorkoutPreview
+                          : AppRoutePath.MealPlanner;
                       navigate(route);
                       clearJob(currentJob.jobId);
                     }}

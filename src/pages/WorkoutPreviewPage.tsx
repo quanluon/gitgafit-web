@@ -7,6 +7,7 @@ import { useAuthStore } from '@store/authStore';
 import { workoutService } from '@services/workoutService';
 import { Language, DayOfWeek } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
+import { AppRoutePath } from '@/routes/paths';
 
 export function WorkoutPreviewPage(): React.ReactElement {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export function WorkoutPreviewPage(): React.ReactElement {
           setCurrentPlan(plan);
         } catch (err) {
           // If no plan exists, redirect to onboarding
-          navigate('/onboarding');
+          navigate(AppRoutePath.Onboarding);
         }
       }
     };
@@ -38,7 +39,7 @@ export function WorkoutPreviewPage(): React.ReactElement {
     }
 
     // Navigate to onboarding to start background generation
-    navigate('/onboarding');
+    navigate(AppRoutePath.Onboarding);
   };
 
   const handleAccept = (): void => {

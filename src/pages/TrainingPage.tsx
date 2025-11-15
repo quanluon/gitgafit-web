@@ -13,6 +13,7 @@ import { Exercise } from '@/types/workout';
 import { Language } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
 import toast from 'react-hot-toast';
+import { AppRoutePath } from '@/routes/paths';
 
 interface ExerciseSet {
   reps: number;
@@ -40,7 +41,7 @@ export function TrainingPage(): React.ReactElement {
 
   useEffect(() => {
     if (!currentSession || !todaysWorkout) {
-      navigate('/planner');
+      navigate(AppRoutePath.Planner);
     }
   }, [currentSession, todaysWorkout, navigate]);
 
@@ -136,7 +137,7 @@ export function TrainingPage(): React.ReactElement {
       await trainingService.completeSession(currentSession._id);
       await indexedDBService.deleteTrainingSession(currentSession._id);
       clearSession();
-      navigate('/');
+      navigate(AppRoutePath.Root);
     } catch (err) {
       console.error('Failed to complete session:', err);
     } finally {
@@ -152,7 +153,7 @@ export function TrainingPage(): React.ReactElement {
         await trainingService.cancelSession(currentSession._id);
         await indexedDBService.deleteTrainingSession(currentSession._id);
         clearSession();
-        navigate('/planner');
+        navigate(AppRoutePath.Planner);
       } catch (err) {
         console.error('Failed to cancel session:', err);
       }
@@ -174,7 +175,7 @@ export function TrainingPage(): React.ReactElement {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={(): void => navigate('/planner')}
+                onClick={(): void => navigate(AppRoutePath.Planner)}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>

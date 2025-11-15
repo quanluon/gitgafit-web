@@ -15,8 +15,7 @@ import { UserProfile } from '@/types/user';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@atoms/Select';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { UNLIMITED_LIMIT } from '@/types/subscription';
-
-type OnboardingStep = 'goal' | 'experience' | 'body' | 'schedule' | 'summary';
+import { useOnboardingStore, OnboardingStep } from '@store/onboardingStore';
 
 type OnboardingForm = UserProfile & {
   workoutTimeMinutes?: number;
@@ -28,8 +27,8 @@ export function OnboardingPage(): React.ReactElement {
   const { t } = useTranslation();
   const { user, updateUser } = useAuthStore();
   const { startGeneration, jobs } = useGenerationStore();
-  const [currentStep, setCurrentStep] = useState<OnboardingStep>('goal');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { draft, currentStep, setCurrentStep, updateDraft, resetDraft } = useOnboardingStore();
   const { stats: subscriptionStats, getQuotaInfo } = useSubscriptionStats();
 
   // Check if there's already a workout generation in progress
@@ -43,14 +42,29 @@ export function OnboardingPage(): React.ReactElement {
     control,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<OnboardingForm>({
     defaultValues: {
-      workoutTimeMinutes: 60,
+      ...draft,
+      workoutTimeMinutes: draft.workoutTimeMinutes ?? 60,
     },
   });
 
   const formData = watch();
+  React.useEffect(() => {
+    const subscription = watch((values) => {
+      const sanitizedScheduleDays = values.scheduleDays?.filter(
+        (day): day is DayOfWeek => Boolean(day),
+      );
+      updateDraft({
+        ...values,
+        scheduleDays: sanitizedScheduleDays,
+        workoutTimeMinutes: values.workoutTimeMinutes ?? 60,
+      });
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateDraft]);
 
   // Pre-fill from user profile if available
   React.useEffect(() => {
@@ -60,7 +74,7 @@ export function OnboardingPage(): React.ReactElement {
       if (user.height) setValue('height', user.height);
       if (user.weight) setValue('weight', user.weight);
       if (user.targetWeight) setValue('targetWeight', user.targetWeight);
-      if (user.scheduleDays && user.scheduleDays.length > 0) {
+      if (user.scheduleDays?.length > 0) {
         setValue('scheduleDays', user.scheduleDays);
       }
     }
@@ -177,6 +191,11 @@ export function OnboardingPage(): React.ReactElement {
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.WORKOUT);
         toast.success(t('generation.workoutPlan') + ' ' + t('generation.generationStarted'));
+        resetDraft();
+        reset({
+          workoutTimeMinutes: 60,
+          workoutNotes: '',
+        });
         // Navigate to home - user can continue using the app
         navigate('/');
       }
@@ -565,11 +584,7 @@ export function OnboardingPage(): React.ReactElement {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={
-                    isLoading ||
-                    hasActiveWorkoutGeneration ||
-                    !!(quotaInfo?.isDepleted)
-                  }
+                  disabled={isLoading || hasActiveWorkoutGeneration || !!quotaInfo?.isDepleted}
                 >
                   {isLoading || hasActiveWorkoutGeneration
                     ? t('generation.generating')

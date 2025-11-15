@@ -2,6 +2,7 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosE
 import { ApiResponse } from '@/types/common';
 import { authService } from './authService';
 import { useAuthStore } from '@/store';
+import { AppRoutePath } from '@/routes/paths';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
@@ -65,7 +66,7 @@ class ApiService {
         const forceLogout = (): void => {
           const authStore = useAuthStore.getState();
           authStore.clearAuth();
-          window.location.href = '/login';
+          window.location.href = AppRoutePath.Login;
         };
         // Check if error is 401 and we haven't retried yet
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {

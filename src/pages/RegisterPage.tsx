@@ -7,6 +7,11 @@ import { Button } from '@atoms/Button';
 import { FormField } from '@molecules/FormField';
 import { useAuthStore } from '@store/authStore';
 import { authService } from '@services/authService';
+import { useLocaleStore } from '@store/localeStore';
+import { Language } from '@/types/enums';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
+import { Globe } from 'lucide-react';
+import { AppRoutePath } from '@/routes/paths';
 
 interface RegisterFormData {
   email: string;
@@ -18,6 +23,7 @@ export function RegisterPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const { language, setLanguage } = useLocaleStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
@@ -38,7 +44,7 @@ export function RegisterPage(): React.ReactElement {
       });
       setAuth(response.accessToken, response.refreshToken, response.user);
       toast.success(t('auth.registerSuccess'));
-      navigate('/onboarding');
+      navigate(AppRoutePath.Onboarding);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage = error?.response?.data?.message || t('auth.registerError') || 'Registration failed. Please try again.';
@@ -48,9 +54,32 @@ export function RegisterPage(): React.ReactElement {
     }
   };
 
+  const languageOptions = [
+    { value: Language.EN, label: 'English' },
+    { value: Language.VI, label: 'Tiếng Việt' },
+  ];
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
+        <div className="flex justify-end">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Globe className="h-4 w-4" />
+            <Select value={language} onValueChange={(value): void => setLanguage(value as Language)}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder={t('profile.language')} />
+              </SelectTrigger>
+              <SelectContent>
+                {languageOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="text-center">
           <h1 className="text-3xl font-bold">GigaFit</h1>
           <p className="text-muted-foreground mt-2">{t('auth.register')}</p>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
@@ -9,30 +9,80 @@ import { Language } from '@/types/enums';
 import { GenerationProgress } from './components/organisms/GenerationProgress';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
-import { HomePage } from './pages/HomePage';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { PlannerPage } from './pages/PlannerPage';
-import { TrainingPage } from './pages/TrainingPage';
-import { StatisticsPage } from './pages/StatisticsPage';
-import { OnboardingPage } from './pages/OnboardingPage';
-import { WorkoutPreviewPage } from './pages/WorkoutPreviewPage';
-import { MealPlannerPage } from './pages/MealPlannerPage';
+import { AppRoutePath, AppRouteConfig } from './routes/paths';
 import './App.css';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
+const HomePage = lazy(async () => {
+  const module = await import('./pages/HomePage');
+  return { default: module.HomePage };
+});
 
-function ProtectedRoute({ children }: ProtectedRouteProps): React.ReactElement {
+const LoginPage = lazy(async () => {
+  const module = await import('./pages/LoginPage');
+  return { default: module.LoginPage };
+});
+
+const RegisterPage = lazy(async () => {
+  const module = await import('./pages/RegisterPage');
+  return { default: module.RegisterPage };
+});
+
+const ProfilePage = lazy(async () => {
+  const module = await import('./pages/ProfilePage');
+  return { default: module.ProfilePage };
+});
+
+const PlannerPage = lazy(async () => {
+  const module = await import('./pages/PlannerPage');
+  return { default: module.PlannerPage };
+});
+
+const TrainingPage = lazy(async () => {
+  const module = await import('./pages/TrainingPage');
+  return { default: module.TrainingPage };
+});
+
+const StatisticsPage = lazy(async () => {
+  const module = await import('./pages/StatisticsPage');
+  return { default: module.StatisticsPage };
+});
+
+const OnboardingPage = lazy(async () => {
+  const module = await import('./pages/OnboardingPage');
+  return { default: module.OnboardingPage };
+});
+
+const WorkoutPreviewPage = lazy(async () => {
+  const module = await import('./pages/WorkoutPreviewPage');
+  return { default: module.WorkoutPreviewPage };
+});
+
+const MealPlannerPage = lazy(async () => {
+  const module = await import('./pages/MealPlannerPage');
+  return { default: module.MealPlannerPage };
+});
+
+function ProtectedRoute({ children }: { children: React.ReactNode }): React.ReactElement {
   const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  return isAuthenticated ? <>{children}</> : <Navigate to={AppRoutePath.Login} />;
 }
 
 function App(): React.ReactElement {
   const { isAuthenticated, updateUser } = useAuthStore();
   const { setLanguage } = useLocaleStore();
+
+  const appRoutes: AppRouteConfig[] = [
+    { path: AppRoutePath.Login, element: <LoginPage /> },
+    { path: AppRoutePath.Register, element: <RegisterPage /> },
+    { path: AppRoutePath.Root, element: <HomePage />, isProtected: true },
+    { path: AppRoutePath.Onboarding, element: <OnboardingPage />, isProtected: true },
+    { path: AppRoutePath.WorkoutPreview, element: <WorkoutPreviewPage />, isProtected: true },
+    { path: AppRoutePath.Profile, element: <ProfilePage />, isProtected: true },
+    { path: AppRoutePath.Planner, element: <PlannerPage />, isProtected: true },
+    { path: AppRoutePath.Training, element: <TrainingPage />, isProtected: true },
+    { path: AppRoutePath.Statistics, element: <StatisticsPage />, isProtected: true },
+    { path: AppRoutePath.MealPlanner, element: <MealPlannerPage />, isProtected: true },
+  ];
   
   // Initialize Socket.IO connection
   useSocket();
@@ -64,13 +114,13 @@ function App(): React.ReactElement {
         position="top-center"
         reverseOrder={false}
         toastOptions={{
-          duration: 4000,
+          duration: 2000,
           style: {
             background: '#363636',
             color: '#fff',
           },
           success: {
-            duration: 3000,
+            duration: 2000,
             iconTheme: {
               primary: '#4ade80',
               secondary: '#fff',
@@ -86,80 +136,25 @@ function App(): React.ReactElement {
         }}
       />
       <Router>
-        {/* Floating generation progress bubble - must be inside Router for useNavigate */}
-        <GenerationProgress />
-        {/* PWA install prompts - shows when installable (Android/Chrome) */}
-        <PWAInstallPrompt />
-        {/* iOS Safari install instructions */}
-        <IOSInstallPrompt />
-        <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/onboarding"
-          element={
-            <ProtectedRoute>
-              <OnboardingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/workout-preview"
-          element={
-            <ProtectedRoute>
-              <WorkoutPreviewPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/planner"
-          element={
-            <ProtectedRoute>
-              <PlannerPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/training"
-          element={
-            <ProtectedRoute>
-              <TrainingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/statistics"
-          element={
-            <ProtectedRoute>
-              <StatisticsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/meal-planner"
-          element={
-            <ProtectedRoute>
-              <MealPlannerPage />
-            </ProtectedRoute>
-          }
-        />
-        </Routes>
+        <Suspense fallback={<div className="app__route-fallback">Loading...</div>}>
+          {/* Floating generation progress bubble - must be inside Router for useNavigate */}
+          <GenerationProgress />
+          {/* PWA install prompts - shows when installable (Android/Chrome) */}
+          <PWAInstallPrompt />
+          {/* iOS Safari install instructions */}
+          <IOSInstallPrompt />
+          <Routes>
+            {appRoutes.map(({ path, element, isProtected }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  isProtected ? <ProtectedRoute>{element}</ProtectedRoute> : element
+                }
+              />
+            ))}
+          </Routes>
+        </Suspense>
       </Router>
     </>
   );

@@ -1,3 +1,4 @@
+import { AppRoutePath } from '@/routes/paths';
 import { ActivityLevel, DayOfWeek, ExperienceLevel, Gender, Goal } from '@/types/enums';
 import { UserProfile } from '@/types/user';
 import { Button } from '@atoms/Button';
@@ -445,7 +446,7 @@ export function ProfilePage(): React.ReactElement {
                 variant="destructive"
                 onClick={(): void => {
                   clearAuth();
-                  navigate('/login');
+                  navigate(AppRoutePath.Login);
                 }}
               >
                 {t('auth.logout')}

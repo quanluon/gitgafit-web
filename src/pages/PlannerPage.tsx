@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { AppRoutePath } from '@/routes/paths';
 
 export function PlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -61,7 +62,7 @@ export function PlannerPage(): React.ReactElement {
       setSelectedDay(currentDay);
     } catch (err) {
       setError(t('workout.noPlanFound'));
-      setTimeout(() => navigate('/onboarding'), 2000);
+      setTimeout(() => navigate(AppRoutePath.Onboarding), 2000);
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +111,7 @@ export function PlannerPage(): React.ReactElement {
         dayOfWeek: selectedDay,
       });
       setCurrentSession(session);
-      navigate('/training');
+      navigate(AppRoutePath.Training);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error?.response?.data?.message || t('training.failedToStart'));
@@ -211,7 +212,7 @@ export function PlannerPage(): React.ReactElement {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={(): void => navigate('/onboarding')}
+                      onClick={(): void => navigate(AppRoutePath.Onboarding)}
                       disabled={quotaInfo?.isDepleted}
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
@@ -247,7 +248,7 @@ export function PlannerPage(): React.ReactElement {
                   {t('training.sessionFor')} {currentSession.dayOfWeek}
                 </p>
               </div>
-              <Button onClick={(): void => navigate('/training')}>
+              <Button onClick={(): void => navigate(AppRoutePath.Training)}>
                 {t('training.continueSession')}
               </Button>
             </div>
@@ -273,7 +274,7 @@ export function PlannerPage(): React.ReactElement {
           <WorkoutCard
             workout={todaysWorkout}
             onStartTraining={handleStartTraining}
-            onManage={(): void => navigate('/profile')}
+            onManage={(): void => navigate(AppRoutePath.Profile)}
             onViewDetails={(): void => setShowDetailsModal(true)}
             disabled={!!currentSession}
           />
