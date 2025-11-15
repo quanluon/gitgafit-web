@@ -22,31 +22,31 @@ export function DaySelector({
   const getDayLabel = (day: DayOfWeek): { short: string; full: string } => {
     const dayMap: Record<DayOfWeek, { short: string; full: string }> = {
       [DayOfWeek.MONDAY]: {
-        short: t('common.days.monday').slice(0, 3),
+        short: t('common.days.monday'),
         full: t('common.days.monday'),
       },
       [DayOfWeek.TUESDAY]: {
-        short: t('common.days.tuesday').slice(0, 3),
+        short: t('common.days.tuesday'),
         full: t('common.days.tuesday'),
       },
       [DayOfWeek.WEDNESDAY]: {
-        short: t('common.days.wednesday').slice(0, 3),
+        short: t('common.days.wednesday'),
         full: t('common.days.wednesday'),
       },
       [DayOfWeek.THURSDAY]: {
-        short: t('common.days.thursday').slice(0, 3),
+        short: t('common.days.thursday'),
         full: t('common.days.thursday'),
       },
       [DayOfWeek.FRIDAY]: {
-        short: t('common.days.friday').slice(0, 3),
+        short: t('common.days.friday'),
         full: t('common.days.friday'),
       },
       [DayOfWeek.SATURDAY]: {
-        short: t('common.days.saturday').slice(0, 3),
+        short: t('common.days.saturday'),
         full: t('common.days.saturday'),
       },
       [DayOfWeek.SUNDAY]: {
-        short: t('common.days.sunday').slice(0, 3),
+        short: t('common.days.sunday'),
         full: t('common.days.sunday'),
       },
     };

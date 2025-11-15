@@ -10,6 +10,8 @@ interface GeneratePlanRequest {
   weight?: number;
   height?: number;
   targetWeight?: number;
+  workoutTimeMinutes?: number;
+  notes?: string;
 }
 
 interface JobResponse {

@@ -81,13 +81,13 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
   const firstDayOfWeek = getFirstDayOfMonth(currentDate);
 
   const dayNames = [
-    t('common.days.monday').slice(0, 3),
-    t('common.days.tuesday').slice(0, 3),
-    t('common.days.wednesday').slice(0, 3),
-    t('common.days.thursday').slice(0, 3),
-    t('common.days.friday').slice(0, 3),
-    t('common.days.saturday').slice(0, 3),
-    t('common.days.sunday').slice(0, 3),
+    t('common.days.monday'),
+    t('common.days.tuesday'),
+    t('common.days.wednesday'),
+    t('common.days.thursday'),
+    t('common.days.friday'),
+    t('common.days.saturday'),
+    t('common.days.sunday'),
   ];
 
   return (

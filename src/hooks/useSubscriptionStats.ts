@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { userService } from '@services/userService';
-import { GenerationStats, SubscriptionStats } from '@/types/subscription';
+import { GenerationStats, SubscriptionStats, UNLIMITED_LIMIT } from '@/types/subscription';
 
 type UseSubscriptionStatsOptions = {
   loadOnMount?: boolean;
@@ -54,17 +54,18 @@ export function useSubscriptionStats(
     (type: GenerationTypeKey): QuotaInfo | null => {
       if (!stats) return null;
       const { remaining, limit, resetsOn, used } = stats[type] as GenerationStats;
-      const isUnlimited = limit === -1;
-      const limitLabel = isUnlimited ? '∞' : String(limit);
+      const isUnlimited = limit === UNLIMITED_LIMIT;
+      const limitLabel = isUnlimited ? '∞' : String(Math.max(0, limit));
+      const remainingDisplay = isUnlimited ? '∞' : String(Math.max(0, remaining));
       return {
         used,
         remaining,
         limit,
         resetsOn,
         isUnlimited,
-        isDepleted: remaining <= 0,
+        isDepleted: !isUnlimited && remaining <= 0,
         limitLabel,
-        formatted: `${remaining} / ${limitLabel}`,
+        formatted: `${remainingDisplay} / ${limitLabel}`,
       };
     },
     [stats],

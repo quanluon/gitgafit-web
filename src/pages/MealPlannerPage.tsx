@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
-import { RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
-import { Button } from '@atoms/Button';
-import { MacrosCard } from '@molecules/MacrosCard';
-import { MainLayout } from '@templates/MainLayout';
-import { useAuthStore } from '@store/authStore';
-import { useGenerationStore, GenerationType, GenerationStatus } from '@store/generationStore';
-import { mealService } from '@services/mealService';
-import { MealPlan, DailyMealPlan, Meal } from '@/types/meal';
 import { Language, MealType } from '@/types/enums';
-import { useLocaleStore } from '@store/localeStore';
+import { DailyMealPlan, Meal, MealPlan } from '@/types/meal';
+import { Button } from '@atoms/Button';
+import { Label } from '@atoms/Label';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
+import { MacrosCard } from '@molecules/MacrosCard';
+import { mealService } from '@services/mealService';
+import { useAuthStore } from '@store/authStore';
+import { GenerationStatus, GenerationType, useGenerationStore } from '@store/generationStore';
+import { useLocaleStore } from '@store/localeStore';
+import { MainLayout } from '@templates/MainLayout';
+import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 export function MealPlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -26,8 +27,8 @@ export function MealPlannerPage(): React.ReactElement {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
+  const [mealNotes, setMealNotes] = useState<string>('');
   const {
-    stats: subscriptionStats,
     refresh: refreshSubscriptionStats,
     formatQuotaDisplay,
     getQuotaInfo,
@@ -67,7 +68,7 @@ export function MealPlannerPage(): React.ReactElement {
     }
 
     // Check subscription quota for AI generation
-    if (useAI && subscriptionStats && subscriptionStats.meal.remaining <= 0) {
+    if (useAI && quotaInfo?.isDepleted) {
       toast.error(t('subscription.limitReached'));
       return;
     }
@@ -83,8 +84,9 @@ export function MealPlannerPage(): React.ReactElement {
       setIsGenerating(true);
       setError('');
 
+      const notesPayload = mealNotes.trim() || undefined;
       // Start background generation
-      const response = await mealService.generateMealPlan({ fullWeek, useAI });
+      const response = await mealService.generateMealPlan({ fullWeek, useAI, notes: notesPayload });
 
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.MEAL);
@@ -109,8 +111,8 @@ export function MealPlannerPage(): React.ReactElement {
     [MealType.SNACK]: t('meal.snack'),
   };
 
-  const mealQuotaDisplay = formatQuotaDisplay('meal');
-  const mealQuotaInfo = getQuotaInfo('meal');
+  const quotaDisplay = formatQuotaDisplay(GenerationType.MEAL);
+  const quotaInfo = getQuotaInfo(GenerationType.MEAL);
 
   const getMealIcon = (type: MealType): string => {
     const icons: Record<MealType, string> = {
@@ -151,16 +153,16 @@ export function MealPlannerPage(): React.ReactElement {
                   disabled={
                     isGenerating ||
                     hasActiveMealGeneration ||
-                    (subscriptionStats !== null && subscriptionStats.meal.remaining <= 0)
+                    !!(quotaInfo?.isDepleted)
                   }
                 >
                   <RefreshCw
                     className={`h-4 w-4 mr-2 ${isGenerating || hasActiveMealGeneration ? 'animate-spin' : ''}`}
                   />
                   {t('common.regenerate')}{' '}
-                  {mealQuotaDisplay && (
+                  {quotaDisplay && (
                     <div className="text-xs text-muted-foreground ml-1">
-                      {mealQuotaDisplay}
+                      {quotaDisplay}
                     </div>
                   )}
                 </Button>
@@ -177,25 +179,32 @@ export function MealPlannerPage(): React.ReactElement {
           </div>
         )}
 
+        <div className="rounded-lg border bg-card/40 p-4 space-y-2">
+          <Label>{t('meal.notesLabel')}</Label>
+          <textarea
+            className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            value={mealNotes}
+            onChange={(event): void => setMealNotes(event.target.value)}
+            placeholder={t('meal.notesPlaceholder') || ''}
+          />
+          <p className="text-xs text-muted-foreground">{t('meal.notesHelper')}</p>
+        </div>
+
         {/* No Plan Yet */}
         {!mealPlan && (
           <div className="text-center py-12 space-y-6">
             <p className="text-muted-foreground">{t('meal.noMealPlan')}</p>
 
             {/* Subscription Info */}
-            {mealQuotaInfo && (
+            {quotaInfo && (
               <div className="text-sm">
                 <span className="text-muted-foreground">{t('subscription.mealGenerations')}: </span>
                 <span
                   className={
-                    mealQuotaInfo.isDepleted ? 'text-destructive font-semibold' : 'text-primary font-semibold'
+                    quotaInfo.isDepleted ? 'text-destructive font-semibold' : 'text-primary font-semibold'
                   }
                 >
-                  {mealQuotaInfo.remaining} {t('subscription.remaining')}
-                </span>
-                <span className="text-muted-foreground">
-                  {' '}
-                  / {mealQuotaInfo.isUnlimited ? t('subscription.unlimited') : mealQuotaInfo.limit}
+                  {quotaInfo.formatted}
                 </span>
               </div>
             )}
@@ -207,14 +216,14 @@ export function MealPlannerPage(): React.ReactElement {
                 disabled={
                   isGenerating ||
                   hasActiveMealGeneration ||
-                  (subscriptionStats !== null && subscriptionStats.meal.remaining <= 0)
+                  !!(quotaInfo?.isDepleted)
                 }
               >
                 {isGenerating || hasActiveMealGeneration
                   ? t('generation.generating') || 'Generating...'
                   : t('meal.aiFullWeek')}
               </Button>
-              <Button
+              {/* <Button
                 onClick={(): Promise<void> => handleGeneratePlan(true, false)}
                 size="lg"
                 variant="outline"
@@ -223,10 +232,10 @@ export function MealPlannerPage(): React.ReactElement {
                 {isGenerating || hasActiveMealGeneration
                   ? t('generation.generating') || 'Generating...'
                   : t('meal.templateFullWeek')}
-              </Button>
+              </Button> */}
             </div>
 
-            {subscriptionStats && subscriptionStats.meal.remaining <= 0 && (
+            {quotaInfo?.isDepleted && (
               <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm max-w-sm mx-auto">
                 {t('subscription.upgradeToGenerate')}
               </div>

@@ -4,6 +4,8 @@ export enum SubscriptionPlan {
   ENTERPRISE = 'enterprise',
 }
 
+export const UNLIMITED_LIMIT = -1;
+
 export interface GenerationStats {
   used: number;
   limit: number;

@@ -1,3 +1,4 @@
+import { GenerationType } from '@/store/generationStore';
 import { DayOfWeek, PlanSource } from '@/types/enums';
 import { CustomPlanPayload, WorkoutDay, WorkoutPlan } from '@/types/workout';
 import { Button } from '@atoms/Button';
@@ -31,9 +32,9 @@ export function PlannerPage(): React.ReactElement {
   const [isCustomPlanModalOpen, setCustomPlanModalOpen] = useState<boolean>(false);
   const [editingPlan, setEditingPlan] = useState<WorkoutPlan | null>(null);
   const {
-    stats: subscriptionStats,
     refresh: refreshSubscriptionStats,
     formatQuotaDisplay,
+    getQuotaInfo,
   } = useSubscriptionStats();
 
   // Get current day
@@ -141,7 +142,8 @@ export function PlannerPage(): React.ReactElement {
   };
 
   const availableDays = currentPlan?.schedule.map((w) => w.dayOfWeek) || [];
-  const workoutQuotaDisplay = formatQuotaDisplay('workout');
+  const quotaDisplay = formatQuotaDisplay(GenerationType.WORKOUT);
+  const quotaInfo = getQuotaInfo(GenerationType.WORKOUT);
 
   if (isLoading) {
     return (
@@ -194,15 +196,13 @@ export function PlannerPage(): React.ReactElement {
                       variant="outline"
                       size="sm"
                       onClick={(): void => navigate('/onboarding')}
-                      disabled={
-                        subscriptionStats !== null && subscriptionStats.workout.remaining <= 0
-                      }
+                      disabled={quotaInfo?.isDepleted}
                     >
                       <RefreshCw className="mr-2 h-4 w-4" />
                       {t('common.regenerate')}
-                      {workoutQuotaDisplay && (
+                      {quotaDisplay && (
                         <div className="ml-1 text-xs text-muted-foreground">
-                          {workoutQuotaDisplay}
+                          {quotaDisplay}
                         </div>
                       )}
                     </Button>

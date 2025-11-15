@@ -12,9 +12,16 @@ import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
 import { UserProfile } from '@/types/user';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@atoms/Select';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
+import { UNLIMITED_LIMIT } from '@/types/subscription';
 
 type OnboardingStep = 'goal' | 'experience' | 'body' | 'schedule' | 'summary';
+
+type OnboardingForm = UserProfile & {
+  workoutTimeMinutes?: number;
+  workoutNotes?: string;
+};
 
 export function OnboardingPage(): React.ReactElement {
   const navigate = useNavigate();
@@ -23,7 +30,7 @@ export function OnboardingPage(): React.ReactElement {
   const { startGeneration, jobs } = useGenerationStore();
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('goal');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { stats: subscriptionStats } = useSubscriptionStats();
+  const { stats: subscriptionStats, getQuotaInfo } = useSubscriptionStats();
 
   // Check if there's already a workout generation in progress
   const hasActiveWorkoutGeneration = jobs.some(
@@ -37,7 +44,11 @@ export function OnboardingPage(): React.ReactElement {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<UserProfile>();
+  } = useForm<OnboardingForm>({
+    defaultValues: {
+      workoutTimeMinutes: 60,
+    },
+  });
 
   const formData = watch();
 
@@ -92,13 +103,13 @@ export function OnboardingPage(): React.ReactElement {
   ];
 
   const dayOptions = [
-    { value: DayOfWeek.MONDAY, label: t('common.days.monday').slice(0, 3) },
-    { value: DayOfWeek.TUESDAY, label: t('common.days.tuesday').slice(0, 3) },
-    { value: DayOfWeek.WEDNESDAY, label: t('common.days.wednesday').slice(0, 3) },
-    { value: DayOfWeek.THURSDAY, label: t('common.days.thursday').slice(0, 3) },
-    { value: DayOfWeek.FRIDAY, label: t('common.days.friday').slice(0, 3) },
-    { value: DayOfWeek.SATURDAY, label: t('common.days.saturday').slice(0, 3) },
-    { value: DayOfWeek.SUNDAY, label: t('common.days.sunday').slice(0, 3) },
+    { value: DayOfWeek.MONDAY, label: t('common.days.monday') },
+    { value: DayOfWeek.TUESDAY, label: t('common.days.tuesday') },
+    { value: DayOfWeek.WEDNESDAY, label: t('common.days.wednesday') },
+    { value: DayOfWeek.THURSDAY, label: t('common.days.thursday') },
+    { value: DayOfWeek.FRIDAY, label: t('common.days.friday') },
+    { value: DayOfWeek.SATURDAY, label: t('common.days.saturday') },
+    { value: DayOfWeek.SUNDAY, label: t('common.days.sunday') },
   ];
 
   const steps: OnboardingStep[] = ['goal', 'experience', 'body', 'schedule', 'summary'];
@@ -119,15 +130,18 @@ export function OnboardingPage(): React.ReactElement {
     }
   };
 
-  const onSubmit = async (data: UserProfile): Promise<void> => {
+  const onSubmit = async (data: OnboardingForm): Promise<void> => {
     // Prevent multiple submissions
     if (isLoading || hasActiveWorkoutGeneration) {
-      toast.error(t('generation.alreadyGenerating') || 'Your trainer is already creating a plan. Please wait.');
+      toast.error(
+        t('generation.alreadyGenerating') ||
+          'Your trainer is already creating a plan. Please wait.',
+      );
       return;
     }
 
     // Check subscription quota
-    if (subscriptionStats && subscriptionStats.workout.remaining <= 0) {
+    if (quotaInfo?.isDepleted) {
       toast.error(t('subscription.limitReached'));
       return;
     }
@@ -136,7 +150,15 @@ export function OnboardingPage(): React.ReactElement {
       setIsLoading(true);
 
       // Update user profile
-      const updatedUser = await userService.updateProfile(data);
+      const profilePayload: UserProfile = {
+        goal: data.goal,
+        experienceLevel: data.experienceLevel,
+        height: data.height,
+        weight: data.weight,
+        targetWeight: data.targetWeight,
+        scheduleDays: data.scheduleDays,
+      };
+      const updatedUser = await userService.updateProfile(profilePayload);
       updateUser(updatedUser);
 
       // Start background workout generation
@@ -147,6 +169,8 @@ export function OnboardingPage(): React.ReactElement {
         weight: data.weight,
         height: data.height,
         targetWeight: data.targetWeight,
+        workoutTimeMinutes: data.workoutTimeMinutes ?? 60,
+        notes: data.workoutNotes?.trim() || undefined,
       });
 
       // Start generation tracking in the floating bubble
@@ -163,6 +187,8 @@ export function OnboardingPage(): React.ReactElement {
       setIsLoading(false);
     }
   };
+
+  const quotaInfo = getQuotaInfo(GenerationType.WORKOUT);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -459,22 +485,74 @@ export function OnboardingPage(): React.ReactElement {
                 </div>
               </div>
 
+              <div className="space-y-4 rounded-lg border p-6">
+                <h3 className="text-lg font-semibold">{t('workout.generationPreferences')}</h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>{t('workout.sessionDuration')}</Label>
+                    <Controller
+                      control={control}
+                      name="workoutTimeMinutes"
+                      render={({ field }): React.ReactElement => (
+                        <Select
+                          value={`${field.value ?? 60}`}
+                          onValueChange={(value): void => field.onChange(Number(value))}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder={t('workout.sessionDuration')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[30, 45, 60].map((duration) => (
+                              <SelectItem key={duration} value={`${duration}`}>
+                                {duration} {t('workout.minutesSuffix')}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('workout.sessionDurationHelper')}
+                    </p>
+                  </div>
+                  <div className="md:col-span-2 space-y-2">
+                    <Label>{t('workout.notesLabel')}</Label>
+                    <textarea
+                      className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      {...register('workoutNotes')}
+                      placeholder={t('workout.notesPlaceholder') || ''}
+                    />
+                    <p className="text-xs text-muted-foreground">{t('workout.notesHelper')}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Subscription Info */}
               {subscriptionStats && (
                 <div className="text-sm text-center">
                   <span className="text-muted-foreground">
                     {t('subscription.workoutGenerations')}:{' '}
                   </span>
-                  <span className={subscriptionStats.workout.remaining > 0 ? 'text-primary font-semibold' : 'text-destructive font-semibold'}>
-                    {subscriptionStats.workout.remaining} {t('subscription.remaining')}
+                  <span
+                    className={
+                      quotaInfo?.isDepleted
+                        ? 'text-primary font-semibold'
+                        : 'text-destructive font-semibold'
+                    }
+                  >
+                    {quotaInfo?.formatted}
                   </span>
                   <span className="text-muted-foreground">
-                    {' '}/ {subscriptionStats.workout.limit === -1 ? t('subscription.unlimited') : subscriptionStats.workout.limit}
+                    {' '}
+                    /{' '}
+                    {quotaInfo?.limit === UNLIMITED_LIMIT
+                      ? t('subscription.unlimited')
+                      : quotaInfo?.limit}
                   </span>
                 </div>
               )}
 
-              {subscriptionStats && subscriptionStats.workout.remaining <= 0 && (
+              {quotaInfo?.isDepleted && (
                 <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm text-center">
                   {t('subscription.upgradeToGenerate')}
                 </div>
@@ -488,9 +566,9 @@ export function OnboardingPage(): React.ReactElement {
                   type="submit"
                   className="flex-1"
                   disabled={
-                    isLoading || 
-                    hasActiveWorkoutGeneration || 
-                    (subscriptionStats !== null && subscriptionStats.workout.remaining <= 0)
+                    isLoading ||
+                    hasActiveWorkoutGeneration ||
+                    !!(quotaInfo?.isDepleted)
                   }
                 >
                   {isLoading || hasActiveWorkoutGeneration
