@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { ApiResponse } from '@/types/common';
 import { authService } from './authService';
+import { useAuthStore } from '@/store';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
@@ -61,7 +62,11 @@ class ApiService {
       },
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
+        const forceLogout = (): void => {
+          const authStore = useAuthStore.getState();
+          authStore.clearAuth();
+          window.location.href = '/login';
+        };
         // Check if error is 401 and we haven't retried yet
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
           // Prevent infinite loops for auth endpoints
@@ -71,9 +76,8 @@ class ApiService {
             originalRequest.url?.includes('/auth/register')
           ) {
             // If refresh or login failed, logout
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/login';
+            forceLogout();
+
             return Promise.reject(error);
           }
 
@@ -100,9 +104,7 @@ class ApiService {
 
           if (!refreshToken) {
             // No refresh token, logout
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/login';
+            forceLogout();
             return Promise.reject(error);
           }
 
@@ -112,16 +114,8 @@ class ApiService {
             const { accessToken, refreshToken: newRefreshToken } = response;
 
             // Update tokens in localStorage
-            localStorage.setItem('auth_token', accessToken);
-            localStorage.setItem('refresh_token', newRefreshToken);
-
-            // Dispatch event to update zustand store
-            if (typeof window !== 'undefined') {
-              const event = new CustomEvent('token-refreshed', {
-                detail: { accessToken, refreshToken: newRefreshToken },
-              });
-              window.dispatchEvent(event);
-            }
+            const authStore = useAuthStore.getState();
+            authStore.setTokens(accessToken, newRefreshToken);
 
             // Update auth header for original request
             if (originalRequest.headers) {
@@ -139,9 +133,7 @@ class ApiService {
             processQueue(refreshError as Error, null);
             isRefreshing = false;
 
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = '/login';
+            forceLogout();
 
             return Promise.reject(refreshError);
           }
@@ -159,4 +151,3 @@ class ApiService {
 
 export const apiService = new ApiService();
 export const apiClient = apiService.getClient();
-
