@@ -13,7 +13,7 @@ import { MainLayout } from '@templates/MainLayout';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,6 +23,7 @@ export function ProfilePage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, updateUser, clearAuth } = useAuthStore();
+  const { showSuccess, showError } = useToast();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedSection, setExpandedSection] = useState<CollapsibleSection>(null);
 
@@ -54,9 +55,9 @@ export function ProfilePage(): React.ReactElement {
       setIsLoading(true);
       const updatedUser = await userService.updateProfile(data);
       updateUser(updatedUser);
-      toast.success(t('profile.updateSuccess'));
+      showSuccess(t('profile.updateSuccess'));
     } catch (err) {
-      toast.error(t('profile.updateError'));
+      showError(t('profile.updateError'));
     } finally {
       setIsLoading(false);
     }

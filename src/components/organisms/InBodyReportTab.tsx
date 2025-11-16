@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import dayjs from 'dayjs';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
@@ -8,11 +8,10 @@ import { Label } from '@atoms/Label';
 import { inbodyService } from '@services/inbodyService';
 import { InbodyMetricsSummary } from '@/types/inbody';
 import { validateImage, ValidationResult } from '@/utils/imageValidation';
-import { Camera, Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { GenerationType } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
-import { CameraModal } from '@organisms/CameraModal';
 import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
 import { socketService, WebSocketEvent } from '@services/socketService';
 
@@ -25,6 +24,7 @@ interface InBodyReportTabProps {
 
 export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): React.ReactElement {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const { refresh } = useSubscriptionStats();
   const [file, setFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<Date>(() => new Date());
@@ -33,7 +33,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [metrics, setMetrics] = useState<InbodyMetricsSummary | undefined>();
   const [s3Url, setS3Url] = useState<string>('');
-  const [showCamera, setShowCamera] = useState<boolean>(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -59,23 +58,19 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         setShowPreview(false);
         setMetrics(undefined);
         setS3Url('');
-        toast.success(t('inbody.imageValid'), { duration: 2000 });
+        showSuccess(t('inbody.imageValid'), { duration: 2000 });
       } else {
         const errorMessages = validation.errorKeys.map((key: string) => t(key)).join('. ');
-        toast.error(errorMessages || t('inbody.imageInvalid'), { duration: 5000 });
+        showError(errorMessages || t('inbody.imageInvalid'), { duration: 5000 });
       }
     } catch (error) {
       console.error('Validation error:', error);
-      toast.error(t('inbody.validationError'), { duration: 4000 });
+      showError(t('inbody.validationError'), { duration: 4000 });
     } finally {
       setIsValidating(false);
     }
   };
 
-  const handleCameraCapture = async (file: File): Promise<void> => {
-    await validateAndSetFile(file);
-    setShowCamera(false);
-  };
 
   useEffect(() => {
     const handleStarted = (data: {
@@ -111,8 +106,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         setProgressMessage('');
       }, 500);
       if (data.message) {
-        toast.dismiss('inbody-scan');
-        toast.success(data.message, { id: 'inbody-scan', duration: 3000 });
+        showSuccess(data.message, { id: 'inbody-scan', duration: 3000 });
       }
     };
 
@@ -121,8 +115,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       setProgress(0);
       setProgressMessage('');
       if (data.message) {
-        toast.dismiss('inbody-scan');
-        toast.error(data.message, { id: 'inbody-scan', duration: 4000 });
+        showError(data.message, { id: 'inbody-scan', duration: 4000 });
       }
     };
 
@@ -150,7 +143,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
 
   const handleScan = async (): Promise<void> => {
     if (!file) {
-      toast.error(t('inbody.fileRequired'));
+      showError(t('inbody.fileRequired'));
       return;
     }
 
@@ -175,12 +168,12 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       setOcrText(result.ocrText || '');
       setMetrics(result.metrics);
       setShowPreview(true);
-      toast.success(t('inbody.scanSuccess'), { duration: 3000 });
+      showSuccess(t('inbody.scanSuccess'), { duration: 3000 });
       await refresh();
       await onRefresh?.();
     } catch (error) {
       console.error('Scan failed', error);
-      toast.error(t('inbody.scanError'), { duration: 4000 });
+      showError(t('inbody.scanError'), { duration: 4000 });
     } finally {
       setIsScanning(false);
     }
@@ -188,11 +181,11 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
 
   const handleProcess = async (): Promise<void> => {
     if (!file || !ocrText.trim()) {
-      toast.error(t('inbody.ocrTextRequired'));
+      showError(t('inbody.ocrTextRequired'));
       return;
     }
     if (quota?.isDepleted) {
-      toast.error(t('subscription.limitReached'));
+      showError(t('subscription.limitReached'));
       return;
     }
 
@@ -215,7 +208,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         takenAt: takenAt ? dayjs(takenAt).toISOString() : undefined,
       });
 
-      toast.success(t('inbody.processSuccess'), { duration: 3000 });
+      showSuccess(t('inbody.processSuccess'), { duration: 3000 });
       setFile(null);
       setOcrText('');
       setTakenAt(new Date());
@@ -226,7 +219,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       await onRefresh?.();
     } catch (error) {
       console.error('Process failed', error);
-      toast.error(t('inbody.processError'), { duration: 4000 });
+      showError(t('inbody.processError'), { duration: 4000 });
     } finally {
       setIsLoading(false);
     }
@@ -263,7 +256,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
                 disabled={isLoading || isScanning || isValidating}
                 className="flex-1"
               />
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={(): void => setShowCamera(true)}
@@ -271,7 +264,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
                 className="gap-2"
               >
                 <Camera className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </div>
           </div>
           <div className="space-y-2">
@@ -344,13 +337,13 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         </Button>
       )}
 
-      <CameraModal
+      {/* <CameraModal
         isOpen={showCamera}
         onClose={(): void => setShowCamera(false)}
         onCapture={handleCameraCapture}
         facingMode="environment"
         title={t('inbody.cameraTitle')}
-      />
+      /> */}
 
       <AnalysisProgressModal
         isOpen={isScanning}

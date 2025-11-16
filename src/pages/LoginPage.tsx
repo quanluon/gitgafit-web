@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { Button } from '@atoms/Button';
 import { FormField } from '@molecules/FormField';
 import { useAuthStore } from '@store/authStore';
@@ -17,6 +17,7 @@ interface LoginFormData {
 export function LoginPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { setAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -31,12 +32,12 @@ export function LoginPage(): React.ReactElement {
       setIsLoading(true);
       const response = await authService.login(data);
       setAuth(response.accessToken, response.refreshToken, response.user);
-      toast.success(t('auth.loginSuccess'));
+      showSuccess(t('auth.loginSuccess'));
       navigate('/');
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage = error?.response?.data?.message || t('auth.loginError') || 'Invalid email or password';
-      toast.error(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }

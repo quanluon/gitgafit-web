@@ -150,6 +150,62 @@ export function SubscriptionCard(): React.ReactElement {
             </span>
           </div>
         </div>
+
+        {/* InBody Scans */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium">{t('subscription.inbodyScans')}</span>
+            <span className="text-muted-foreground">
+              {stats.inbody.limit === -1
+                ? t('subscription.unlimited')
+                : `${stats.inbody.remaining} ${t('subscription.remaining')}`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full ${getProgressColor(stats.inbody.remaining, stats.inbody.limit)} transition-all`}
+                style={{
+                  width:
+                    stats.inbody.limit === -1
+                      ? '100%'
+                      : `${((stats.inbody.limit - stats.inbody.used) / stats.inbody.limit) * 100}%`,
+                }}
+              />
+            </div>
+            <span className="text-xs text-muted-foreground text-right">
+              {stats.inbody.limit === -1 ? '∞' : `${stats.inbody.used}/${stats.inbody.limit}`}
+            </span>
+          </div>
+        </div>
+
+        {/* Body Photo Analysis */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium">{t('subscription.bodyPhotoAnalysis')}</span>
+            <span className="text-muted-foreground">
+              {stats.bodyPhoto.limit === -1
+                ? t('subscription.unlimited')
+                : `${stats.bodyPhoto.remaining} ${t('subscription.remaining')}`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-full ${getProgressColor(stats.bodyPhoto.remaining, stats.bodyPhoto.limit)} transition-all`}
+                style={{
+                  width:
+                    stats.bodyPhoto.limit === -1
+                      ? '100%'
+                      : `${((stats.bodyPhoto.limit - stats.bodyPhoto.used) / stats.bodyPhoto.limit) * 100}%`,
+                }}
+              />
+            </div>
+            <span className="text-xs text-muted-foreground text-right">
+              {stats.bodyPhoto.limit === -1 ? '∞' : `${stats.bodyPhoto.used}/${stats.bodyPhoto.limit}`}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Upgrade Section (only for non-enterprise) */}

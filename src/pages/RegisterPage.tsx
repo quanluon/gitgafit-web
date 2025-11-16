@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { Button } from '@atoms/Button';
 import { FormField } from '@molecules/FormField';
 import { useAuthStore } from '@store/authStore';
@@ -19,6 +19,7 @@ interface RegisterFormData {
 export function RegisterPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { setAuth } = useAuthStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -39,12 +40,12 @@ export function RegisterPage(): React.ReactElement {
         password: data.password,
       });
       setAuth(response.accessToken, response.refreshToken, response.user);
-      toast.success(t('auth.registerSuccess'));
+      showSuccess(t('auth.registerSuccess'));
       navigate(AppRoutePath.Onboarding);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage = error?.response?.data?.message || t('auth.registerError') || 'Registration failed. Please try again.';
-      toast.error(errorMessage);
+      showError(errorMessage);
     } finally {
       setIsLoading(false);
     }

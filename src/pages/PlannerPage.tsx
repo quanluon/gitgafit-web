@@ -14,7 +14,7 @@ import { useWorkoutStore } from '@store/workoutStore';
 import { MainLayout } from '@templates/MainLayout';
 import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutePath } from '@/routes/paths';
@@ -22,6 +22,7 @@ import { AppRoutePath } from '@/routes/paths';
 export function PlannerPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { currentPlan, setCurrentPlan, setTodaysWorkout } = useWorkoutStore();
   const { currentSession, setCurrentSession } = useTrainingStore();
   const { jobs } = useGenerationStore();
@@ -125,13 +126,13 @@ export function PlannerPage(): React.ReactElement {
       setSelectedDay(plan.schedule[0]?.dayOfWeek ?? null);
       setTodaysWorkoutLocal(plan.schedule[0] ?? null);
       setTodaysWorkout(plan.schedule[0] ?? null);
-      toast.success(t('workout.customPlanCreated'));
+      showSuccess(t('workout.customPlanCreated'));
       setCustomPlanModalOpen(false);
       setEditingPlan(null);
       await refreshSubscriptionStats();
     } catch (error) {
       console.error('Failed to create custom plan:', error);
-      toast.error(t('workout.failedToCreatePlan'));
+      showError(t('workout.failedToCreatePlan'));
     }
   };
 
@@ -139,11 +140,11 @@ export function PlannerPage(): React.ReactElement {
     if (!currentPlan) return;
     try {
       await workoutService.deletePlan(currentPlan._id);
-      toast.success(t('workout.customPlanDeleted'));
+      showSuccess(t('workout.customPlanDeleted'));
       await loadWorkoutPlan();
     } catch (error) {
       console.error('Failed to delete plan:', error);
-      toast.error(t('workout.failedToDeletePlan'));
+      showError(t('workout.failedToDeletePlan'));
     }
   };
 

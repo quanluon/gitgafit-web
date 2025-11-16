@@ -5,10 +5,11 @@ import { useLocaleStore } from '@store/localeStore';
 import { useAuthStore } from '@store/authStore';
 import { userService } from '@services/userService';
 import { Language } from '@/types/enums';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 
 export function LanguageSelector(): React.ReactElement {
   const { language, setLanguage } = useLocaleStore();
+  const { showError } = useToast();
   const { updateUser } = useAuthStore();
 
   const languageOptions = [
@@ -26,7 +27,7 @@ export function LanguageSelector(): React.ReactElement {
       updateUser(updatedUser);
     } catch (error) {
       console.error('Failed to update language:', error);
-      toast.error('Failed to update language');
+      showError('Failed to update language');
       // Revert on error
       setLanguage(language);
     }

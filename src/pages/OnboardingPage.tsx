@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
@@ -25,6 +25,7 @@ type OnboardingForm = UserProfile & {
 export function OnboardingPage(): React.ReactElement {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const { user, updateUser } = useAuthStore();
   const { startGeneration, jobs } = useGenerationStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -147,7 +148,7 @@ export function OnboardingPage(): React.ReactElement {
   const onSubmit = async (data: OnboardingForm): Promise<void> => {
     // Prevent multiple submissions
     if (isLoading || hasActiveWorkoutGeneration) {
-      toast.error(
+      showError(
         t('generation.alreadyGenerating') ||
           'Your trainer is already creating a plan. Please wait.',
       );
@@ -156,7 +157,7 @@ export function OnboardingPage(): React.ReactElement {
 
     // Check subscription quota
     if (quotaInfo?.isDepleted) {
-      toast.error(t('subscription.limitReached'));
+      showError(t('subscription.limitReached'));
       return;
     }
 
@@ -190,7 +191,7 @@ export function OnboardingPage(): React.ReactElement {
       // Start generation tracking in the floating bubble
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.WORKOUT);
-        toast.success(t('generation.workoutPlan') + ' ' + t('generation.generationStarted'));
+        showSuccess(t('generation.workoutPlan') + ' ' + t('generation.generationStarted'));
         resetDraft();
         reset({
           workoutTimeMinutes: 60,
@@ -201,7 +202,7 @@ export function OnboardingPage(): React.ReactElement {
       }
     } catch (err) {
       console.error('Onboarding failed:', err);
-      toast.error(t('onboarding.generationFailed'));
+      showError(t('onboarding.generationFailed'));
     } finally {
       setIsLoading(false);
     }

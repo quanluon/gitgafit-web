@@ -4,7 +4,7 @@ import { GenerationStatus, GenerationType, useGenerationStore } from '@store/gen
 import { CheckCircle, ChevronDown, Loader2, X, XCircle } from 'lucide-react';
 import React, { useEffect } from 'react';
 import Draggable from 'react-draggable';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 export function GenerationProgress(): React.ReactElement | null {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { showSuccess, showError, dismiss } = useToast();
   const { jobs, isExpanded, toggleExpanded, clearJob, setExpanded } = useGenerationStore();
 
   // Track which jobs have shown toasts to prevent duplicates
@@ -59,7 +60,7 @@ export function GenerationProgress(): React.ReactElement | null {
       setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
 
       // Show toast
-      toast.success(
+      showSuccess(
         (toastInstance) => (
           <div className="flex items-center gap-3">
             <div className="flex-1">
@@ -69,7 +70,7 @@ export function GenerationProgress(): React.ReactElement | null {
             <Button
               size="sm"
               onClick={() => {
-                toast.dismiss(toastInstance.id);
+                dismiss(toastInstance.id);
                 navigate(route);
                 clearJob(job.jobId);
               }}
@@ -102,7 +103,7 @@ export function GenerationProgress(): React.ReactElement | null {
       setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
 
       // Show error toast
-      toast.error(job.error || t('generation.failed'), {
+      showError(job.error || t('generation.failed'), {
         duration: 5000,
         position: 'top-center',
         id: `error-${job.jobId}`,

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import dayjs from 'dayjs';
 import { Button } from '@atoms/Button';
 import { MainLayout } from '@templates/MainLayout';
@@ -23,6 +23,7 @@ type TabType = 'report' | 'photo';
 export function InbodyPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showError } = useToast();
   const { getQuotaInfo } = useSubscriptionStats();
   const { language } = useLocaleStore();
   const currentLang = language as Language;
@@ -56,7 +57,7 @@ export function InbodyPage(): React.ReactElement {
         setResults(data);
       } catch (error) {
         console.error('Failed to load InBody results', error);
-        toast.error(t('inbody.loadError'));
+        showError(t('inbody.loadError'));
       }
     },
     [t],
@@ -119,7 +120,7 @@ export function InbodyPage(): React.ReactElement {
 
         <div className="p-4 space-y-4 border rounded-lg bg-card relative">
           {isAnalyzing && (
-            <div className="top-[-16px] fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center">
+            <div className="top-[-25px] fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center">
               <div className="flex flex-col items-center gap-4">
                 <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 <div className="text-sm font-medium text-muted-foreground">
@@ -226,11 +227,11 @@ export function InbodyPage(): React.ReactElement {
                             ? dayjs(result.takenAt).format('DD MMM YYYY')
                             : t('inbody.unknownDate')}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {result.metrics?.bodyFatPercent
-                            ? t('inbody.bodyFatLabel', { value: result.metrics.bodyFatPercent })
-                            : t('inbody.noMetrics')}
-                        </div>
+                        {!!result.metrics?.bodyFatPercent && (
+                          <div className="text-sm text-muted-foreground">
+                            {t('inbody.bodyFatLabel', { value: result.metrics.bodyFatPercent })}
+                          </div>
+                        )}
                       </div>
                       <span
                         className={cn('text-xs font-semibold px-2 py-1 rounded-full', statusStyles)}
@@ -255,7 +256,10 @@ export function InbodyPage(): React.ReactElement {
                             ) {
                               const translatable = analysis as Translatable;
                               const text =
-                                translatable[currentLang] || translatable.vi || translatable.en || '';
+                                translatable[currentLang] ||
+                                translatable.vi ||
+                                translatable.en ||
+                                '';
                               return text.slice(0, 100) + (text.length > 100 ? '...' : '');
                             }
                             // New format: Structured object

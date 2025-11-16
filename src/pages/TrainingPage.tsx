@@ -12,7 +12,7 @@ import { indexedDBService } from '@services/indexeddb';
 import { Exercise } from '@/types/workout';
 import { Language } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { AppRoutePath } from '@/routes/paths';
 
 interface ExerciseSet {
@@ -31,6 +31,7 @@ interface ExerciseWithIndex extends Exercise {
 export function TrainingPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showError } = useToast();
   const { language } = useLocaleStore();
   const { todaysWorkout } = useWorkoutStore();
   const { currentSession, clearSession } = useTrainingStore();
@@ -125,7 +126,7 @@ export function TrainingPage(): React.ReactElement {
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage = error?.response?.data?.message || t('training.failedToLog') || 'Failed to log exercise. Please try again.';
-      toast.error(errorMessage);
+      showError(errorMessage);
     }
   };
 

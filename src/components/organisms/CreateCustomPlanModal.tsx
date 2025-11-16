@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, Plus, Trash2, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
@@ -46,6 +46,7 @@ export function CreateCustomPlanModal({
 }: CreateCustomPlanModalProps): React.ReactElement | null {
   const { t, i18n } = useTranslation();
   const language = (i18n.language as Language) || Language.EN;
+  const { showSuccess, showError } = useToast();
   const [title, setTitle] = useState('');
   const [schedule, setSchedule] = useState<WorkoutDay[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -113,7 +114,7 @@ export function CreateCustomPlanModal({
       });
       return draft;
     });
-    toast.success(
+    showSuccess(
       t('workout.libraryAdded', { exercise: exercise.name[language] || exercise.name.en }),
     );
   };
@@ -211,7 +212,7 @@ export function CreateCustomPlanModal({
 
   const handleSave = async (): Promise<void> => {
     if (validationMessage) {
-      toast.error(validationMessage);
+      showError(validationMessage);
       return;
     }
 
@@ -224,14 +225,14 @@ export function CreateCustomPlanModal({
       onClose();
     } catch (error) {
       console.error('Failed to save custom plan:', error);
-      toast.error(t('workout.failedToCreatePlan'));
+      showError(t('workout.failedToCreatePlan'));
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="top-[-16px] fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="top-[-25px] fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg border bg-background">
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
@@ -545,7 +546,7 @@ function ExerciseLibraryPanel({
   }
 
   return createPortal(
-    <div className="top-[-16px] fixed inset-0 z-[70] bg-black/50">
+    <div className="top-[-25px] fixed inset-0 z-[70] bg-black/50">
       <div className="ml-auto flex h-full w-full max-w-lg flex-col bg-card px-6 py-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <div>

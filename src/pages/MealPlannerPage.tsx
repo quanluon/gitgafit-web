@@ -11,13 +11,14 @@ import { useLocaleStore } from '@store/localeStore';
 import { MainLayout } from '@templates/MainLayout';
 import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export function MealPlannerPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
 
@@ -76,7 +77,7 @@ export function MealPlannerPage(): React.ReactElement {
   const handleGeneratePlan = async (fullWeek = false, useAI = false): Promise<void> => {
     // Prevent multiple generations
     if (isGenerating || hasActiveMealGeneration) {
-      toast.error(
+      showError(
         t('generation.alreadyGenerating') ||
           'Your trainer is already creating a plan. Please wait.',
       );
@@ -85,7 +86,7 @@ export function MealPlannerPage(): React.ReactElement {
 
     // Check subscription quota for AI generation
     if (useAI && quotaInfo?.isDepleted) {
-      toast.error(t('subscription.limitReached'));
+      showError(t('subscription.limitReached'));
       return;
     }
 
@@ -106,13 +107,13 @@ export function MealPlannerPage(): React.ReactElement {
 
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.MEAL);
-        toast.success(t('generation.mealPlan') + ' ' + t('generation.generationStarted'));
+        showSuccess(t('generation.mealPlan') + ' ' + t('generation.generationStarted'));
         // Reload subscription stats after starting generation
         void refreshSubscriptionStats();
       }
     } catch (err) {
       setError('Failed to start meal plan generation');
-      toast.error('Failed to start meal plan generation');
+      showError('Failed to start meal plan generation');
     } finally {
       setIsGenerating(false);
     }

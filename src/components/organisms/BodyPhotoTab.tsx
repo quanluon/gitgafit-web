@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import toast from 'react-hot-toast';
+import { useToast } from '@/hooks/useToast';
 import dayjs from 'dayjs';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
@@ -10,7 +10,6 @@ import { validateImage, ValidationResult } from '@/utils/imageValidation';
 import { GenerationType } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { cn } from '@/utils/cn';
-import { CameraModal } from '@organisms/CameraModal';
 import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
 import { inbodyService } from '@/services/inbodyService';
 import { socketService, WebSocketEvent } from '@services/socketService';
@@ -31,9 +30,9 @@ export function BodyPhotoTab({
   onAnalyzingChange,
 }: BodyPhotoTabProps): React.ReactElement {
   const { t } = useTranslation();
+  const { showSuccess, showError } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<Date>(() => new Date());
-  const [showCamera, setShowCamera] = useState<boolean>(false);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -56,23 +55,19 @@ export function BodyPhotoTab({
 
       if (validation.isValid) {
         setFile(fileToValidate);
-        toast.success(t('inbody.imageValid'), { duration: 2000 });
+        showSuccess(t('inbody.imageValid'), { duration: 2000 });
       } else {
         const errorMessages = validation.errorKeys.map((key: string) => t(key)).join('. ');
-        toast.error(errorMessages || t('inbody.imageInvalid'), { duration: 5000 });
+        showError(errorMessages || t('inbody.imageInvalid'), { duration: 5000 });
       }
     } catch (error) {
       console.error('Validation error:', error);
-      toast.error(t('inbody.validationError'), { duration: 4000 });
+      showError(t('inbody.validationError'), { duration: 4000 });
     } finally {
       setIsValidating(false);
     }
   };
 
-  const handleCameraCapture = async (file: File): Promise<void> => {
-    await validateAndSetFile(file);
-    setShowCamera(false);
-  };
 
   useEffect(() => {
     const handleStarted = (data: {
@@ -110,8 +105,7 @@ export function BodyPhotoTab({
         setProgressMessage('');
         onAnalyzingChange?.(false);
       }, 500);
-      toast.dismiss('body-photo-analysis');
-      toast.success(data.message || t('inbody.bodyPhoto.analysisStarted'), {
+      showSuccess(data.message || t('inbody.bodyPhoto.analysisStarted'), {
         id: 'body-photo-analysis',
         duration: 3000,
       });
@@ -125,8 +119,7 @@ export function BodyPhotoTab({
       setProgress(0);
       setProgressMessage('');
       onAnalyzingChange?.(false);
-      toast.dismiss('body-photo-analysis');
-      toast.error(data.message || t('inbody.bodyPhoto.analysisError'), {
+      showError(data.message || t('inbody.bodyPhoto.analysisError'), {
         id: 'body-photo-analysis',
         duration: 4000,
       });
@@ -159,11 +152,11 @@ export function BodyPhotoTab({
 
   const handleAnalyze = async (): Promise<void> => {
     if (!file) {
-      toast.error(t('inbody.bodyPhoto.fileRequired'));
+      showError(t('inbody.bodyPhoto.fileRequired'));
       return;
     }
     if (quota?.isDepleted) {
-      toast.error(t('subscription.limitReached'));
+      showError(t('subscription.limitReached'));
       return;
     }
 
@@ -179,10 +172,10 @@ export function BodyPhotoTab({
         takenAt ? dayjs(takenAt).toISOString() : undefined,
       );
 
-      toast.success(t('inbody.bodyPhoto.analysisStarted'), { duration: 3000 });
+      showSuccess(t('inbody.bodyPhoto.analysisStarted'), { duration: 3000 });
     } catch (error) {
       console.error('Analysis failed', error);
-      toast.error(t('inbody.bodyPhoto.analysisError'), { duration: 4000 });
+      showError(t('inbody.bodyPhoto.analysisError'), { duration: 4000 });
       setIsAnalyzing(false);
       onAnalyzingChange?.(false);
     }
@@ -238,7 +231,7 @@ export function BodyPhotoTab({
                 <Upload className="h-4 w-4" />
                 {t('inbody.bodyPhoto.selectFromGallery')}
               </Button>
-              <Button
+              {/* <Button
                 type="button"
                 variant="outline"
                 onClick={(): void => setShowCamera(true)}
@@ -246,7 +239,7 @@ export function BodyPhotoTab({
                 className="gap-2"
               >
                 <Camera className="h-4 w-4" />
-              </Button>
+              </Button> */}
             </div>
           </div>
           <div className="space-y-2">
@@ -328,13 +321,13 @@ export function BodyPhotoTab({
         </div>
       </div>
 
-      <CameraModal
+      {/* <CameraModal
         isOpen={showCamera}
         onClose={(): void => setShowCamera(false)}
         onCapture={handleCameraCapture}
         facingMode="user"
         title={t('inbody.bodyPhoto.cameraTitle')}
-      />
+      /> */}
 
       <AnalysisProgressModal
         isOpen={isAnalyzing}

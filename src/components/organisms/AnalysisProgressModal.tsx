@@ -22,7 +22,7 @@ export function AnalysisProgressModal({
   if (!isOpen) return null;
 
   return (
-    <div className="top-[-16px] fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex items-center justify-center">
+    <div className="top-[-25px] fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex items-center justify-center">
       <div className="bg-card border rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
