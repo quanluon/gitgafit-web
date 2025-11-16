@@ -380,7 +380,14 @@
     "scanning": "Đang quét...",
     "scanSuccess": "Quét ảnh thành công!",
     "scanError": "Không thể quét ảnh. Vui lòng thử lại.",
+    "analyzing": "Đang phân tích...",
+    "progress": "Tiến độ",
     "analysisTitle": "Phân tích chi tiết",
+    "analysis": {
+      "bodyCompositionSummary": "Tóm tắt thành phần cơ thể",
+      "recommendations": "Khuyến nghị",
+      "trainingNutritionAdvice": "Lời khuyên về tập luyện và dinh dưỡng"
+    },
     "clickToViewAnalysis": "Nhấn để xem phân tích chi tiết",
     "noAnalysis": "Chưa có phân tích",
     "useCamera": "Dùng Camera",
@@ -417,6 +424,7 @@
       "cameraTitle": "Chụp ảnh cơ thể",
       "analyzeButton": "Phân tích ảnh",
       "analyzing": "Đang phân tích...",
+      "progress": "Tiến độ",
       "analysisStarted": "Đã bắt đầu phân tích! Chúng tôi sẽ thông báo khi hoàn tất.",
       "analysisError": "Không thể phân tích ảnh. Vui lòng thử lại.",
       "fileRequired": "Vui lòng chọn ảnh trước.",

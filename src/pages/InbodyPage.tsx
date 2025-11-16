@@ -28,9 +28,26 @@ export function InbodyPage(): React.ReactElement {
   const currentLang = language as Language;
   const [results, setResults] = useState<InbodyResult[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('report');
-  const [selectedAnalysis, setSelectedAnalysis] = useState<Translatable | null>(null);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<
+    | Translatable
+    | {
+        en: {
+          body_composition_summary: string;
+          recommendations: string[];
+          training_nutrition_advice: string;
+        };
+        vi: {
+          body_composition_summary: string;
+          recommendations: string[];
+          training_nutrition_advice: string;
+        };
+      }
+    | null
+  >(null);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
   const inbodyQuota = getQuotaInfo(GenerationType.INBODY);
+  const bodyPhotoQuota = getQuotaInfo(GenerationType.BODY_PHOTO);
 
   const loadResults = useMemo(
     () => async (): Promise<void> => {
@@ -51,7 +68,7 @@ export function InbodyPage(): React.ReactElement {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto p-4 space-b-6">
+      <div className="max-w-4xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">{t('inbody.title')}</h1>
@@ -65,35 +82,63 @@ export function InbodyPage(): React.ReactElement {
         {/* Tabs */}
         <div className="flex gap-2 border-b mb-4">
           <button
-            onClick={(): void => setActiveTab('report')}
+            onClick={(): void => {
+              if (!isAnalyzing) {
+                setActiveTab('report');
+              }
+            }}
+            disabled={isAnalyzing}
             className={cn(
               'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
               activeTab === 'report'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
+              isAnalyzing && 'opacity-50 cursor-not-allowed',
             )}
           >
             {t('inbody.tabs.report')}
           </button>
           <button
-            onClick={(): void => setActiveTab('photo')}
+            onClick={(): void => {
+              if (!isAnalyzing) {
+                setActiveTab('photo');
+              }
+            }}
+            disabled={isAnalyzing}
             className={cn(
               'px-4 py-2 text-sm font-medium border-b-2 transition-colors',
               activeTab === 'photo'
                 ? 'border-primary text-primary'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
+              isAnalyzing && 'opacity-50 cursor-not-allowed',
             )}
           >
             {t('inbody.tabs.photo')}
           </button>
         </div>
 
-        <div className="p-4 space-y-4 border rounded-lg bg-card">
-          {activeTab === 'report' ? (
-            <InBodyReportTab quota={inbodyQuota} onRefresh={loadResults} />
-          ) : (
-            <BodyPhotoTab quota={inbodyQuota} onRefresh={loadResults} />
+        <div className="p-4 space-y-4 border rounded-lg bg-card relative">
+          {isAnalyzing && (
+            <div className="top-[-16px] fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                <div className="text-sm font-medium text-muted-foreground">
+                  {t('inbody.bodyPhoto.analyzing')}
+                </div>
+              </div>
+            </div>
           )}
+          {/* Keep both tabs mounted to preserve state */}
+          <div className={cn(activeTab !== 'report' && 'hidden')}>
+            <InBodyReportTab quota={inbodyQuota} onRefresh={loadResults} />
+          </div>
+          <div className={cn(activeTab !== 'photo' && 'hidden')}>
+            <BodyPhotoTab
+              quota={bodyPhotoQuota}
+              onRefresh={loadResults}
+              onAnalyzingChange={setIsAnalyzing}
+            />
+          </div>
         </div>
 
         <div className="p-4 space-y-4 border rounded-lg bg-card">
@@ -132,13 +177,43 @@ export function InbodyPage(): React.ReactElement {
                     onClick={(e): void => {
                       e.stopPropagation();
                       if (hasAnalysis) {
-                        setSelectedAnalysis(result.aiAnalysis as Translatable);
+                        setSelectedAnalysis(
+                          result.aiAnalysis as
+                            | Translatable
+                            | {
+                                en: {
+                                  body_composition_summary: string;
+                                  recommendations: string[];
+                                  training_nutrition_advice: string;
+                                };
+                                vi: {
+                                  body_composition_summary: string;
+                                  recommendations: string[];
+                                  training_nutrition_advice: string;
+                                };
+                              },
+                        );
                       }
                     }}
                     onKeyDown={(e): void => {
                       if ((e.key === 'Enter' || e.key === ' ') && hasAnalysis) {
                         e.preventDefault();
-                        setSelectedAnalysis(result.aiAnalysis as Translatable);
+                        setSelectedAnalysis(
+                          result.aiAnalysis as
+                            | Translatable
+                            | {
+                                en: {
+                                  body_composition_summary: string;
+                                  recommendations: string[];
+                                  training_nutrition_advice: string;
+                                };
+                                vi: {
+                                  body_composition_summary: string;
+                                  recommendations: string[];
+                                  training_nutrition_advice: string;
+                                };
+                              },
+                        );
                       }
                     }}
                     role={hasAnalysis ? 'button' : undefined}
@@ -170,9 +245,39 @@ export function InbodyPage(): React.ReactElement {
                         </div>
                         <div className="text-muted-foreground text-xs">
                           {((): string => {
-                            const analysis = result.aiAnalysis as unknown as Translatable;
-                            const text = analysis[currentLang] || analysis.vi || analysis.en || '';
-                            return text.slice(0, 100) + (text.length > 100 ? '...' : '');
+                            const analysis = result.aiAnalysis;
+                            if (!analysis) return '';
+                            // Old format: Translatable (string)
+                            if (
+                              typeof analysis === 'object' &&
+                              'en' in analysis &&
+                              typeof analysis.en === 'string'
+                            ) {
+                              const translatable = analysis as Translatable;
+                              const text =
+                                translatable[currentLang] || translatable.vi || translatable.en || '';
+                              return text.slice(0, 100) + (text.length > 100 ? '...' : '');
+                            }
+                            // New format: Structured object
+                            if (
+                              typeof analysis === 'object' &&
+                              'en' in analysis &&
+                              typeof analysis.en === 'object' &&
+                              analysis.en !== null &&
+                              'body_composition_summary' in analysis.en
+                            ) {
+                              const structured = analysis as {
+                                en: { body_composition_summary: string };
+                                vi: { body_composition_summary: string };
+                              };
+                              const summary =
+                                structured[currentLang]?.body_composition_summary ||
+                                structured.vi?.body_composition_summary ||
+                                structured.en?.body_composition_summary ||
+                                '';
+                              return summary.slice(0, 100) + (summary.length > 100 ? '...' : '');
+                            }
+                            return '';
                           })()}
                         </div>
                       </div>

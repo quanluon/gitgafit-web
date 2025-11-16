@@ -25,10 +25,23 @@ export enum WebSocketEvent {
   INBODY_OCR_PROGRESS = 'inbody-ocr-progress',
   INBODY_OCR_COMPLETE = 'inbody-ocr-complete',
   INBODY_OCR_ERROR = 'inbody-ocr-error',
+
+  // InBody scan events
+  INBODY_SCAN_STARTED = 'inbody.scan.started',
+  INBODY_SCAN_PROGRESS = 'inbody.scan.progress',
+  INBODY_SCAN_COMPLETE = 'inbody.scan.complete',
+  INBODY_SCAN_ERROR = 'inbody.scan.error',
+
+  // Body photo analysis events
+  BODY_PHOTO_ANALYSIS_STARTED = 'body-photo.analysis.started',
+  BODY_PHOTO_ANALYSIS_PROGRESS = 'body-photo.analysis.progress',
+  BODY_PHOTO_ANALYSIS_COMPLETE = 'body-photo.analysis.complete',
+  BODY_PHOTO_ANALYSIS_ERROR = 'body-photo.analysis.error',
 }
 
 interface NotificationPayload {
-  jobId: string | number;
+  jobId?: string | number;
+  resultId?: string;
   progress?: number;
   message?: string;
   planId?: string;

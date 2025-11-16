@@ -5,7 +5,8 @@ import { socketService, WebSocketEvent } from '@services/socketService';
 import { queueService } from '@services/queueService';
 
 interface NotificationPayload {
-  jobId: string | number;
+  jobId?: string | number;
+  resultId?: string;
   progress?: number;
   message?: string;
   planId?: string;

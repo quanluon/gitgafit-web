@@ -10,4 +10,5 @@ export * from './InbodyAnalysisModal';
 export * from './InBodyReportTab';
 export * from './BodyPhotoTab';
 export * from './CameraModal';
+export * from './AnalysisProgressModal';
 

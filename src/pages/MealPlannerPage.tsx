@@ -263,7 +263,7 @@ export function MealPlannerPage(): React.ReactElement {
         {mealPlan && (
           <>
             {/* TDEE & Macros Overview */}
-            <div className="space-b-4">
+            <div className="space-y-4">
               <h2 className="text-xl font-bold">{t('meal.nutritionTargets')}</h2>
 
               <div className="bg-card border rounded-lg p-6 space-y-4">
@@ -290,7 +290,7 @@ export function MealPlannerPage(): React.ReactElement {
             </div>
 
             {/* Weekly Meal Schedule */}
-            <div className="space-b-4">
+            <div className="space-y-4">
               <h2 className="text-xl font-bold">{t('meal.weeklyPlan')}</h2>
 
               {mealPlan.schedule.map((day: DailyMealPlan) => {

@@ -42,7 +42,7 @@ class InbodyService {
     const response = await apiClient.post<ApiResponse<{ metrics: InbodyMetricsSummary; ocrText?: string }>>(
       '/inbody/scan',
       {
-        url,
+        s3Url:url,
         originalFilename: filename,
         takenAt,
       },
@@ -64,6 +64,19 @@ class InbodyService {
 
   async getDetail(id: string): Promise<InbodyResult> {
     const response = await apiClient.get<ApiResponse<InbodyResult>>(`/inbody/${id}`);
+    return response.data.data!;
+  }
+
+  async analyzeBodyPhoto(
+    s3Url: string,
+    originalFilename: string,
+    takenAt?: string,
+  ): Promise<InbodyResult> {
+    const response = await apiClient.post<ApiResponse<InbodyResult>>('/inbody/body-photo', {
+      s3Url,
+      originalFilename,
+      takenAt,
+    });
     return response.data.data!;
   }
 }

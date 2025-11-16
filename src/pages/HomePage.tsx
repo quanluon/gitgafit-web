@@ -186,7 +186,7 @@ export function HomePage(): React.ReactElement {
 
           {/* Awards */}
           {!isLoading && awards.length > 0 && (
-            <div className="space-b-4">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">{t('home.awards')}</h2>
                 <Button variant="ghost" size="sm" onClick={(): void => navigate(AppRoutePath.Statistics)}>

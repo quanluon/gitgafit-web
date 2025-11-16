@@ -4,6 +4,7 @@ export enum GenerationType {
   WORKOUT = 'workout',
   MEAL = 'meal',
   INBODY = 'inbody',
+  BODY_PHOTO = 'bodyPhoto',
 }
 
 export enum GenerationStatus {

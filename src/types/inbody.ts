@@ -40,7 +40,20 @@ export interface InbodyResult {
   originalFilename: string;
   ocrText?: string;
   metrics?: InbodyMetricsSummary;
-  aiAnalysis?: Translatable;
+  aiAnalysis?:
+    | Translatable
+    | {
+        en: {
+          body_composition_summary: string;
+          recommendations: string[];
+          training_nutrition_advice: string;
+        };
+        vi: {
+          body_composition_summary: string;
+          recommendations: string[];
+          training_nutrition_advice: string;
+        };
+      };
   takenAt?: string;
   createdAt: string;
   updatedAt: string;

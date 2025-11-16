@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
@@ -13,11 +13,13 @@ import { cn } from '@/utils/cn';
 import { GenerationType } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { CameraModal } from '@organisms/CameraModal';
+import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
+import { socketService, WebSocketEvent } from '@services/socketService';
 
 interface InBodyReportTabProps {
   quota?: ReturnType<typeof useSubscriptionStats>['getQuotaInfo'] extends (type: GenerationType) => infer R
     ? R
-    : never;
+    : any;
   onRefresh?: () => Promise<void>;
 }
 
@@ -35,6 +37,8 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [progressMessage, setProgressMessage] = useState<string>('');
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const selectedFile = event.target.files?.[0];
@@ -55,14 +59,14 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         setShowPreview(false);
         setMetrics(undefined);
         setS3Url('');
-        toast.success(t('inbody.imageValid'));
+        toast.success(t('inbody.imageValid'), { duration: 2000 });
       } else {
         const errorMessages = validation.errorKeys.map((key: string) => t(key)).join('. ');
         toast.error(errorMessages || t('inbody.imageInvalid'), { duration: 5000 });
       }
     } catch (error) {
       console.error('Validation error:', error);
-      toast.error(t('inbody.validationError'));
+      toast.error(t('inbody.validationError'), { duration: 4000 });
     } finally {
       setIsValidating(false);
     }
@@ -72,6 +76,77 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
     await validateAndSetFile(file);
     setShowCamera(false);
   };
+
+  useEffect(() => {
+    const handleStarted = (data: {
+      message?: string;
+      progress?: number;
+    }): void => {
+      if (data.progress !== undefined) {
+        setProgress(data.progress);
+      }
+      if (data.message) {
+        setProgressMessage(data.message);
+        setIsScanning(true);
+      }
+    };
+
+    const handleProgress = (data: {
+      progress?: number;
+      message?: string;
+    }): void => {
+      if (data.progress !== undefined) {
+        setProgress(data.progress);
+      }
+      if (data.message) {
+        setProgressMessage(data.message);
+      }
+    };
+
+    const handleComplete = (data: { message?: string }): void => {
+      setProgress(100);
+      setTimeout(() => {
+        setIsScanning(false);
+        setProgress(0);
+        setProgressMessage('');
+      }, 500);
+      if (data.message) {
+        toast.dismiss('inbody-scan');
+        toast.success(data.message, { id: 'inbody-scan', duration: 3000 });
+      }
+    };
+
+    const handleError = (data: { message?: string }): void => {
+      setIsScanning(false);
+      setProgress(0);
+      setProgressMessage('');
+      if (data.message) {
+        toast.dismiss('inbody-scan');
+        toast.error(data.message, { id: 'inbody-scan', duration: 4000 });
+      }
+    };
+
+    const unsubscribeStarted = socketService.on(
+      WebSocketEvent.INBODY_SCAN_STARTED,
+      handleStarted,
+    );
+    const unsubscribeProgress = socketService.on(
+      WebSocketEvent.INBODY_SCAN_PROGRESS,
+      handleProgress,
+    );
+    const unsubscribeComplete = socketService.on(
+      WebSocketEvent.INBODY_SCAN_COMPLETE,
+      handleComplete,
+    );
+    const unsubscribeError = socketService.on(WebSocketEvent.INBODY_SCAN_ERROR, handleError);
+
+    return () => {
+      unsubscribeStarted();
+      unsubscribeProgress();
+      unsubscribeComplete();
+      unsubscribeError();
+    };
+  }, [t]);
 
   const handleScan = async (): Promise<void> => {
     if (!file) {
@@ -100,12 +175,12 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       setOcrText(result.ocrText || '');
       setMetrics(result.metrics);
       setShowPreview(true);
-      toast.success(t('inbody.scanSuccess'));
+      toast.success(t('inbody.scanSuccess'), { duration: 3000 });
       await refresh();
       await onRefresh?.();
     } catch (error) {
       console.error('Scan failed', error);
-      toast.error(t('inbody.scanError'));
+      toast.error(t('inbody.scanError'), { duration: 4000 });
     } finally {
       setIsScanning(false);
     }
@@ -140,7 +215,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         takenAt: takenAt ? dayjs(takenAt).toISOString() : undefined,
       });
 
-      toast.success(t('inbody.processSuccess'));
+      toast.success(t('inbody.processSuccess'), { duration: 3000 });
       setFile(null);
       setOcrText('');
       setTakenAt(new Date());
@@ -151,14 +226,14 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       await onRefresh?.();
     } catch (error) {
       console.error('Process failed', error);
-      toast.error(t('inbody.processError'));
+      toast.error(t('inbody.processError'), { duration: 4000 });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-b-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">{t('inbody.uploadSection')}</h2>
@@ -176,7 +251,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         </div>
       </div>
 
-      <div className="space-b-4">
+      <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>{t('inbody.selectFile')}</Label>
@@ -275,6 +350,12 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         onCapture={handleCameraCapture}
         facingMode="environment"
         title={t('inbody.cameraTitle')}
+      />
+
+      <AnalysisProgressModal
+        isOpen={isScanning}
+        progress={progress}
+        message={progressMessage}
       />
 
       {showPreview && (

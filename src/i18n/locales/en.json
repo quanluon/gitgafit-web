@@ -380,7 +380,14 @@
     "scanning": "Scanning...",
     "scanSuccess": "Image scanned successfully!",
     "scanError": "Failed to scan image. Please try again.",
+    "analyzing": "Analyzing...",
+    "progress": "Progress",
     "analysisTitle": "Detailed Analysis",
+    "analysis": {
+      "bodyCompositionSummary": "Body Composition Summary",
+      "recommendations": "Recommendations",
+      "trainingNutritionAdvice": "Training & Nutrition Advice"
+    },
     "clickToViewAnalysis": "Click to view detailed analysis",
     "noAnalysis": "No analysis available yet",
     "useCamera": "Use Camera",
@@ -417,6 +424,7 @@
       "cameraTitle": "Capture Body Photo",
       "analyzeButton": "Analyze Photo",
       "analyzing": "Analyzing...",
+      "progress": "Progress",
       "analysisStarted": "Analysis started! We'll notify you when it's ready.",
       "analysisError": "Failed to analyze photo. Please try again.",
       "fileRequired": "Please select a photo first.",

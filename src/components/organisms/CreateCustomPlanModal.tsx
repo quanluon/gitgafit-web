@@ -231,7 +231,7 @@ export function CreateCustomPlanModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="top-[-16px] fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg border bg-background">
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
@@ -545,7 +545,7 @@ function ExerciseLibraryPanel({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-black/50">
+    <div className="top-[-16px] fixed inset-0 z-[70] bg-black/50">
       <div className="ml-auto flex h-full w-full max-w-lg flex-col bg-card px-6 py-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <div>

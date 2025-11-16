@@ -9,6 +9,7 @@ import { Language } from '@/types/enums';
 import { GenerationProgress } from './components/organisms/GenerationProgress';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
+import { RouteLoadingFallback } from './components/molecules/RouteLoadingFallback';
 import { AppRoutePath, AppRouteConfig } from './routes/paths';
 import './App.css';
 
@@ -140,9 +141,10 @@ function App(): React.ReactElement {
             },
           },
         }}
+        gutter={8}
       />
       <Router>
-        <Suspense fallback={<div className="app__route-fallback">Loading...</div>}>
+        <Suspense fallback={<RouteLoadingFallback />}>
           {/* Floating generation progress bubble - must be inside Router for useNavigate */}
           <GenerationProgress />
           {/* PWA install prompts - shows when installable (Android/Chrome) */}

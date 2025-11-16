@@ -49,7 +49,7 @@ export function ExerciseLogsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div className="top-[-16px] fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-background border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">

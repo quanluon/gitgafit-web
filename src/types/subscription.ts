@@ -19,5 +19,6 @@ export interface SubscriptionStats {
   workout: GenerationStats;
   meal: GenerationStats;
   inbody: GenerationStats;
+  bodyPhoto: GenerationStats;
 }
 

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
@@ -11,7 +11,9 @@ import { GenerationType } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { cn } from '@/utils/cn';
 import { CameraModal } from '@organisms/CameraModal';
+import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
 import { inbodyService } from '@/services/inbodyService';
+import { socketService, WebSocketEvent } from '@services/socketService';
 
 interface BodyPhotoTabProps {
   quota?: ReturnType<typeof useSubscriptionStats>['getQuotaInfo'] extends (
@@ -20,9 +22,14 @@ interface BodyPhotoTabProps {
     ? R
     : never;
   onRefresh?: () => Promise<void>;
+  onAnalyzingChange?: (isAnalyzing: boolean) => void;
 }
 
-export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.ReactElement {
+export function BodyPhotoTab({
+  quota,
+  onRefresh,
+  onAnalyzingChange,
+}: BodyPhotoTabProps): React.ReactElement {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<Date>(() => new Date());
@@ -30,6 +37,8 @@ export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.Rea
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [progressMessage, setProgressMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -47,14 +56,14 @@ export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.Rea
 
       if (validation.isValid) {
         setFile(fileToValidate);
-        toast.success(t('inbody.imageValid'));
+        toast.success(t('inbody.imageValid'), { duration: 2000 });
       } else {
         const errorMessages = validation.errorKeys.map((key: string) => t(key)).join('. ');
         toast.error(errorMessages || t('inbody.imageInvalid'), { duration: 5000 });
       }
     } catch (error) {
       console.error('Validation error:', error);
-      toast.error(t('inbody.validationError'));
+      toast.error(t('inbody.validationError'), { duration: 4000 });
     } finally {
       setIsValidating(false);
     }
@@ -64,6 +73,89 @@ export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.Rea
     await validateAndSetFile(file);
     setShowCamera(false);
   };
+
+  useEffect(() => {
+    const handleStarted = (data: {
+      resultId?: string;
+      message?: string;
+      progress?: number;
+    }): void => {
+      if (data.progress !== undefined) {
+        setProgress(data.progress);
+      }
+      if (data.message) {
+        setProgressMessage(data.message);
+        setIsAnalyzing(true);
+      }
+    };
+
+    const handleProgress = (data: {
+      resultId?: string;
+      progress?: number;
+      message?: string;
+    }): void => {
+      if (data.progress !== undefined) {
+        setProgress(data.progress);
+      }
+      if (data.message) {
+        setProgressMessage(data.message);
+      }
+    };
+
+    const handleComplete = async (data: { resultId?: string; message?: string }): Promise<void> => {
+      setProgress(100);
+      setTimeout(() => {
+        setIsAnalyzing(false);
+        setProgress(0);
+        setProgressMessage('');
+        onAnalyzingChange?.(false);
+      }, 500);
+      toast.dismiss('body-photo-analysis');
+      toast.success(data.message || t('inbody.bodyPhoto.analysisStarted'), {
+        id: 'body-photo-analysis',
+        duration: 3000,
+      });
+      setFile(null);
+      setValidationResult(null);
+      await onRefresh?.();
+    };
+
+    const handleError = (data: { resultId?: string; message?: string }): void => {
+      setIsAnalyzing(false);
+      setProgress(0);
+      setProgressMessage('');
+      onAnalyzingChange?.(false);
+      toast.dismiss('body-photo-analysis');
+      toast.error(data.message || t('inbody.bodyPhoto.analysisError'), {
+        id: 'body-photo-analysis',
+        duration: 4000,
+      });
+    };
+
+    const unsubscribeStarted = socketService.on(
+      WebSocketEvent.BODY_PHOTO_ANALYSIS_STARTED,
+      handleStarted,
+    );
+    const unsubscribeProgress = socketService.on(
+      WebSocketEvent.BODY_PHOTO_ANALYSIS_PROGRESS,
+      handleProgress,
+    );
+    const unsubscribeComplete = socketService.on(
+      WebSocketEvent.BODY_PHOTO_ANALYSIS_COMPLETE,
+      handleComplete,
+    );
+    const unsubscribeError = socketService.on(
+      WebSocketEvent.BODY_PHOTO_ANALYSIS_ERROR,
+      handleError,
+    );
+
+    return () => {
+      unsubscribeStarted();
+      unsubscribeProgress();
+      unsubscribeComplete();
+      unsubscribeError();
+    };
+  }, [t, onRefresh]);
 
   const handleAnalyze = async (): Promise<void> => {
     if (!file) {
@@ -77,22 +169,27 @@ export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.Rea
 
     try {
       setIsAnalyzing(true);
-      // TODO: Implement body photo analysis API call
-      // const result = await bodyPhotoService.analyzePhoto(file, takenAt);
-      const { uploadUrl } = await inbodyService.getPresignedUrl(file.name);
+      onAnalyzingChange?.(true);
+      const { uploadUrl, s3Url } = await inbodyService.getPresignedUrl(file.name);
       await inbodyService.uploadToS3(uploadUrl, file);
-      toast.success(t('inbody.bodyPhoto.analysisStarted'));
-      await onRefresh?.();
+
+      await inbodyService.analyzeBodyPhoto(
+        s3Url,
+        file.name,
+        takenAt ? dayjs(takenAt).toISOString() : undefined,
+      );
+
+      toast.success(t('inbody.bodyPhoto.analysisStarted'), { duration: 3000 });
     } catch (error) {
       console.error('Analysis failed', error);
-      toast.error(t('inbody.bodyPhoto.analysisError'));
-    } finally {
+      toast.error(t('inbody.bodyPhoto.analysisError'), { duration: 4000 });
       setIsAnalyzing(false);
+      onAnalyzingChange?.(false);
     }
   };
 
   return (
-    <div className="space-b-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">{t('inbody.bodyPhoto.title')}</h2>
@@ -118,7 +215,7 @@ export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.Rea
         </div>
       </div>
 
-      <div className="space-b-4">
+      <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>{t('inbody.bodyPhoto.selectPhoto')}</Label>
@@ -237,6 +334,12 @@ export function BodyPhotoTab({ quota, onRefresh }: BodyPhotoTabProps): React.Rea
         onCapture={handleCameraCapture}
         facingMode="user"
         title={t('inbody.bodyPhoto.cameraTitle')}
+      />
+
+      <AnalysisProgressModal
+        isOpen={isAnalyzing}
+        progress={progress}
+        message={progressMessage}
       />
     </div>
   );
