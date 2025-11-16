@@ -45,7 +45,8 @@ class ApiService {
     // Request interceptor
     this.client.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('auth_token');
+        // Get token from Zustand store instead of localStorage directly
+        const token = useAuthStore.getState().token;
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -101,7 +102,8 @@ class ApiService {
           originalRequest._retry = true;
           isRefreshing = true;
 
-          const refreshToken = localStorage.getItem('refresh_token');
+          // Get refresh token from Zustand store instead of localStorage directly
+          const refreshToken = useAuthStore.getState().refreshToken;
 
           if (!refreshToken) {
             // No refresh token, logout
@@ -114,7 +116,7 @@ class ApiService {
             const response = await authService.refreshToken(refreshToken);
             const { accessToken, refreshToken: newRefreshToken } = response;
 
-            // Update tokens in localStorage
+            // Update tokens in store (Zustand persist will handle storage)
             const authStore = useAuthStore.getState();
             authStore.setTokens(accessToken, newRefreshToken);
 

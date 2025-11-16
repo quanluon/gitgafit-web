@@ -94,6 +94,28 @@ function App(): React.ReactElement {
   // Initialize Socket.IO connection
   useSocket();
 
+  // Initialize auth state from persisted storage on app load
+  useEffect(() => {
+    const initializeAuth = (): void => {
+      // Zustand persist middleware automatically hydrates state from localStorage
+      // But we need to ensure isAuthenticated is set correctly based on token presence
+      // This is important for Android WebView where localStorage might not restore state properly
+      const authState = useAuthStore.getState();
+      if (authState.token && !authState.isAuthenticated) {
+        // Token exists but isAuthenticated is false (from persisted state)
+        // This can happen on Android when localStorage is restored but state isn't hydrated properly
+        useAuthStore.setState({ isAuthenticated: true });
+      } else if (!authState.token && authState.isAuthenticated) {
+        // No token but isAuthenticated is true - clear invalid state
+        useAuthStore.getState().clearAuth();
+      }
+    };
+
+    // Small delay to ensure localStorage is available (especially on Android WebView)
+    const timer = setTimeout(initializeAuth, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Fetch user profile and set language on app load
   useEffect(() => {
     const initializeApp = async (): Promise<void> => {
@@ -108,6 +130,10 @@ function App(): React.ReactElement {
           }
         } catch (error) {
           console.error('Failed to fetch user profile:', error);
+          // If profile fetch fails, token might be invalid - clear auth
+          if ((error as { response?: { status?: number } }).response?.status === 401) {
+            useAuthStore.getState().clearAuth();
+          }
         }
       }
     };

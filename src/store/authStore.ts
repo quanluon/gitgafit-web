@@ -23,31 +23,52 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       setAuth: (token: string, refreshToken: string, user: User): void => {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
+        // Zustand persist middleware will handle storage automatically
         set({ token, refreshToken, user, isAuthenticated: true });
-        
+
+        // Also manually save to localStorage as backup for Android WebView compatibility
+        try {
+          localStorage.setItem('auth_token', token);
+          localStorage.setItem('refresh_token', refreshToken);
+        } catch (error) {
+          console.warn('Failed to backup tokens to localStorage:', error);
+        }
+
         // Set language from user profile
         if (user.language) {
           useLocaleStore.getState().setLanguage(user.language as Language);
         }
       },
       setTokens: (token: string, refreshToken: string): void => {
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('refresh_token', refreshToken);
+        // Zustand persist middleware will handle storage automatically
         set({ token, refreshToken });
+
+        // Also manually save to localStorage as backup for Android WebView compatibility
+        try {
+          localStorage.setItem('auth_token', token);
+          localStorage.setItem('refresh_token', refreshToken);
+        } catch (error) {
+          console.warn('Failed to backup tokens to localStorage:', error);
+        }
       },
       clearAuth: (): void => {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('refresh_token');
+        // Zustand persist middleware will handle storage cleanup automatically
         set({ token: null, refreshToken: null, user: null, isAuthenticated: false });
-        
+
+        // Also manually clear localStorage as backup
+        try {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('refresh_token');
+        } catch (error) {
+          console.warn('Failed to clear tokens from localStorage:', error);
+        }
+
         // Reset language to default (en)
         useLocaleStore.getState().setLanguage(Language.EN);
       },
       updateUser: (user: User): void => {
         set({ user });
-        
+
         // Update language when user profile is updated
         if (user.language) {
           useLocaleStore.getState().setLanguage(user.language as Language);
@@ -56,15 +77,41 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
+      // Zustand persist uses localStorage by default
+      // Add partialize to only persist auth-related fields
+      partialize: (state) => ({
+        token: state.token,
+        refreshToken: state.refreshToken,
+        user: state.user,
+        isAuthenticated: state.token ? true : false, // Sync isAuthenticated with token presence
+      }),
+      // On rehydrate, ensure isAuthenticated matches token presence (Android WebView fix)
+      onRehydrateStorage: () => {
+        return (state) => {
+          if (state) {
+            // Sync isAuthenticated with token presence after hydration
+            const hasToken = !!state.token;
+            if (hasToken !== state.isAuthenticated) {
+              state.isAuthenticated = hasToken;
+            }
+
+            // Restore tokens from localStorage backup if Zustand state is empty (Android fix)
+            if (!state.token) {
+              try {
+                const backupToken = localStorage.getItem('auth_token');
+                const backupRefreshToken = localStorage.getItem('refresh_token');
+                if (backupToken) {
+                  state.token = backupToken;
+                  state.refreshToken = backupRefreshToken;
+                  state.isAuthenticated = true;
+                }
+              } catch (error) {
+                console.warn('Failed to restore tokens from localStorage backup:', error);
+              }
+            }
+          }
+        };
+      },
     },
   ),
 );
-
-// Listen for token refresh events from axios interceptor
-if (typeof window !== 'undefined') {
-  window.addEventListener('token-refreshed', ((event: CustomEvent) => {
-    const { accessToken, refreshToken } = event.detail;
-    useAuthStore.getState().setTokens(accessToken, refreshToken);
-  }) as EventListener);
-}
-
