@@ -5,8 +5,7 @@ import dayjs from 'dayjs';
 import { Button } from '@atoms/Button';
 import { MainLayout } from '@templates/MainLayout';
 import { inbodyService } from '@services/inbodyService';
-import { InbodyResult, InbodyStatus } from '@/types/inbody';
-import { Translatable } from '@/types/common';
+import { InbodyResult, InbodyStatus, InbodyAnalysis, Translatable } from '@/types/inbody';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutePath } from '@/routes/paths';
 import { cn } from '@/utils/cn';
@@ -29,22 +28,8 @@ export function InbodyPage(): React.ReactElement {
   const currentLang = language as Language;
   const [results, setResults] = useState<InbodyResult[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('report');
-  const [selectedAnalysis, setSelectedAnalysis] = useState<
-    | Translatable
-    | {
-        en: {
-          body_composition_summary: string;
-          recommendations: string[];
-          training_nutrition_advice: string;
-        };
-        vi: {
-          body_composition_summary: string;
-          recommendations: string[];
-          training_nutrition_advice: string;
-        };
-      }
-    | null
-  >(null);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<Translatable | InbodyAnalysis | null>(null);
+  const [selectedS3Url, setSelectedS3Url] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
   const inbodyQuota = getQuotaInfo(GenerationType.INBODY);
@@ -178,43 +163,15 @@ export function InbodyPage(): React.ReactElement {
                     onClick={(e): void => {
                       e.stopPropagation();
                       if (hasAnalysis) {
-                        setSelectedAnalysis(
-                          result.aiAnalysis as
-                            | Translatable
-                            | {
-                                en: {
-                                  body_composition_summary: string;
-                                  recommendations: string[];
-                                  training_nutrition_advice: string;
-                                };
-                                vi: {
-                                  body_composition_summary: string;
-                                  recommendations: string[];
-                                  training_nutrition_advice: string;
-                                };
-                              },
-                        );
+                        setSelectedAnalysis(result.aiAnalysis as Translatable | InbodyAnalysis);
+                        setSelectedS3Url(result?.s3Url || null);
                       }
                     }}
                     onKeyDown={(e): void => {
                       if ((e.key === 'Enter' || e.key === ' ') && hasAnalysis) {
                         e.preventDefault();
-                        setSelectedAnalysis(
-                          result.aiAnalysis as
-                            | Translatable
-                            | {
-                                en: {
-                                  body_composition_summary: string;
-                                  recommendations: string[];
-                                  training_nutrition_advice: string;
-                                };
-                                vi: {
-                                  body_composition_summary: string;
-                                  recommendations: string[];
-                                  training_nutrition_advice: string;
-                                };
-                              },
-                        );
+                        setSelectedAnalysis(result.aiAnalysis as Translatable | InbodyAnalysis);
+                        setSelectedS3Url(result?.s3Url || null);
                       }
                     }}
                     role={hasAnalysis ? 'button' : undefined}
@@ -262,7 +219,7 @@ export function InbodyPage(): React.ReactElement {
                                 '';
                               return text.slice(0, 100) + (text.length > 100 ? '...' : '');
                             }
-                            // New format: Structured object
+                              // New format: Structured object
                             if (
                               typeof analysis === 'object' &&
                               'en' in analysis &&
@@ -270,10 +227,7 @@ export function InbodyPage(): React.ReactElement {
                               analysis.en !== null &&
                               'body_composition_summary' in analysis.en
                             ) {
-                              const structured = analysis as {
-                                en: { body_composition_summary: string };
-                                vi: { body_composition_summary: string };
-                              };
+                              const structured = analysis as InbodyAnalysis;
                               const summary =
                                 structured[currentLang]?.body_composition_summary ||
                                 structured.vi?.body_composition_summary ||
@@ -301,7 +255,11 @@ export function InbodyPage(): React.ReactElement {
         {selectedAnalysis && (
           <InbodyAnalysisModal
             analysis={selectedAnalysis}
-            onClose={(): void => setSelectedAnalysis(null)}
+            s3Url={selectedS3Url}
+            onClose={(): void => {
+              setSelectedAnalysis(null);
+              setSelectedS3Url(null);
+            }}
           />
         )}
       </div>

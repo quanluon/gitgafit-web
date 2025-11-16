@@ -390,6 +390,11 @@
       "recommendations": "Khuyến nghị",
       "trainingNutritionAdvice": "Lời khuyên về tập luyện và dinh dưỡng"
     },
+    "viewUploadedImage": "Xem ảnh đã tải lên",
+    "uploadedImage": "Ảnh đã tải lên",
+    "imageLoadError": "Không thể tải ảnh",
+    "clickToViewAnalysis": "Nhấn để xem phân tích",
+    "noAnalysis": "Chưa có phân tích",
     "clickToViewAnalysis": "Nhấn để xem phân tích chi tiết",
     "noAnalysis": "Chưa có phân tích",
     "useCamera": "Dùng Camera",

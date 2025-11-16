@@ -390,6 +390,11 @@
       "recommendations": "Recommendations",
       "trainingNutritionAdvice": "Training & Nutrition Advice"
     },
+    "viewUploadedImage": "View Uploaded Image",
+    "uploadedImage": "Uploaded Image",
+    "imageLoadError": "Failed to load image",
+    "clickToViewAnalysis": "Click to view analysis",
+    "noAnalysis": "No analysis available",
     "clickToViewAnalysis": "Click to view detailed analysis",
     "noAnalysis": "No analysis available yet",
     "useCamera": "Use Camera",

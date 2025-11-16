@@ -1,3 +1,8 @@
+import { Translatable } from './common';
+
+// Re-export Translatable for convenience
+export type { Translatable };
+
 export enum InbodyStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
@@ -26,34 +31,33 @@ export interface InbodyMetricsSummary {
   segmentalFat?: SegmentMeasurement[];
 }
 
-export interface Translatable {
-  en: string;
-  vi: string;
+/**
+ * InBody analysis structure per language
+ */
+export interface InbodyAnalysisPerLanguage {
+  body_composition_summary: string;
+  recommendations: string[];
+  training_nutrition_advice: string;
+}
+
+/**
+ * Bilingual InBody analysis with structured fields
+ */
+export interface InbodyAnalysis {
+  en: InbodyAnalysisPerLanguage;
+  vi: InbodyAnalysisPerLanguage;
 }
 
 export interface InbodyResult {
   _id: string;
   userId: string;
   status: InbodyStatus;
-  url: string;
+  s3Url: string;
   sourceFilePath?: string;
   originalFilename: string;
   ocrText?: string;
   metrics?: InbodyMetricsSummary;
-  aiAnalysis?:
-    | Translatable
-    | {
-        en: {
-          body_composition_summary: string;
-          recommendations: string[];
-          training_nutrition_advice: string;
-        };
-        vi: {
-          body_composition_summary: string;
-          recommendations: string[];
-          training_nutrition_advice: string;
-        };
-      };
+  aiAnalysis?: Translatable | InbodyAnalysis;
   takenAt?: string;
   createdAt: string;
   updatedAt: string;

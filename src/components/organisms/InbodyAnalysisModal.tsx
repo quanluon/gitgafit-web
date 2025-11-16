@@ -1,40 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { X } from 'lucide-react';
+import { X, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@atoms/Button';
-import { Translatable } from '@/types/common';
+import { Translatable, InbodyAnalysis } from '@/types/inbody';
 import { useLocaleStore } from '@/store/localeStore';
 import { Language } from '@/types/enums';
 
 interface InbodyAnalysisModalProps {
-  analysis:
-    | Translatable
-    | {
-        en: {
-          body_composition_summary: string;
-          recommendations: string[];
-          training_nutrition_advice: string;
-        };
-        vi: {
-          body_composition_summary: string;
-          recommendations: string[];
-          training_nutrition_advice: string;
-        };
-      };
+  analysis: Translatable | InbodyAnalysis;
+  s3Url?: string | null;
   onClose: () => void;
 }
 
-interface StructuredAnalysis {
-  body_composition_summary: string;
-  recommendations: string[];
-  training_nutrition_advice: string;
-}
-
 function isStructuredAnalysis(
-  analysis: Translatable | { en: StructuredAnalysis; vi: StructuredAnalysis },
-): analysis is { en: StructuredAnalysis; vi: StructuredAnalysis } {
+  analysis: Translatable | InbodyAnalysis,
+): analysis is InbodyAnalysis {
   return (
     typeof analysis === 'object' &&
     analysis !== null &&
@@ -48,11 +30,13 @@ function isStructuredAnalysis(
 
 export function InbodyAnalysisModal({
   analysis,
+  s3Url,
   onClose,
 }: InbodyAnalysisModalProps): React.ReactElement {
   const { t } = useTranslation();
   const { language } = useLocaleStore();
   const currentLang = language as Language;
+  const [showImage, setShowImage] = useState<boolean>(false);
 
   const renderContent = (): React.ReactElement => {
     if (isStructuredAnalysis(analysis)) {
@@ -126,9 +110,53 @@ export function InbodyAnalysisModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{renderContent()}</div>
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {/* Analysis Content */}
+            {renderContent()}
+
+            {/* Image Collapse Section */}
+            {s3Url && (
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  onClick={(): void => setShowImage(!showImage)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <span className="font-medium">{t('inbody.viewUploadedImage')}</span>
+                  </div>
+                  {showImage ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </button>
+                {showImage && (
+                  <div className="border-t p-4 bg-muted/30">
+                    <div className="flex justify-center">
+                      <img
+                        src={s3Url}
+                        alt={t('inbody.uploadedImage')}
+                        className="max-w-full h-auto max-h-[500px] rounded-lg shadow-lg object-contain"
+                        onError={(e): void => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const errorDiv = document.createElement('div');
+                          errorDiv.className = 'text-sm text-muted-foreground text-center py-4';
+                          errorDiv.textContent = t('inbody.imageLoadError');
+                          target.parentNode?.appendChild(errorDiv);
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
