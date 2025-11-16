@@ -458,7 +458,11 @@
     "trainingLogs": "Nhật ký tập luyện",
     "noWorkoutsThisDay": "Không có buổi tập nào trong ngày này",
     "totalSets": "Tổng số hiệp",
-    "totalVolume": "Tổng khối lượng"
+    "totalVolume": "Tổng khối lượng",
+    "allWorkouts": "Tất cả buổi tập",
+    "exercises": "Bài tập",
+    "sets": "hiệp",
+    "perSession": "buổi"
   },
   "home": {
     "welcome": "Chào mừng trở lại",

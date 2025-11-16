@@ -18,13 +18,13 @@
     "optional": "optional",
     "all": "All",
     "days": {
-      "monday": "Monday",
-      "tuesday": "Tuesday",
-      "wednesday": "Wednesday",
-      "thursday": "Thursday",
-      "friday": "Friday",
-      "saturday": "Saturday",
-      "sunday": "Sunday",
+      "monday": "Mon",
+      "tuesday": "Tue",
+      "wednesday": "Wed",
+      "thursday": "Thu",
+      "friday": "Fri",
+      "saturday": "Sat",
+      "sunday": "Sun",
       "days": "days"
     },
     "time": {
@@ -458,7 +458,11 @@
     "trainingLogs": "Training Logs",
     "noWorkoutsThisDay": "No workouts recorded for this day",
     "totalSets": "Total Sets",
-    "totalVolume": "Total Volume"
+    "totalVolume": "Total Volume",
+    "allWorkouts": "All Workouts",
+    "exercises": "Exercises",
+    "sets": "sets",
+    "perSession": "session"
   },
   "home": {
     "welcome": "Welcome back",
