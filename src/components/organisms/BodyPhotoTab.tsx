@@ -333,6 +333,7 @@ export function BodyPhotoTab({
         isOpen={isAnalyzing}
         progress={progress}
         message={progressMessage}
+        estimatedTime={10}
       />
     </div>
   );

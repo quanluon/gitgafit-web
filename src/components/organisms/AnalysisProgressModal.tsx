@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Brain } from 'lucide-react';
+import { X, Brain, Clock } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { Button } from '@atoms/Button';
 
@@ -9,6 +9,7 @@ interface AnalysisProgressModalProps {
   progress: number;
   message: string;
   onClose?: () => void;
+  estimatedTime?: number; // in seconds, default 10
 }
 
 export function AnalysisProgressModal({
@@ -16,10 +17,24 @@ export function AnalysisProgressModal({
   progress,
   message,
   onClose,
+  estimatedTime = 10,
 }: AnalysisProgressModalProps): React.ReactElement | null {
   const { t } = useTranslation();
+  const [remainingTime, setRemainingTime] = useState<number>(estimatedTime);
+
+  // Update remaining time based on progress
+  useEffect(() => {
+    if (isOpen && progress >= 0) {
+      // Calculate remaining time based on progress
+      // If progress is X%, remaining time = estimatedTime * (1 - X/100)
+      const calculatedRemaining = Math.max(0, estimatedTime * (1 - progress / 100));
+      setRemainingTime(Math.ceil(calculatedRemaining));
+    }
+  }, [progress, isOpen, estimatedTime]);
 
   if (!isOpen) return null;
+
+  const displayTime = Math.max(0, Math.ceil(remainingTime));
 
   return (
     <div className="top-[-25px] fixed inset-0 z-[100] bg-background/90 backdrop-blur-sm flex items-center justify-center">
@@ -67,6 +82,15 @@ export function AnalysisProgressModal({
               {/* Animated shimmer effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
             </div>
+          </div>
+          {/* Estimated time remaining */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+            <Clock className="h-3 w-3" />
+            <span>
+              {displayTime > 0
+                ? t('inbody.estimatedTimeRemaining', { seconds: displayTime })
+                : t('inbody.almostDone')}
+            </span>
           </div>
         </div>
 

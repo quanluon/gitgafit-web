@@ -384,6 +384,8 @@
     "scanError": "Không thể quét ảnh. Vui lòng thử lại.",
     "analyzing": "Đang phân tích...",
     "progress": "Tiến độ",
+    "estimatedTimeRemaining": "Còn khoảng {{seconds}} giây",
+    "almostDone": "Sắp hoàn tất...",
     "analysisTitle": "Phân tích chi tiết",
     "analysis": {
       "bodyCompositionSummary": "Tóm tắt thành phần cơ thể",

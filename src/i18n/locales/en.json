@@ -384,6 +384,8 @@
     "scanError": "Failed to scan image. Please try again.",
     "analyzing": "Analyzing...",
     "progress": "Progress",
+    "estimatedTimeRemaining": "About {{seconds}}s remaining",
+    "almostDone": "Almost done...",
     "analysisTitle": "Detailed Analysis",
     "analysis": {
       "bodyCompositionSummary": "Body Composition Summary",

@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/useToast';
-import dayjs from 'dayjs';
+import { GenerationType } from '@/store/generationStore';
+import { InbodyMetricsSummary } from '@/types/inbody';
+import { cn } from '@/utils/cn';
+import { validateImage, ValidationResult } from '@/utils/imageValidation';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
-import { inbodyService } from '@services/inbodyService';
-import { InbodyMetricsSummary } from '@/types/inbody';
-import { validateImage, ValidationResult } from '@/utils/imageValidation';
-import { Check, AlertCircle } from 'lucide-react';
-import { cn } from '@/utils/cn';
-import { GenerationType } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
+import { inbodyService } from '@services/inbodyService';
 import { socketService, WebSocketEvent } from '@services/socketService';
+import dayjs from 'dayjs';
+import { AlertCircle, Check } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface InBodyReportTabProps {
   quota?: ReturnType<typeof useSubscriptionStats>['getQuotaInfo'] extends (type: GenerationType) => infer R
@@ -349,6 +349,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         isOpen={isScanning}
         progress={progress}
         message={progressMessage}
+        estimatedTime={10}
       />
 
       {showPreview && (
