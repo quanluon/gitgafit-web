@@ -3,6 +3,7 @@ import { create } from 'zustand';
 export enum GenerationType {
   WORKOUT = 'workout',
   MEAL = 'meal',
+  INBODY = 'inbody',
 }
 
 export enum GenerationStatus {

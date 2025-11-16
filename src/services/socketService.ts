@@ -19,6 +19,12 @@ export enum WebSocketEvent {
   MEAL_GENERATION_PROGRESS = 'meal-generation-progress',
   MEAL_GENERATION_COMPLETE = 'meal-generation-complete',
   MEAL_GENERATION_ERROR = 'meal-generation-error',
+
+  // InBody OCR events
+  INBODY_OCR_STARTED = 'inbody-ocr-started',
+  INBODY_OCR_PROGRESS = 'inbody-ocr-progress',
+  INBODY_OCR_COMPLETE = 'inbody-ocr-complete',
+  INBODY_OCR_ERROR = 'inbody-ocr-error',
 }
 
 interface NotificationPayload {

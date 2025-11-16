@@ -18,5 +18,6 @@ export interface SubscriptionStats {
   periodStart: string;
   workout: GenerationStats;
   meal: GenerationStats;
+  inbody: GenerationStats;
 }
 

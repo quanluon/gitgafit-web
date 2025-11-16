@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@store/authStore';
-import { useGenerationStore, GenerationStatus } from '@store/generationStore';
+import { useGenerationStore, GenerationStatus, GenerationType } from '@store/generationStore';
 import { socketService, WebSocketEvent } from '@services/socketService';
 import { queueService } from '@services/queueService';
 
@@ -20,7 +20,8 @@ type EventHandler = (data: NotificationPayload) => void;
  */
 export function useSocket(): void {
   const { user, isAuthenticated } = useAuthStore();
-  const { updateProgress, completeGeneration, failGeneration, setJobs } = useGenerationStore();
+  const { startGeneration, updateProgress, completeGeneration, failGeneration, setJobs } =
+    useGenerationStore();
 
 
   // Fetch active jobs from backend on mount
@@ -117,6 +118,46 @@ export function useSocket(): void {
         }
       );
 
+      const unsubscribeInbodyStarted = socketService.on(
+        WebSocketEvent.INBODY_OCR_STARTED,
+        (data) => {
+          if (data.jobId) {
+            startGeneration(data.jobId.toString(), GenerationType.INBODY);
+          }
+        }
+      );
+
+      const unsubscribeInbodyProgress = socketService.on(
+        WebSocketEvent.INBODY_OCR_PROGRESS,
+        (data) => {
+          if (data.jobId) {
+            updateProgress(
+              data.jobId.toString(),
+              data.progress || 0,
+              data.message || 'Analyzing InBody scan...'
+            );
+          }
+        }
+      );
+
+      const unsubscribeInbodyComplete = socketService.on(
+        WebSocketEvent.INBODY_OCR_COMPLETE,
+        (data: { jobId?: string | number; resultId?: string }) => {
+          if (data.jobId) {
+            completeGeneration(data.jobId.toString(), data.resultId);
+          }
+        }
+      );
+
+      const unsubscribeInbodyError = socketService.on(
+        WebSocketEvent.INBODY_OCR_ERROR,
+        (data) => {
+          if (data.jobId) {
+            failGeneration(data.jobId.toString(), data.error || 'Scan failed');
+          }
+        }
+      );
+
       return (): void => {
         // Cleanup subscriptions
         unsubscribeWorkoutProgress();
@@ -125,13 +166,17 @@ export function useSocket(): void {
         unsubscribeMealProgress();
         unsubscribeMealComplete();
         unsubscribeMealError();
+        unsubscribeInbodyStarted();
+        unsubscribeInbodyProgress();
+        unsubscribeInbodyComplete();
+        unsubscribeInbodyError();
         
         // Cleanup socket connection
         socketService.disconnect();
       };
     }
     return undefined;
-  }, [isAuthenticated, user?._id, updateProgress, completeGeneration, failGeneration]);
+  }, [isAuthenticated, user?._id, startGeneration, updateProgress, completeGeneration, failGeneration]);
 }
 
 /**

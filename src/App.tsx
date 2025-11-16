@@ -62,6 +62,11 @@ const MealPlannerPage = lazy(async () => {
   return { default: module.MealPlannerPage };
 });
 
+const InbodyPage = lazy(async () => {
+  const module = await import('./pages/InbodyPage');
+  return { default: module.InbodyPage };
+});
+
 function ProtectedRoute({ children }: { children: React.ReactNode }): React.ReactElement {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <>{children}</> : <Navigate to={AppRoutePath.Login} />;
@@ -82,6 +87,7 @@ function App(): React.ReactElement {
     { path: AppRoutePath.Training, element: <TrainingPage />, isProtected: true },
     { path: AppRoutePath.Statistics, element: <StatisticsPage />, isProtected: true },
     { path: AppRoutePath.MealPlanner, element: <MealPlannerPage />, isProtected: true },
+    { path: AppRoutePath.Inbody, element: <InbodyPage />, isProtected: true },
   ];
   
   // Initialize Socket.IO connection

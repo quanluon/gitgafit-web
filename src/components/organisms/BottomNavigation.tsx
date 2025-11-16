@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Home, UtensilsCrossed, BarChart3, User } from 'lucide-react';
+import { Home, UtensilsCrossed, BarChart3, User, ScanLine } from 'lucide-react';
 import { AppRoutePath } from '@/routes/paths';
 
 export function BottomNavigation(): React.ReactElement {
@@ -12,6 +12,7 @@ export function BottomNavigation(): React.ReactElement {
   const navItems = [
     { icon: Home, label: t('navigation.home'), path: AppRoutePath.Root },
     { icon: UtensilsCrossed, label: t('navigation.mealPlanner'), path: AppRoutePath.MealPlanner },
+    { icon: ScanLine, label: t('navigation.inbody'), path: AppRoutePath.Inbody },
     { icon: BarChart3, label: t('navigation.statistics'), path: AppRoutePath.Statistics },
     { icon: User, label: t('navigation.profile'), path: AppRoutePath.Profile },
   ];

@@ -11,6 +11,7 @@ export enum AppRoutePath {
   Training = '/training',
   Statistics = '/statistics',
   MealPlanner = '/meal-planner',
+  Inbody = '/inbody',
 }
 
 export interface AppRouteConfig {

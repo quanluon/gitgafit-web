@@ -45,8 +45,15 @@ export function GenerationProgress(): React.ReactElement | null {
       const readyMessage =
         job.type === GenerationType.WORKOUT
           ? t('generation.workoutReady')
-          : t('generation.mealReady');
-      const route = job.type === GenerationType.WORKOUT ? AppRoutePath.WorkoutPreview : AppRoutePath.MealPlanner;
+          : job.type === GenerationType.MEAL
+            ? t('generation.mealReady')
+            : t('generation.inbodyReady');
+      const route =
+        job.type === GenerationType.WORKOUT
+          ? AppRoutePath.WorkoutPreview
+          : job.type === GenerationType.MEAL
+            ? AppRoutePath.MealPlanner
+            : AppRoutePath.Inbody;
 
       // Mark as notified
       setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
@@ -122,7 +129,9 @@ export function GenerationProgress(): React.ReactElement | null {
   const jobTypeLabel =
     currentJob?.type === GenerationType.WORKOUT
       ? t('generation.workoutPlan')
-      : t('generation.mealPlan');
+      : currentJob?.type === GenerationType.MEAL
+        ? t('generation.mealPlan')
+        : t('generation.inbodyPlan');
 
   // Count active generations
   const activeCount = activeJobs.length;
@@ -222,16 +231,20 @@ export function GenerationProgress(): React.ReactElement | null {
                 <p className="text-xs text-muted-foreground">
                   {activeCount} {t('generation.generationsInProgress')}:
                 </p>
-                {activeJobs.map((job) => (
-                  <div key={job.jobId} className="flex items-center justify-between text-xs">
-                    <span>
-                      {job.type === GenerationType.WORKOUT
-                        ? `🏋️ ${t('generation.workoutPlan')}`
-                        : `🍽️ ${t('generation.mealPlan')}`}
-                    </span>
-                    <span className="font-semibold">{job.progress}%</span>
-                  </div>
-                ))}
+                {activeJobs.map((job) => {
+                  const label =
+                    job.type === GenerationType.WORKOUT
+                      ? `🏋️ ${t('generation.workoutPlan')}`
+                      : job.type === GenerationType.MEAL
+                        ? `🍽️ ${t('generation.mealPlan')}`
+                        : `🧪 ${t('generation.inbodyPlan')}`;
+                  return (
+                    <div key={job.jobId} className="flex items-center justify-between text-xs">
+                      <span>{label}</span>
+                      <span className="font-semibold">{job.progress}%</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -240,7 +253,12 @@ export function GenerationProgress(): React.ReactElement | null {
               <>
                 <div>
                   <p className="text-sm font-medium mb-1">{jobTypeLabel}</p>
-                  <p className="text-xs text-muted-foreground">{currentJob.message}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {currentJob.message ||
+                      (currentJob.type === GenerationType.INBODY
+                        ? t('generation.inbodyAnalyzing')
+                        : t('generation.generating'))}
+                  </p>
                 </div>
 
                 {/* Progress Bar (for generating state) */}
@@ -274,7 +292,9 @@ export function GenerationProgress(): React.ReactElement | null {
                       const route =
                         currentJob.type === GenerationType.WORKOUT
                           ? AppRoutePath.WorkoutPreview
-                          : AppRoutePath.MealPlanner;
+                          : currentJob.type === GenerationType.MEAL
+                            ? AppRoutePath.MealPlanner
+                            : AppRoutePath.Inbody;
                       navigate(route);
                       clearJob(currentJob.jobId);
                     }}
