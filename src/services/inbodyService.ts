@@ -35,14 +35,14 @@ class InbodyService {
   }
 
   async scanImage(
-    s3Url: string,
+    url: string,
     filename: string,
     takenAt?: string,
   ): Promise<{ metrics: InbodyMetricsSummary; ocrText?: string }> {
     const response = await apiClient.post<ApiResponse<{ metrics: InbodyMetricsSummary; ocrText?: string }>>(
       '/inbody/scan',
       {
-        s3Url,
+        url,
         originalFilename: filename,
         takenAt,
       },

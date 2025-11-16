@@ -382,7 +382,27 @@
     "scanError": "Failed to scan image. Please try again.",
     "analysisTitle": "Detailed Analysis",
     "clickToViewAnalysis": "Click to view detailed analysis",
-    "noAnalysis": "No analysis available yet"
+    "noAnalysis": "No analysis available yet",
+    "useCamera": "Use Camera",
+    "cameraTitle": "Capture InBody Scan",
+    "capture": "Capture Photo",
+    "captureError": "Failed to capture photo",
+    "validating": "Validating image quality",
+    "imageValid": "Image quality is good!",
+    "imageInvalid": "Image quality issues detected",
+    "validationError": "Failed to validate image",
+    "imageQualityGood": "Image quality: Good",
+    "imageQualityIssues": "Image quality: Issues detected",
+    "qualityScore": "Quality score",
+    "validation": {
+      "tooSmall": "Image too small. Minimum: 640x480px",
+      "extremeAspectRatio": "Image aspect ratio is extreme. Please ensure the image is properly framed",
+      "blurry": "Image appears blurry. Please ensure the image is in focus",
+      "tilted": "Image appears tilted or distorted. Please ensure the image is flat and straight",
+      "invalidFile": "Invalid image file",
+      "canvasError": "Cannot process image",
+      "unknownError": "Unknown validation error"
+    }
   },
     "statistics": {
     "totalWorkouts": "Total Workouts",

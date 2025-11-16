@@ -35,7 +35,7 @@ export interface InbodyResult {
   _id: string;
   userId: string;
   status: InbodyStatus;
-  s3Url: string;
+  url: string;
   sourceFilePath?: string;
   originalFilename: string;
   ocrText?: string;

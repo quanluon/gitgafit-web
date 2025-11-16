@@ -382,7 +382,27 @@
     "scanError": "Không thể quét ảnh. Vui lòng thử lại.",
     "analysisTitle": "Phân tích chi tiết",
     "clickToViewAnalysis": "Nhấn để xem phân tích chi tiết",
-    "noAnalysis": "Chưa có phân tích"
+    "noAnalysis": "Chưa có phân tích",
+    "useCamera": "Dùng Camera",
+    "cameraTitle": "Chụp ảnh InBody",
+    "capture": "Chụp ảnh",
+    "captureError": "Không thể chụp ảnh",
+    "validating": "Đang kiểm tra chất lượng ảnh",
+    "imageValid": "Chất lượng ảnh tốt!",
+    "imageInvalid": "Phát hiện vấn đề về chất lượng ảnh",
+    "validationError": "Không thể kiểm tra ảnh",
+    "imageQualityGood": "Chất lượng ảnh: Tốt",
+    "imageQualityIssues": "Chất lượng ảnh: Có vấn đề",
+    "qualityScore": "Điểm chất lượng",
+    "validation": {
+      "tooSmall": "Ảnh quá nhỏ. Tối thiểu: 640x480px",
+      "extremeAspectRatio": "Tỷ lệ ảnh không hợp lý. Vui lòng đảm bảo ảnh được căn chỉnh đúng",
+      "blurry": "Ảnh bị mờ. Vui lòng đảm bảo ảnh được lấy nét",
+      "tilted": "Ảnh bị nghiêng hoặc méo. Vui lòng đảm bảo ảnh phẳng và thẳng",
+      "invalidFile": "File ảnh không hợp lệ",
+      "canvasError": "Không thể xử lý ảnh",
+      "unknownError": "Lỗi kiểm tra không xác định"
+    }
   },
     "statistics": {
     "totalWorkouts": "Tổng số buổi tập",
