@@ -124,7 +124,7 @@ export function ProfilePage(): React.ReactElement {
           <SubscriptionCard />
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-b-4">
             {/* Personal Information Section */}
             <div className="bg-card border rounded-lg overflow-hidden">
               <button

@@ -73,8 +73,6 @@ function checkFlatness(imageData: ImageData): boolean {
  */
 export async function validateImage(file: File): Promise<ValidationResult> {
   const errorKeys: string[] = [];
-  const MIN_WIDTH = 640;
-  const MIN_HEIGHT = 480;
   const SHARP_THRESHOLD = 100;
   const MAX_SIZE = 800;
 
@@ -96,11 +94,6 @@ export async function validateImage(file: File): Promise<ValidationResult> {
 
     img.onload = (): void => {
       try {
-        // Check dimensions
-        if (img.width < MIN_WIDTH || img.height < MIN_HEIGHT) {
-          errorKeys.push('inbody.validation.tooSmall');
-        }
-
         // Check aspect ratio
         const aspectRatio = img.width / img.height;
         if (aspectRatio < 0.5 || aspectRatio > 2) {
@@ -124,14 +117,14 @@ export async function validateImage(file: File): Promise<ValidationResult> {
 
         // Check flatness
         const isFlat = checkFlatness(imageData);
-        if (!isFlat) {
-          errorKeys.push('inbody.validation.tilted');
-        }
+        // if (!isFlat) {
+        //   errorKeys.push('inbody.validation.tilted');
+        // }
 
         const score = Math.min(100, (blurScore / 1000) * 50 + (isFlat ? 50 : 0));
 
         resolve({
-          isValid: errorKeys.length === 0 && isSharp && isFlat,
+          isValid: errorKeys.length === 0 && isSharp,
           isSharp,
           isFlat,
           score,

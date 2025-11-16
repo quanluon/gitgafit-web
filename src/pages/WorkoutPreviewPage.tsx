@@ -109,7 +109,7 @@ export function WorkoutPreviewPage(): React.ReactElement {
         </div>
 
         {/* Weekly Schedule */}
-        <div className="space-y-4">
+        <div className="space-b-4">
           <h2 className="text-xl font-bold">Weekly Schedule</h2>
 
           {sortedSchedule.map((day) => {

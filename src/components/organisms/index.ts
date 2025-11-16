@@ -7,4 +7,7 @@ export * from './UpdateWeightModal';
 export * from './WorkoutDetailsModal';
 export * from './BottomNavigation';
 export * from './InbodyAnalysisModal';
+export * from './InBodyReportTab';
+export * from './BodyPhotoTab';
+export * from './CameraModal';
 

@@ -387,6 +387,7 @@
     "cameraTitle": "Capture InBody Scan",
     "capture": "Capture Photo",
     "captureError": "Failed to capture photo",
+    "flipCamera": "Flip Camera",
     "validating": "Validating image quality",
     "imageValid": "Image quality is good!",
     "imageInvalid": "Image quality issues detected",
@@ -402,6 +403,27 @@
       "invalidFile": "Invalid image file",
       "canvasError": "Cannot process image",
       "unknownError": "Unknown validation error"
+    },
+    "tabs": {
+      "report": "InBody Report",
+      "photo": "Body Photo"
+    },
+    "bodyPhoto": {
+      "title": "Body Photo Analysis",
+      "description": "Take a full-body photo to estimate body composition",
+      "estimates": "Estimates: Body fat %, Muscle mass, Body composition",
+      "selectPhoto": "Select Photo",
+      "selectFromGallery": "From Gallery",
+      "cameraTitle": "Capture Body Photo",
+      "analyzeButton": "Analyze Photo",
+      "analyzing": "Analyzing...",
+      "analysisStarted": "Analysis started! We'll notify you when it's ready.",
+      "analysisError": "Failed to analyze photo. Please try again.",
+      "fileRequired": "Please select a photo first.",
+      "tipsTitle": "Tips for best results",
+      "tip1": "Stand straight, arms at sides",
+      "tip2": "Good lighting, full body visible",
+      "tip3": "Wear fitted clothing"
     }
   },
     "statistics": {

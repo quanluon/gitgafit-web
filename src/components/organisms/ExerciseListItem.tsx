@@ -1,10 +1,9 @@
+import { Language } from '@/types/enums';
+import { Exercise } from '@/types/workout';
+import { useLocaleStore } from '@store/localeStore';
+import { Play } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MoreVertical } from 'lucide-react';
-import { Button } from '@atoms/Button';
-import { Exercise } from '@/types/workout';
-import { Language } from '@/types/enums';
-import { useLocaleStore } from '@store/localeStore';
 
 interface ExerciseListItemProps {
   exercise: Exercise;
@@ -30,9 +29,19 @@ export function ExerciseListItem({
     >
       <div className="flex items-start justify-between">
         <h3 className="font-semibold text-lg">{exerciseName}</h3>
-        <Button variant="ghost" size="icon" onClick={(e): void => e.stopPropagation()}>
-          <MoreVertical className="h-4 w-4" />
-        </Button>
+        {/* Video Link */}
+        {exercise.videoUrl && (
+          <a
+            onClick={(e): void => e.stopPropagation()}
+            href={exercise.videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-primary hover:underline"
+          >
+            <Play className="h-4 w-4" />
+            {t('workout.watchVideo')}
+          </a>
+        )}
       </div>
 
       {/* Target Sets */}
@@ -71,4 +80,3 @@ export function ExerciseListItem({
     </div>
   );
 }
-

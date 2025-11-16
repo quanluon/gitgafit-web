@@ -387,6 +387,7 @@
     "cameraTitle": "Chụp ảnh InBody",
     "capture": "Chụp ảnh",
     "captureError": "Không thể chụp ảnh",
+    "flipCamera": "Đổi camera",
     "validating": "Đang kiểm tra chất lượng ảnh",
     "imageValid": "Chất lượng ảnh tốt!",
     "imageInvalid": "Phát hiện vấn đề về chất lượng ảnh",
@@ -402,6 +403,27 @@
       "invalidFile": "File ảnh không hợp lệ",
       "canvasError": "Không thể xử lý ảnh",
       "unknownError": "Lỗi kiểm tra không xác định"
+    },
+    "tabs": {
+      "report": "Báo cáo InBody",
+      "photo": "Ảnh cơ thể"
+    },
+    "bodyPhoto": {
+      "title": "Phân tích ảnh cơ thể",
+      "description": "Chụp ảnh toàn thân để ước lượng thành phần cơ thể",
+      "estimates": "Ước lượng: % Mỡ, Khối lượng cơ, Thành phần cơ thể",
+      "selectPhoto": "Chọn ảnh",
+      "selectFromGallery": "Từ thư viện",
+      "cameraTitle": "Chụp ảnh cơ thể",
+      "analyzeButton": "Phân tích ảnh",
+      "analyzing": "Đang phân tích...",
+      "analysisStarted": "Đã bắt đầu phân tích! Chúng tôi sẽ thông báo khi hoàn tất.",
+      "analysisError": "Không thể phân tích ảnh. Vui lòng thử lại.",
+      "fileRequired": "Vui lòng chọn ảnh trước.",
+      "tipsTitle": "Mẹo để có kết quả tốt nhất",
+      "tip1": "Đứng thẳng, tay để dọc theo thân",
+      "tip2": "Ánh sáng tốt, toàn thân rõ ràng",
+      "tip3": "Mặc quần áo bó sát"
     }
   },
     "statistics": {
