@@ -16,4 +16,6 @@ export * from './RedirectToProfileModal';
 export * from './RedirectModal';
 export * from './SubscriptionDetailsModal';
 export * from './MealPlanGenerationModal';
+export * from './FeedbackModal';
+export * from './FeedbackWidget';
 

@@ -10,6 +10,7 @@ import { GenerationProgress } from './components/organisms/GenerationProgress';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
 import { RouteLoadingFallback } from './components/molecules/RouteLoadingFallback';
+import { FeedbackWidget } from './components/organisms/FeedbackWidget';
 import { AppRoutePath, AppRouteConfig } from './routes/paths';
 import './App.css';
 
@@ -177,6 +178,8 @@ function App(): React.ReactElement {
           <PWAInstallPrompt />
           {/* iOS Safari install instructions */}
           <IOSInstallPrompt />
+          {/* Beta feedback widget */}
+          <FeedbackWidget />
           <Routes>
             {appRoutes.map(({ path, element, isProtected }) => (
               <Route

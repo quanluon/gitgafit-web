@@ -362,6 +362,29 @@
     "profile": "Hồ sơ",
     "inbody": "InBody"
   },
+  "feedback": {
+    "button": "Góp ý beta",
+    "betaBadge": "Người thử nghiệm",
+    "title": "Chia sẻ cảm nhận của bạn",
+    "subtitle": "Gửi trực tiếp cho đội phát triển. Cứ viết ngắn gọn, chân thật nhất nhé.",
+    "emailLabel": "Email",
+    "contextLabel": "Bạn đang ở khu vực nào?",
+    "messageLabel": "Điều cần cải thiện?",
+    "placeholder": "Hãy kể về lỗi, trải nghiệm chưa tốt hoặc điều bạn thích...",
+    "messageHelper": "Tối thiểu 10 ký tự",
+    "submit": "Gửi góp ý",
+    "sending": "Đang gửi...",
+    "success": "Cảm ơn bạn! Đội huấn luyện cá nhân đang đọc ngay.",
+    "error": "Không thể gửi góp ý. Vui lòng thử lại.",
+    "contexts": {
+      "general": "Toàn bộ ứng dụng",
+      "workout": "Kế hoạch tập luyện",
+      "meal": "Kế hoạch dinh dưỡng",
+      "inbody": "InBody & quét cơ thể",
+      "profile": "Hồ sơ & onboarding",
+      "other": "Khác"
+    }
+  },
   "inbody": {
     "title": "Kết quả InBody",
     "subtitle": "Tải báo cáo lên để huấn luyện viên phân tích chi tiết.",

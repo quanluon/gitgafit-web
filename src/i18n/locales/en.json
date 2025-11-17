@@ -362,6 +362,29 @@
     "profile": "Profile",
     "inbody": "InBody"
   },
+  "feedback": {
+    "button": "Beta feedback",
+    "betaBadge": "Beta tester",
+    "title": "Tell us how it's going",
+    "subtitle": "These notes go directly to the builder team. Short and honest is perfect.",
+    "emailLabel": "Email",
+    "contextLabel": "Where were you?",
+    "messageLabel": "What should we improve?",
+    "placeholder": "Share bugs, rough edges, or what you loved...",
+    "messageHelper": "At least 10 characters",
+    "submit": "Send feedback",
+    "sending": "Sending...",
+    "success": "Thanks! Your trainer team is already looking at it.",
+    "error": "Couldn't send feedback. Please try again.",
+    "contexts": {
+      "general": "Whole experience",
+      "workout": "Workout planner",
+      "meal": "Meal planner",
+      "inbody": "InBody & body scans",
+      "profile": "Profile & onboarding",
+      "other": "Something else"
+    }
+  },
   "inbody": {
     "title": "InBody Scans",
     "subtitle": "Upload your reports and get instant insights from your trainer.",

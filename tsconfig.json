@@ -37,7 +37,8 @@
       "@services/*": ["src/services/*"],
       "@utils/*": ["src/utils/*"],
       "@hooks/*": ["src/hooks/*"],
-      "react-pwa-installer-prompt": ["types/react-pwa-installer-prompt"]
+      "react-pwa-installer-prompt": ["types/react-pwa-installer-prompt"],
+      "firebase/*": ["types/firebase/*"]
     },
     "typeRoots": ["./types", "./node_modules/@types"]
   },

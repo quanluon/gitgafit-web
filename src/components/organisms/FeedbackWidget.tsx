@@ -1,0 +1,53 @@
+import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MessageCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { FeedbackModal } from './FeedbackModal';
+import { logFeedbackEvent } from '@/services/firebase';
+
+export function FeedbackWidget(): React.ReactElement {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const derivedContext = useMemo(() => {
+    if (location.pathname.includes('planner') || location.pathname.includes('workout')) {
+      return 'workout';
+    }
+    if (location.pathname.includes('meal')) {
+      return 'meal';
+    }
+    if (location.pathname.includes('inbody')) {
+      return 'inbody';
+    }
+    if (location.pathname.includes('profile')) {
+      return 'profile';
+    }
+    return 'general';
+  }, [location.pathname]);
+
+  const handleOpen = (): void => {
+    logFeedbackEvent('feedback_opened', { path: location.pathname });
+    setIsOpen(true);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={handleOpen}
+        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-primary py-3 pl-4 pr-5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition hover:translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <MessageCircle className="h-4 w-4" />
+        {t('feedback.button')}
+      </button>
+      <FeedbackModal
+        isOpen={isOpen}
+        onClose={(): void => setIsOpen(false)}
+        initialContext={derivedContext}
+        path={location.pathname}
+      />
+    </>
+  );
+}
+
