@@ -5,7 +5,7 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: { allowedHosts: ['eea0d0d6aeb1.ngrok-free.app'] },
+  server: { allowedHosts: ['bore.pub'] },
   plugins: [
     react(),
     VitePWA({
