@@ -95,10 +95,10 @@ export async function validateImage(file: File): Promise<ValidationResult> {
     img.onload = (): void => {
       try {
         // Check aspect ratio
-        const aspectRatio = img.width / img.height;
-        if (aspectRatio < 0.5 || aspectRatio > 2) {
-          errorKeys.push('inbody.validation.extremeAspectRatio');
-        }
+        // const aspectRatio = img.width / img.height;
+        // if (aspectRatio < 0.5 || aspectRatio > 2) {
+        //   errorKeys.push('inbody.validation.extremeAspectRatio');
+        // }
 
         // Resize for processing
         const scale = Math.min(1, MAX_SIZE / Math.max(img.width, img.height));
@@ -111,9 +111,9 @@ export async function validateImage(file: File): Promise<ValidationResult> {
         // Check blur
         const blurScore = calculateBlurScore(imageData);
         const isSharp = blurScore > SHARP_THRESHOLD;
-        if (!isSharp) {
-          errorKeys.push('inbody.validation.blurry');
-        }
+        // if (!isSharp) {
+        //   errorKeys.push('inbody.validation.blurry');
+        // }
 
         // Check flatness
         const isFlat = checkFlatness(imageData);
@@ -124,7 +124,8 @@ export async function validateImage(file: File): Promise<ValidationResult> {
         const score = Math.min(100, (blurScore / 1000) * 50 + (isFlat ? 50 : 0));
 
         resolve({
-          isValid: errorKeys.length === 0 && isSharp,
+          isValid: true,
+          // isValid: errorKeys.length === 0 && isSharp,
           isSharp,
           isFlat,
           score,
