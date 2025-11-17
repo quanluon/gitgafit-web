@@ -26,8 +26,8 @@ export function UpdateWeightModal({
   };
 
   return (
-    <div className="top-[-25px] fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 space-y-6">
+    <div className="modal-overlay items-end sm:items-center">
+      <div className="modal-container border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">{t('weight.updateTitle')}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>

@@ -1,0 +1,196 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { X } from 'lucide-react';
+import { Button } from '@atoms/Button';
+import {
+  ONE_HUNDRED_PERCENT_TEXT,
+  SubscriptionPlan,
+  SubscriptionStats,
+  UNLIMITED_LIMIT,
+} from '@/types/subscription';
+import { Check, Crown, TrendingUp, Zap } from 'lucide-react';
+
+interface SubscriptionDetailsModalProps {
+  isOpen: boolean;
+  stats: SubscriptionStats | null;
+  onClose: () => void;
+}
+
+export function SubscriptionDetailsModal({
+  isOpen,
+  stats,
+  onClose,
+}: SubscriptionDetailsModalProps): React.ReactElement | null {
+  const { t } = useTranslation();
+
+  if (!isOpen || !stats) return null;
+
+  const planConfig = {
+    [SubscriptionPlan.FREE]: {
+      icon: Zap,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+      label: t('subscription.freePlan'),
+    },
+    [SubscriptionPlan.PREMIUM]: {
+      icon: Crown,
+      color: 'text-yellow-500',
+      bgColor: 'bg-yellow-500/10',
+      label: t('subscription.premiumPlan'),
+    },
+    [SubscriptionPlan.ENTERPRISE]: {
+      icon: TrendingUp,
+      color: 'text-purple-500',
+      bgColor: 'bg-purple-500/10',
+      label: t('subscription.enterprisePlan'),
+    },
+  };
+
+  const config = planConfig[stats.plan] || planConfig[SubscriptionPlan.FREE];
+  const Icon = config.icon;
+
+  const getProgressColor = (remaining: number, limit: number): string => {
+    if (limit === UNLIMITED_LIMIT) return 'bg-green-500';
+    const percentage = (remaining / limit) * 100;
+    if (percentage > 50) return 'bg-green-500';
+    if (percentage > 25) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    const nextReset = new Date(date);
+    nextReset.setDate(nextReset.getDate() + 30);
+    return nextReset.toLocaleDateString();
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container border">
+        {/* Header */}
+        <div className={`${config.bgColor} p-4 border-b sticky top-0 flex items-center justify-between`}>
+          <div className="flex items-center gap-3">
+            <div className={`${config.color}`}>
+              <Icon className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">{config.label}</h3>
+              <p className="text-xs text-muted-foreground">
+                {t('subscription.resetsOn')}: {formatDate(stats.periodStart)}
+              </p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Usage Stats */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {(
+            [
+              { key: 'workout' as const, translationKey: 'subscription.workoutGenerations' },
+              { key: 'meal' as const, translationKey: 'subscription.mealGenerations' },
+              { key: 'inbody' as const, translationKey: 'subscription.inbodyScans' },
+              { key: 'bodyPhoto' as const, translationKey: 'subscription.bodyPhotoAnalysis' },
+            ] as const
+          ).map(({ key, translationKey }) => {
+            const stat = stats[key];
+            const progressWidth =
+              stat.limit === UNLIMITED_LIMIT
+                ? ONE_HUNDRED_PERCENT_TEXT
+                : `${((stat.limit - stat.used) / stat.limit) * 100}%`;
+            const displayText =
+              stat.limit === UNLIMITED_LIMIT
+                ? UNLIMITED_LIMIT
+                : `${stat.used}/${stat.limit}`;
+
+            return (
+              <div key={key} className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">{t(translationKey)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
+                    <div
+                      className={`h-full ${getProgressColor(stat.remaining, stat.limit)} transition-all`}
+                      style={{ width: progressWidth }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground text-right min-w-[60px]">
+                    {displayText}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Upgrade Section (only for non-enterprise) */}
+        {stats.plan !== SubscriptionPlan.ENTERPRISE && (
+          <div className="border-t bg-muted/30 p-4">
+            <div className="space-y-3">
+              <p className="text-sm font-medium">{t('subscription.wantMore')}</p>
+              <div className="grid gap-2">
+                {stats.plan === SubscriptionPlan.FREE && (
+                  <>
+                    <div className="flex items-start gap-2 text-sm">
+                      <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">
+                        {t('subscription.premiumBenefit1')}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">
+                        {t('subscription.premiumBenefit2')}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {stats.plan === SubscriptionPlan.PREMIUM && (
+                  <>
+                    <div className="flex items-start gap-2 text-sm">
+                      <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">
+                        {t('subscription.enterpriseBenefit1')}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">
+                        {t('subscription.enterpriseBenefit2')}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className="pt-2">
+                <button
+                  className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium"
+                  onClick={(): void => {
+                    alert(t('subscription.comingSoon'));
+                  }}
+                >
+                  {stats.plan === SubscriptionPlan.FREE
+                    ? t('subscription.upgradeToPremium')
+                    : t('subscription.upgradeToEnterprise')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Enterprise Badge */}
+        {stats.plan === SubscriptionPlan.ENTERPRISE && (
+          <div className="border-t bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-4 text-center">
+            <p className="text-sm font-medium text-purple-600 dark:text-purple-400">
+              {t('subscription.enterpriseActive')} ✨
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

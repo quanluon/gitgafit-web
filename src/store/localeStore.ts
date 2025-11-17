@@ -8,7 +8,7 @@ interface LocaleState {
 }
 
 export const useLocaleStore = create<LocaleState>()((set) => ({
-  language: Language.EN,
+  language: Language.VI,
   setLanguage: (language: Language): void => {
     i18n.changeLanguage(language);
     set({ language });

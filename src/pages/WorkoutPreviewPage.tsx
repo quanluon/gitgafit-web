@@ -8,6 +8,7 @@ import { workoutService } from '@services/workoutService';
 import { Language, DayOfWeek } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
 import { AppRoutePath } from '@/routes/paths';
+import { RedirectToOnboardingModal } from '@organisms/RedirectToOnboardingModal';
 
 export function WorkoutPreviewPage(): React.ReactElement {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export function WorkoutPreviewPage(): React.ReactElement {
   const { user } = useAuthStore();
   const { currentPlan, setCurrentPlan } = useWorkoutStore();
   const [error, setError] = useState<string>('');
+  const [showRedirectModal, setShowRedirectModal] = useState<boolean>(false);
 
   useEffect(() => {
     // Load current plan if not in store
@@ -24,8 +26,8 @@ export function WorkoutPreviewPage(): React.ReactElement {
           const plan = await workoutService.getCurrentPlan();
           setCurrentPlan(plan);
         } catch (err) {
-          // If no plan exists, redirect to onboarding
-          navigate(AppRoutePath.Onboarding);
+          // If no plan exists, show friendly modal
+          setShowRedirectModal(true);
         }
       }
     };
@@ -172,6 +174,13 @@ export function WorkoutPreviewPage(): React.ReactElement {
           </Button>
         </div>
       </div>
+
+      {/* Redirect to Onboarding Modal */}
+      <RedirectToOnboardingModal
+        isOpen={showRedirectModal}
+        onClose={(): void => setShowRedirectModal(false)}
+        redirectDelay={3}
+      />
     </div>
   );
 }

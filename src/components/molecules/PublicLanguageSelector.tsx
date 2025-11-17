@@ -1,8 +1,7 @@
-import React from 'react';
-import { Globe } from 'lucide-react';
+import { Language, LANGUAGE_OPTIONS } from '@/types/enums';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
-import { Language } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
+import React from 'react';
 
 interface PublicLanguageSelectorProps {
   className?: string;
@@ -15,22 +14,16 @@ export function PublicLanguageSelector({
 }: PublicLanguageSelectorProps): React.ReactElement {
   const { language, setLanguage } = useLocaleStore();
 
-  const languageOptions = [
-    { value: Language.EN, label: '🇬🇧 English' },
-    { value: Language.VI, label: '🇻🇳 Tiếng Việt' },
-  ];
-
   return (
     <div
       className={`flex items-center gap-2 text-sm text-muted-foreground ${className ?? ''}`}
     >
-      <Globe className="h-4 w-4" />
       <Select value={language} onValueChange={(value): void => setLanguage(value as Language)}>
         <SelectTrigger className={`w-[140px] ${triggerClassName ?? ''}`}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {languageOptions.map((option) => (
+          {LANGUAGE_OPTIONS.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>

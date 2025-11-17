@@ -16,7 +16,7 @@ export function MainLayout({
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
       <main 
-        className={`flex-1 overflow-y-auto ${showBottomNav ? 'pb-16' : 'pb-4'}`}
+        className={`flex-1 overflow-y-auto ${showBottomNav ? 'pb-4' : 'pb-4'}`}
         style={{
           paddingBottom: showBottomNav ? 'calc(4rem + env(safe-area-inset-bottom))' : 'env(safe-area-inset-bottom)',
         }}

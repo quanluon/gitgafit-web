@@ -6,6 +6,12 @@ export enum SubscriptionPlan {
 
 export const UNLIMITED_LIMIT = -1;
 
+export const INFINITY_SYMBOL = '∞';
+
+export const ONE_HUNDRED_PERCENT = 100;
+
+export const ONE_HUNDRED_PERCENT_TEXT = `${ONE_HUNDRED_PERCENT}%`;
+
 export interface GenerationStats {
   used: number;
   limit: number;

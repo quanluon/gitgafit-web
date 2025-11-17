@@ -24,8 +24,8 @@ export function WorkoutDetailsModal({
   const focus = workout.focus[currentLang];
 
   return (
-    <div className="top-[-25px] fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-background rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="modal-overlay items-end sm:items-center">
+      <div className="modal-container border w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl">
         {/* Header */}
         <div className="sticky top-0 bg-background border-b p-6 flex items-center justify-between">
           <div>
@@ -40,7 +40,7 @@ export function WorkoutDetailsModal({
         </div>
 
         {/* Exercise List */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 overflow-scroll">
           {workout.exercises.map((exercise, index) => {
             const exerciseName = exercise.name[currentLang];
             const exerciseDescription = exercise.description[currentLang];

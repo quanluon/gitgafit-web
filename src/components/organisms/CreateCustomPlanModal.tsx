@@ -232,8 +232,8 @@ export function CreateCustomPlanModal({
   };
 
   return (
-    <div className="top-[-25px] fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg border bg-background">
+    <div className="modal-overlay">
+      <div className="modal-container border w-full max-w-5xl">
         <div className="flex items-center justify-between border-b px-6 py-4">
           <div>
             <h2 className="text-xl font-bold">{t('workout.createCustomPlan')}</h2>
@@ -546,7 +546,7 @@ function ExerciseLibraryPanel({
   }
 
   return createPortal(
-    <div className="top-[-25px] fixed inset-0 z-[70] bg-black/50">
+    <div className="modal-overlay z-[70] items-stretch justify-end p-0">
       <div className="ml-auto flex h-full w-full max-w-lg flex-col bg-card px-6 py-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <div>

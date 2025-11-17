@@ -10,7 +10,7 @@ import { useAuthStore } from '@store/authStore';
 import { useGenerationStore, GenerationType, GenerationStatus } from '@store/generationStore';
 import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
-import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
+import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types/enums';
 import { UserProfile } from '@/types/user';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@atoms/Select';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
@@ -75,6 +75,9 @@ export function OnboardingPage(): React.ReactElement {
       if (user.height) setValue('height', user.height);
       if (user.weight) setValue('weight', user.weight);
       if (user.targetWeight) setValue('targetWeight', user.targetWeight);
+      if (user.age) setValue('age', user.age);
+      if (user.gender) setValue('gender', user.gender);
+      if (user.activityLevel) setValue('activityLevel', user.activityLevel);
       if (user.scheduleDays?.length > 0) {
         setValue('scheduleDays', user.scheduleDays);
       }
@@ -127,6 +130,20 @@ export function OnboardingPage(): React.ReactElement {
     { value: DayOfWeek.SUNDAY, label: t('common.days.sunday') },
   ];
 
+  const genderOptions = [
+    { value: Gender.MALE, label: t('profile.male') },
+    { value: Gender.FEMALE, label: t('profile.female') },
+    { value: Gender.OTHER, label: t('profile.other') },
+  ];
+
+  const activityLevelOptions = [
+    { value: ActivityLevel.SEDENTARY, label: t('profile.sedentary'), description: t('profile.sedentaryDesc') },
+    { value: ActivityLevel.LIGHTLY_ACTIVE, label: t('profile.lightlyActive'), description: t('profile.lightlyActiveDesc') },
+    { value: ActivityLevel.MODERATELY_ACTIVE, label: t('profile.moderatelyActive'), description: t('profile.moderatelyActiveDesc') },
+    { value: ActivityLevel.VERY_ACTIVE, label: t('profile.veryActive'), description: t('profile.veryActiveDesc') },
+    { value: ActivityLevel.EXTREMELY_ACTIVE, label: t('profile.extremelyActive'), description: t('profile.extremelyActiveDesc') },
+  ];
+
   const steps: OnboardingStep[] = ['goal', 'experience', 'body', 'schedule', 'summary'];
   const currentStepIndex = steps.indexOf(currentStep);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
@@ -171,6 +188,9 @@ export function OnboardingPage(): React.ReactElement {
         height: data.height,
         weight: data.weight,
         targetWeight: data.targetWeight,
+        age: data.age,
+        gender: data.gender,
+        activityLevel: data.activityLevel,
         scheduleDays: data.scheduleDays,
       };
       const updatedUser = await userService.updateProfile(profilePayload);
@@ -379,6 +399,89 @@ export function OnboardingPage(): React.ReactElement {
                 )}
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="age">{t('onboarding.ageLabel')} *</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  placeholder={user?.age?.toString() || '25'}
+                  {...register('age', {
+                    required: t('onboarding.ageRequired'),
+                    min: { value: 1, message: t('onboarding.agePositive') },
+                    max: { value: 120, message: t('onboarding.ageValid') },
+                  })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t('onboarding.requiredForTDEE')}
+                </p>
+                {errors.age && (
+                  <p className="text-sm text-destructive">{errors.age.message}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gender">{t('onboarding.genderLabel')} *</Label>
+                  <Controller
+                    name="gender"
+                    control={control}
+                    rules={{ required: t('onboarding.selectGender') }}
+                    render={({ field }): React.ReactElement => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('onboarding.selectGender')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {genderOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('onboarding.requiredForTDEE')}
+                  </p>
+                  {errors.gender && (
+                    <p className="text-sm text-destructive">{errors.gender.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activityLevel">{t('onboarding.activityLevelLabel')} *</Label>
+                  <Controller
+                    name="activityLevel"
+                    control={control}
+                    rules={{ required: t('onboarding.selectActivity') }}
+                    render={({ field }): React.ReactElement => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('onboarding.selectActivity')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {activityLevelOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <div>
+                                <div className="font-medium">{option.label}</div>
+                                <div className="text-xs text-muted-foreground">{option.description}</div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('onboarding.requiredForTDEE')}
+                  </p>
+                  {errors.activityLevel && (
+                    <p className="text-sm text-destructive">{errors.activityLevel.message}</p>
+                  )}
+                </div>
+              </div>
+
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
                   {t('onboarding.back')}
@@ -387,7 +490,7 @@ export function OnboardingPage(): React.ReactElement {
                   type="button"
                   onClick={nextStep}
                   className="flex-1"
-                  disabled={!formData.height || !formData.weight}
+                  disabled={!formData.height || !formData.weight || !formData.age || !formData.gender || !formData.activityLevel}
                 >
                   {t('onboarding.continue')}
                 </Button>
@@ -493,6 +596,28 @@ export function OnboardingPage(): React.ReactElement {
                       {t('onboarding.summaryWeight')}
                     </div>
                     <div className="font-semibold">{formData.weight} kg</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryAge')}
+                    </div>
+                    <div className="font-semibold">{formData.age || '-'}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryGender')}
+                    </div>
+                    <div className="font-semibold">
+                      {formData.gender ? genderOptions.find((o) => o.value === formData.gender)?.label : '-'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryActivity')}
+                    </div>
+                    <div className="font-semibold">
+                      {formData.activityLevel ? activityLevelOptions.find((o) => o.value === formData.activityLevel)?.label : '-'}
+                    </div>
                   </div>
                   <div className="col-span-2">
                     <div className="text-sm text-muted-foreground">

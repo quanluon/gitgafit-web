@@ -1,21 +1,15 @@
-import React from 'react';
-import { Globe } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
-import { useLocaleStore } from '@store/localeStore';
-import { useAuthStore } from '@store/authStore';
-import { userService } from '@services/userService';
-import { Language } from '@/types/enums';
 import { useToast } from '@/hooks/useToast';
+import { Language, LANGUAGE_OPTIONS } from '@/types/enums';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@atoms/Select';
+import { userService } from '@services/userService';
+import { useAuthStore } from '@store/authStore';
+import { useLocaleStore } from '@store/localeStore';
+import React from 'react';
 
 export function LanguageSelector(): React.ReactElement {
   const { language, setLanguage } = useLocaleStore();
   const { showError } = useToast();
   const { updateUser } = useAuthStore();
-
-  const languageOptions = [
-    { value: Language.EN, label: '🇬🇧 English', short: 'EN' },
-    { value: Language.VI, label: '🇻🇳 Tiếng Việt', short: 'VI' },
-  ];
 
   const handleLanguageChange = async (newLanguage: Language): Promise<void> => {
     try {
@@ -35,7 +29,6 @@ export function LanguageSelector(): React.ReactElement {
 
   return (
     <div className="flex items-center gap-2">
-      <Globe className="h-4 w-4 text-muted-foreground" />
       <Select 
         value={language} 
         onValueChange={(value): void => {
@@ -46,7 +39,7 @@ export function LanguageSelector(): React.ReactElement {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {languageOptions.map((option) => (
+          {LANGUAGE_OPTIONS.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>

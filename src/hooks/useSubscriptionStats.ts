@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { userService } from '@services/userService';
-import { GenerationStats, SubscriptionStats, UNLIMITED_LIMIT } from '@/types/subscription';
+import {
+  GenerationStats,
+  INFINITY_SYMBOL,
+  SubscriptionStats,
+  UNLIMITED_LIMIT,
+} from '@/types/subscription';
 
 type UseSubscriptionStatsOptions = {
   loadOnMount?: boolean;
@@ -40,8 +45,7 @@ export function useSubscriptionStats(
       setStats(response);
       return response;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to load subscription stats';
+      const message = err instanceof Error ? err.message : 'Failed to load subscription stats';
       setError(message);
       console.error('useSubscriptionStats:', err);
       return null;
@@ -55,8 +59,8 @@ export function useSubscriptionStats(
       if (!stats) return null;
       const { remaining, limit, resetsOn, used } = stats[type] as GenerationStats;
       const isUnlimited = limit === UNLIMITED_LIMIT;
-      const limitLabel = isUnlimited ? '∞' : String(Math.max(0, limit));
-      const remainingDisplay = isUnlimited ? '∞' : String(Math.max(0, remaining));
+      const limitLabel = isUnlimited ? INFINITY_SYMBOL : String(Math.max(0, limit));
+      const remainingDisplay = isUnlimited ? INFINITY_SYMBOL : String(Math.max(0, remaining));
       return {
         used,
         remaining,
@@ -96,5 +100,3 @@ export function useSubscriptionStats(
     [stats, isLoading, error, refresh, getQuotaInfo, formatQuotaDisplay],
   );
 }
-
-

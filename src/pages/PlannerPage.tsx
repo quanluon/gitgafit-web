@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutePath } from '@/routes/paths';
+import { RedirectToOnboardingModal } from '@organisms/RedirectToOnboardingModal';
 
 export function PlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ export function PlannerPage(): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
+  const [showRedirectModal, setShowRedirectModal] = useState<boolean>(false);
   const [isCustomPlanModalOpen, setCustomPlanModalOpen] = useState<boolean>(false);
   const [editingPlan, setEditingPlan] = useState<WorkoutPlan | null>(null);
   const {
@@ -62,8 +64,7 @@ export function PlannerPage(): React.ReactElement {
       const currentDay = getCurrentDay();
       setSelectedDay(currentDay);
     } catch (err) {
-      setError(t('workout.noPlanFound'));
-      setTimeout(() => navigate(AppRoutePath.Onboarding), 2000);
+      setShowRedirectModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -309,6 +310,13 @@ export function PlannerPage(): React.ReactElement {
           setEditingPlan(null);
         }}
         onSave={handleSaveCustomPlan}
+      />
+
+      {/* Redirect to Onboarding Modal */}
+      <RedirectToOnboardingModal
+        isOpen={showRedirectModal}
+        onClose={(): void => setShowRedirectModal(false)}
+        redirectDelay={3}
       />
     </MainLayout>
   );

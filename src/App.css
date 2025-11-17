@@ -41,6 +41,8 @@
     height: 100%;
     /* Support for iOS safe areas and notch */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+    /* Prevent zoom gestures while allowing panning */
+    touch-action: pan-x pan-y;
   }
   
   #root {
@@ -85,6 +87,44 @@
   
   .animate-shimmer {
     animation: shimmer 2s infinite;
+  }
+  
+  /* Common Modal Overlay - fits screen height, no margin top */
+  .modal-overlay {
+    position: fixed;
+    top: -25px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  
+  /* Modal container - fits screen height on mobile */
+  .modal-container {
+    width: 100%;
+    max-width: 28rem;
+    max-height: 95vh;
+    display: flex;
+    flex-direction: column;
+    background-color: hsl(var(--background));
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  @media (min-width: 640px) {
+    .modal-overlay {
+      padding: 1rem;
+    }
+    .modal-container {
+      max-height: 90vh;
+      border-radius: 0.5rem;
+    }
   }
 }
 

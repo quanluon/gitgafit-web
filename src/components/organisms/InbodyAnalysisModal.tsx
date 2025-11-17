@@ -99,8 +99,8 @@ export function InbodyAnalysisModal({
   };
 
   return (
-    <div className="top-[-25px] fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-background rounded-lg w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="modal-overlay">
+      <div className="modal-container border w-full max-w-3xl flex flex-col">
         {/* Header */}
         <div className="sticky top-0 bg-background border-b p-6 flex items-center justify-between">
           <h2 className="text-xl font-bold">{t('inbody.analysisTitle')}</h2>

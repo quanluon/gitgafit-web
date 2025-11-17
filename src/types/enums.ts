@@ -50,6 +50,11 @@ export enum Language {
   VI = 'vi',
 }
 
+export const LANGUAGE_OPTIONS = [
+  { value: Language.VI, label: '🇻🇳 Tiếng Việt' },
+  { value: Language.EN, label: '🇬🇧 English' },
+];
+
 export enum ActivityLevel {
   SEDENTARY = 'sedentary',
   LIGHTLY_ACTIVE = 'lightly_active',

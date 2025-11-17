@@ -13,11 +13,11 @@ import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { RedirectToProfileModal } from '@organisms/RedirectToProfileModal';
+import { MealPlanGenerationModal } from '@organisms/MealPlanGenerationModal';
 
 export function MealPlannerPage(): React.ReactElement {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
@@ -28,7 +28,8 @@ export function MealPlannerPage(): React.ReactElement {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
-  const [mealNotes, setMealNotes] = useState<string>('');
+  const [showRedirectModal, setShowRedirectModal] = useState<boolean>(false);
+  const [showGenerationModal, setShowGenerationModal] = useState<boolean>(false);
   const {
     refresh: refreshSubscriptionStats,
     formatQuotaDisplay,
@@ -47,12 +48,15 @@ export function MealPlannerPage(): React.ReactElement {
       const plan = await mealService.getCurrentPlan();
       setMealPlan(plan);
     } catch (err) {
-      // No plan exists, that's okay
+      // No plan exists - check if user has required profile data
+      if (!user?.age || !user?.gender || !user?.activityLevel) {
+        setShowRedirectModal(true);
+      }
       setError('');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     void loadMealPlan();
@@ -74,7 +78,7 @@ export function MealPlannerPage(): React.ReactElement {
     });
   }, [jobs, loadMealPlan, refreshSubscriptionStats]);
 
-  const handleGeneratePlan = async (fullWeek = false, useAI = false): Promise<void> => {
+  const handleOpenGenerationModal = (): void => {
     // Prevent multiple generations
     if (isGenerating || hasActiveMealGeneration) {
       showError(
@@ -85,31 +89,35 @@ export function MealPlannerPage(): React.ReactElement {
     }
 
     // Check subscription quota for AI generation
-    if (useAI && quotaInfo?.isDepleted) {
+    if (quotaInfo?.isDepleted) {
       showError(t('subscription.limitReached'));
       return;
     }
 
     // Check if user has required data
     if (!user?.weight || !user?.height || !user?.age || !user?.gender || !user?.activityLevel) {
-      setError('Please complete your profile first (age, gender, activity level required)');
-      setTimeout(() => navigate('/profile'), 2000);
+      setShowRedirectModal(true);
       return;
     }
 
+    setShowGenerationModal(true);
+  };
+
+  const handleGeneratePlan = async (notes: string): Promise<void> => {
     try {
       setIsGenerating(true);
       setError('');
 
-      const notesPayload = mealNotes.trim() || undefined;
+      const notesPayload = notes.trim() || undefined;
       // Start background generation
-      const response = await mealService.generateMealPlan({ fullWeek, useAI, notes: notesPayload });
+      const response = await mealService.generateMealPlan({ fullWeek: true, useAI: true, notes: notesPayload });
 
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.MEAL);
         showSuccess(t('generation.mealPlan') + ' ' + t('generation.generationStarted'));
         // Reload subscription stats after starting generation
         void refreshSubscriptionStats();
+        setShowGenerationModal(false);
       }
     } catch (err) {
       setError('Failed to start meal plan generation');
@@ -166,7 +174,7 @@ export function MealPlannerPage(): React.ReactElement {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={(): Promise<void> => handleGeneratePlan(true, true)}
+                  onClick={handleOpenGenerationModal}
                   disabled={
                     isGenerating ||
                     hasActiveMealGeneration ||
@@ -196,20 +204,9 @@ export function MealPlannerPage(): React.ReactElement {
           </div>
         )}
 
-        <div className="rounded-lg border bg-card/40 p-4 space-y-2">
-          <Label>{t('meal.notesLabel')}</Label>
-          <textarea
-            className="min-h-[90px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            value={mealNotes}
-            onChange={(event): void => setMealNotes(event.target.value)}
-            placeholder={t('meal.notesPlaceholder') || ''}
-          />
-          <p className="text-xs text-muted-foreground">{t('meal.notesHelper')}</p>
-        </div>
-
         {/* No Plan Yet */}
         {!mealPlan && (
-          <div className="text-center py-12 space-y-6">
+          <div className="text-center py-6 space-y-6">
             <p className="text-muted-foreground">{t('meal.noMealPlan')}</p>
 
             {/* Subscription Info */}
@@ -228,7 +225,7 @@ export function MealPlannerPage(): React.ReactElement {
 
             <div className="flex flex-col gap-3 max-w-sm mx-auto">
               <Button
-                onClick={(): Promise<void> => handleGeneratePlan(true, true)}
+                onClick={handleOpenGenerationModal}
                 size="lg"
                 disabled={
                   isGenerating ||
@@ -397,6 +394,21 @@ export function MealPlannerPage(): React.ReactElement {
           </>
         )}
       </div>
+
+      {/* Redirect to Profile Modal */}
+      <RedirectToProfileModal
+        isOpen={showRedirectModal}
+        onClose={(): void => setShowRedirectModal(false)}
+        redirectDelay={3}
+      />
+
+      {/* Meal Plan Generation Modal */}
+      <MealPlanGenerationModal
+        isOpen={showGenerationModal}
+        onClose={(): void => setShowGenerationModal(false)}
+        onConfirm={handleGeneratePlan}
+        isGenerating={isGenerating || hasActiveMealGeneration}
+      />
     </MainLayout>
   );
 }

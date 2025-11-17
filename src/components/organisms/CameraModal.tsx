@@ -77,7 +77,7 @@ export function CameraModal({
   };
 
   return (
-    <div className="top-[-25px] fixed inset-0 z-50 bg-black flex flex-col">
+    <div className="modal-overlay z-50 bg-black items-stretch p-0">
       {/* Top overlay with close button */}
       <div className="absolute top-0 left-0 right-0 z-10 p-4 pt-safe flex items-start justify-between pointer-events-none">
         {title && (

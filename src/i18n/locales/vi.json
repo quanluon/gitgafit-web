@@ -83,7 +83,24 @@
     "daysPerWeek": "ngày mỗi tuần",
     "generateMyPlan": "Tạo kế hoạch cho tôi",
     "generationFailed": "Không thể bắt đầu tạo kế hoạch tập",
-    "skipNow": "Bỏ qua"
+    "skipNow": "Bỏ qua",
+    "ageLabel": "Tuổi",
+    "ageRequired": "Tuổi là bắt buộc",
+    "agePositive": "Tuổi phải là số dương",
+    "ageValid": "Tuổi phải hợp lệ (1-120)",
+    "genderLabel": "Giới tính",
+    "selectGender": "Chọn giới tính",
+    "activityLevelLabel": "Mức độ hoạt động",
+    "selectActivity": "Chọn mức độ hoạt động",
+    "requiredForTDEE": "Cần thiết để tính TDEE",
+    "summaryAge": "Tuổi",
+    "summaryGender": "Giới tính",
+    "summaryActivity": "Mức độ hoạt động",
+    "redirectModal": {
+      "title": "Bạn chưa có kế hoạch tập luyện",
+      "message": "Sẽ chuyển hướng tới thiết lập kế hoạch trong {{seconds}} giây nữa...",
+      "goNow": "Đi ngay"
+    }
   },
   "auth": {
     "login": "Đăng nhập",
@@ -124,6 +141,11 @@
     "scheduleDays": "Lịch tập",
     "updateSuccess": "Cập nhật hồ sơ thành công",
     "updateError": "Không thể cập nhật hồ sơ",
+    "redirectModal": {
+      "title": "Hoàn thành hồ sơ của bạn",
+      "message": "Sẽ chuyển hướng tới cài đặt hồ sơ trong {{seconds}} giây nữa...",
+      "goNow": "Đi tới hồ sơ"
+    },
     "requiredForMealPlan": "Cần thiết cho kế hoạch ăn & tính TDEE",
     "requiredForTDEE": "Để tính TDEE",
     "selectGender": "Chọn giới tính",
@@ -328,7 +350,8 @@
     "dailyTargets": "Mục tiêu hàng ngày",
     "notesLabel": "Ghi chú cho bữa ăn",
     "notesPlaceholder": "Nguyên liệu muốn thêm/bớt, khẩu vị, lưu ý ăn kiêng...",
-    "notesHelper": "Tùy chọn: giúp đầu bếp cá nhân hóa thực đơn."
+    "notesHelper": "Tùy chọn: giúp đầu bếp cá nhân hóa thực đơn.",
+    "generateMealPlan": "Tạo kế hoạch bữa ăn"
   },
   "navigation": {
     "home": "Trang chủ",

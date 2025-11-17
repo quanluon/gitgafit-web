@@ -83,7 +83,24 @@
     "daysPerWeek": "days per week",
     "generateMyPlan": "Generate My Plan",
     "generationFailed": "Failed to start workout generation",
-    "skipNow": "Skip now"
+    "skipNow": "Skip now",
+    "ageLabel": "Age",
+    "ageRequired": "Age is required",
+    "agePositive": "Age must be positive",
+    "ageValid": "Age must be valid (1-120)",
+    "genderLabel": "Gender",
+    "selectGender": "Select gender",
+    "activityLevelLabel": "Activity Level",
+    "selectActivity": "Select activity level",
+    "requiredForTDEE": "Required for TDEE calculation",
+    "summaryAge": "Age",
+    "summaryGender": "Gender",
+    "summaryActivity": "Activity Level",
+    "redirectModal": {
+      "title": "You don't have a workout plan yet",
+      "message": "Redirecting to setup your plan in {{seconds}} seconds...",
+      "goNow": "Go Now"
+    }
   },
   "auth": {
     "login": "Login",
@@ -124,6 +141,11 @@
     "scheduleDays": "Schedule Days",
     "updateSuccess": "Profile updated successfully",
     "updateError": "Failed to update profile",
+    "redirectModal": {
+      "title": "Complete Your Profile",
+      "message": "Redirecting to profile settings in {{seconds}} seconds...",
+      "goNow": "Go to Profile"
+    },
     "requiredForMealPlan": "Required for meal plan & TDEE calculation",
     "requiredForTDEE": "For TDEE calculation",
     "selectGender": "Select gender",
@@ -328,7 +350,8 @@
     "dailyTargets": "Daily Targets",
     "notesLabel": "Meal notes",
     "notesPlaceholder": "Ingredients to include/exclude, diet preferences, etc.",
-    "notesHelper": "Optional guidance we’ll share with the chef."
+    "notesHelper": "Optional guidance we'll share with the chef.",
+    "generateMealPlan": "Generate Meal Plan"
   },
   "navigation": {
     "home": "Home",

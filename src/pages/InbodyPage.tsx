@@ -105,7 +105,7 @@ export function InbodyPage(): React.ReactElement {
 
         <div className="p-4 space-y-4 border rounded-lg bg-card relative">
           {isAnalyzing && (
-            <div className="top-[-25px] fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] flex items-center justify-center">
+            <div className="modal-overlay bg-background/80 backdrop-blur-sm z-[100]">
               <div className="flex flex-col items-center gap-4">
                 <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                 <div className="text-sm font-medium text-muted-foreground">
