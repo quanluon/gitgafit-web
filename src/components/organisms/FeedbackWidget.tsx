@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { FeedbackModal } from './FeedbackModal';
 import { logFeedbackEvent } from '@/services/firebase';
@@ -9,6 +9,7 @@ export function FeedbackWidget(): React.ReactElement {
   const { t } = useTranslation();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   const derivedContext = useMemo(() => {
     if (location.pathname.includes('planner') || location.pathname.includes('workout')) {
@@ -31,6 +32,15 @@ export function FeedbackWidget(): React.ReactElement {
     setIsOpen(true);
   };
 
+  const handleHide = (): void => {
+    setIsOpen(false);
+    setIsVisible(false);
+  };
+
+  if (!isVisible) {
+    return <></>;
+  }
+
   return (
     <>
       <button
@@ -40,6 +50,14 @@ export function FeedbackWidget(): React.ReactElement {
       >
         <MessageCircle className="h-4 w-4" />
         {t('feedback.button')}
+      </button>
+      <button
+        type="button"
+        onClick={handleHide}
+        className="fixed bottom-36 right-4 z-40 rounded-full bg-background/80 p-2 shadow-md border text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={t('common.close')}
+      >
+        <X className="h-4 w-4" />
       </button>
       <FeedbackModal
         isOpen={isOpen}

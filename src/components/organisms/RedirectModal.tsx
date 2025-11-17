@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@atoms/Button';
@@ -32,19 +32,12 @@ export function RedirectModal({
   useEffect(() => {
     if (!isOpen) return;
 
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          navigate(redirectPath);
-          return 0;
-        }
-        return prev - 1;
-      });
+    const interval = window.setInterval(() => {
+      setCountdown((prev) => Math.max(prev - 1, 0));
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [isOpen, navigate, redirectPath]);
+    return () => window.clearInterval(interval);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,18 +45,39 @@ export function RedirectModal({
     }
   }, [isOpen, redirectDelay]);
 
+  useEffect(() => {
+    if (isOpen && countdown === 0) {
+      navigate(redirectPath);
+    }
+  }, [countdown, isOpen, navigate, redirectPath]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setCountdown(redirectDelay);
+    }
+  }, [isOpen, redirectDelay]);
+
+  const defaultMessage = useMemo(() => {
+    if (!message) {
+      return t('common.redirectModal.message', { seconds: countdown });
+    }
+
+    if (message.includes('{{seconds}}')) {
+      return message.replace('{{seconds}}', countdown.toString());
+    }
+
+    return `${message} (${countdown}s)`;
+  }, [message, countdown, t]);
+
   if (!isOpen) return null;
 
-    const handleGoNow = (): void => {
-      navigate(redirectPath);
-    };
+  const handleGoNow = (): void => {
+    navigate(redirectPath);
+  };
 
-    const defaultTitle = title || t('common.redirectModal.title');
-    // If message is provided, use it with countdown interpolation, otherwise use default
-    const defaultMessage = message
-      ? message.replace('{{seconds}}', countdown.toString())
-      : t('common.redirectModal.message', { seconds: countdown });
-    const defaultGoNowLabel = goNowLabel || t('common.redirectModal.goNow');
+  const defaultTitle = title || t('common.redirectModal.title');
+
+  const defaultGoNowLabel = goNowLabel || t('common.redirectModal.goNow');
 
     return (
       <div className="modal-overlay">
