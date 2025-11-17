@@ -417,14 +417,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
                 {t('common.cancel')}
               </Button>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleScan}
-              disabled={isScanning || !file}
-              className="w-full"
-            >
-              {isScanning ? t('inbody.scanning') : t('inbody.rescanImage')}
-            </Button>
           </div>
         </div>
       )}
