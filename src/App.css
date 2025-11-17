@@ -39,8 +39,10 @@
   body {
     @apply bg-background text-foreground;
     height: 100%;
-    /* Support for iOS safe areas and notch */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+    padding-top: env(safe-area-inset-top, 0);
+    padding-right: env(safe-area-inset-right, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-left: env(safe-area-inset-left, 0);
     /* Prevent zoom gestures while allowing panning */
     touch-action: pan-x pan-y;
   }
@@ -92,7 +94,7 @@
   /* Common Modal Overlay - fits screen height, no margin top */
   .modal-overlay {
     position: fixed;
-    top: -25px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;

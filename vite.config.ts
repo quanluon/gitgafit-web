@@ -5,6 +5,7 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: { allowedHosts: ['eea0d0d6aeb1.ngrok-free.app'] },
   plugins: [
     react(),
     VitePWA({
@@ -18,9 +19,10 @@ export default defineConfig({
         'android-chrome-512x512.png',
       ],
       manifest: {
-        name: 'GigaFit - AI Fitness & Nutrition',
+        name: 'GigaFit - Your Personal Fitness Coach',
         short_name: 'GigaFit',
-        description: 'AI-powered fitness and nutrition management platform with personalized workout and meal plans',
+        description:
+          'Your personal fitness and nutrition coach. Get customized workout plans, meal plans, and track your progress with expert guidance tailored just for you',
         theme_color: '#000000',
         background_color: '#ffffff',
         display: 'standalone',
@@ -100,4 +102,3 @@ export default defineConfig({
     },
   },
 });
-

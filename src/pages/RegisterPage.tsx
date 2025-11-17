@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/useToast';
+import { AppRoutePath } from '@/routes/paths';
 import { Button } from '@atoms/Button';
 import { FormField } from '@molecules/FormField';
-import { useAuthStore } from '@store/authStore';
+import { AuthLanguageSelector } from '@molecules/PublicLanguageSelector';
 import { authService } from '@services/authService';
-import { PublicLanguageSelector } from '@molecules/PublicLanguageSelector';
-import { AppRoutePath } from '@/routes/paths';
+import { useAuthStore } from '@store/authStore';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface RegisterFormData {
   email: string;
@@ -40,12 +40,15 @@ export function RegisterPage(): React.ReactElement {
         password: data.password,
       });
       setAuth(response.accessToken, response.refreshToken, response.user);
-      showSuccess(t('auth.registerSuccess'));
+      showSuccess(t('auth.registerSuccess'), { id: 'register-success' });
       navigate(AppRoutePath.Onboarding);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      const errorMessage = error?.response?.data?.message || t('auth.registerError') || 'Registration failed. Please try again.';
-      showError(errorMessage);
+      const errorMessage =
+        error?.response?.data?.message ||
+        t('auth.registerError') ||
+        'Registration failed. Please try again.';
+      showError(errorMessage, { id: 'register-error' });
     } finally {
       setIsLoading(false);
     }
@@ -54,9 +57,7 @@ export function RegisterPage(): React.ReactElement {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="fixed top-4 right-4">
-          <PublicLanguageSelector />
-        </div>
+        <AuthLanguageSelector />
 
         <div className="text-center">
           <h1 className="text-3xl font-bold">GigaFit</h1>
@@ -113,4 +114,3 @@ export function RegisterPage(): React.ReactElement {
     </div>
   );
 }
-

@@ -34,6 +34,7 @@
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^14.0.0",
     "react-markdown": "^10.1.0",
+    "react-pwa-installer-prompt": "^1.0.8",
     "react-router-dom": "^6.21.1",
     "react-webcam": "^7.2.0",
     "recharts": "^2.10.3",

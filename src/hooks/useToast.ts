@@ -14,7 +14,16 @@ interface ToastOptions {
     | 'bottom-right';
 }
 
-export function useToast() {
+interface UseToastReturn {
+  showSuccess: (message: string | ((t: Toast) => Renderable), options?: ToastOptions) => void;
+  showError: (message: string | ((t: Toast) => Renderable), options?: ToastOptions) => void;
+  showInfo: (message: string | ((t: Toast) => Renderable), options?: ToastOptions) => void;
+  showLoading: (message: string, options?: ToastOptions) => string;
+  dismiss: (id?: string) => void;
+  dismissAll: () => void;
+}
+
+export function useToast(): UseToastReturn {
   const showSuccess = useCallback(
     (message: string | ((t: Toast) => Renderable), options?: ToastOptions): void => {
       if (options?.id) {

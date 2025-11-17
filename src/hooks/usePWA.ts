@@ -1,101 +1,53 @@
 import { useState, useEffect } from 'react';
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+interface PWAInstallStatus {
+  isInstallAllowed: boolean;
+  isInstallWatingConfirm: boolean;
+  isInstalling: boolean;
+  isInstallCancelled: boolean;
+  isInstallSuccess: boolean;
+  isInstallFailed: boolean;
 }
 
 interface PWAState {
   isInstallable: boolean;
   isInstalled: boolean;
   isStandalone: boolean;
-  promptInstall: () => Promise<void>;
-  dismissPrompt: () => void;
+  installStatus: PWAInstallStatus | null;
 }
 
 /**
- * Custom hook for PWA installation management
- * Handles beforeinstallprompt event and provides install functionality
+ * Custom hook for PWA installation status management
+ * Tracks installation state from react-pwa-installer-prompt callback
  */
 export function usePWA(): PWAState {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState<boolean>(false);
-  const [isInstalled, setIsInstalled] = useState<boolean>(false);
+  const [installStatus, setInstallStatus] = useState<PWAInstallStatus | null>(null);
 
   // Check if app is already installed (running in standalone mode)
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
+  // Determine if installable based on status
+  const isInstallable = installStatus?.isInstallAllowed === true && !isStandalone;
+  const isInstalled = installStatus?.isInstallSuccess === true || isStandalone;
+
+  // Listen for status updates from PWAInstallerPrompt component
   useEffect(() => {
-    // Listen for beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event): void => {
-      // Prevent the mini-infobar from appearing on mobile
-      e.preventDefault();
-      
-      // Save the event for later use
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setIsInstallable(true);
-      
-      console.log('💾 PWA install prompt available');
+    const handleStatusUpdate = (event: CustomEvent<PWAInstallStatus>): void => {
+      setInstallStatus(event.detail);
     };
 
-    // Listen for app installed event
-    const handleAppInstalled = (): void => {
-      console.log('✅ PWA installed successfully');
-      setIsInstalled(true);
-      setIsInstallable(false);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('pwa-install-status', handleStatusUpdate as EventListener);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('pwa-install-status', handleStatusUpdate as EventListener);
     };
   }, []);
-
-  /**
-   * Trigger PWA installation prompt
-   */
-  const promptInstall = async (): Promise<void> => {
-    if (!deferredPrompt) {
-      console.warn('⚠️ Install prompt not available');
-      return;
-    }
-
-    // Show the install prompt
-    await deferredPrompt.prompt();
-
-    // Wait for the user's response
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    console.log(`👤 User response to install prompt: ${outcome}`);
-
-    if (outcome === 'accepted') {
-      setIsInstalled(true);
-    }
-
-    // Clear the deferred prompt
-    setDeferredPrompt(null);
-    setIsInstallable(false);
-  };
-
-  /**
-   * Dismiss the install prompt
-   */
-  const dismissPrompt = (): void => {
-    setIsInstallable(false);
-    setDeferredPrompt(null);
-  };
 
   return {
     isInstallable,
     isInstalled,
     isStandalone,
-    promptInstall,
-    dismissPrompt,
+    installStatus,
   };
 }
-

@@ -15,9 +15,7 @@ export function PublicLanguageSelector({
   const { language, setLanguage } = useLocaleStore();
 
   return (
-    <div
-      className={`flex items-center gap-2 text-sm text-muted-foreground ${className ?? ''}`}
-    >
+    <div className={`flex items-center gap-2 text-sm text-muted-foreground ${className ?? ''}`}>
       <Select value={language} onValueChange={(value): void => setLanguage(value as Language)}>
         <SelectTrigger className={`w-[140px] ${triggerClassName ?? ''}`}>
           <SelectValue />
@@ -34,3 +32,10 @@ export function PublicLanguageSelector({
   );
 }
 
+export function AuthLanguageSelector(): React.ReactElement {
+  return (
+    <div className="fixed top-10 right-4">
+      <PublicLanguageSelector />
+    </div>
+  );
+}

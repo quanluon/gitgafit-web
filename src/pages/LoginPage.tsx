@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/useToast';
 import { Button } from '@atoms/Button';
 import { FormField } from '@molecules/FormField';
-import { useAuthStore } from '@store/authStore';
+import { AuthLanguageSelector } from '@molecules/PublicLanguageSelector';
 import { authService } from '@services/authService';
-import { PublicLanguageSelector } from '@molecules/PublicLanguageSelector';
+import { useAuthStore } from '@store/authStore';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface LoginFormData {
   email: string;
@@ -32,12 +32,13 @@ export function LoginPage(): React.ReactElement {
       setIsLoading(true);
       const response = await authService.login(data);
       setAuth(response.accessToken, response.refreshToken, response.user);
-      showSuccess(t('auth.loginSuccess'));
+      showSuccess(t('auth.loginSuccess'), { id: 'login-success' });
       navigate('/');
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
-      const errorMessage = error?.response?.data?.message || t('auth.loginError') || 'Invalid email or password';
-      showError(errorMessage);
+      const errorMessage =
+        error?.response?.data?.message || t('auth.loginError') || 'Invalid email or password';
+      showError(errorMessage, { id: 'login-error' });
     } finally {
       setIsLoading(false);
     }
@@ -46,9 +47,7 @@ export function LoginPage(): React.ReactElement {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="fixed top-4 right-4">
-          <PublicLanguageSelector />
-        </div>
+        <AuthLanguageSelector />
 
         <div className="text-center">
           <h1 className="text-3xl font-bold">GigaFit</h1>
@@ -62,12 +61,12 @@ export function LoginPage(): React.ReactElement {
             type="email"
             placeholder="name@example.com"
             error={errors.email?.message}
-            register={register('email', { 
+            register={register('email', {
               required: t('errors.required'),
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: t('errors.invalidEmail')
-              }
+                message: t('errors.invalidEmail'),
+              },
             })}
             required
           />
@@ -77,12 +76,12 @@ export function LoginPage(): React.ReactElement {
             name="password"
             type="password"
             error={errors.password?.message}
-            register={register('password', { 
+            register={register('password', {
               required: t('errors.required'),
               minLength: {
                 value: 6,
-                message: t('auth.passwordMinLength')
-              }
+                message: t('auth.passwordMinLength'),
+              },
             })}
             required
           />
@@ -102,4 +101,3 @@ export function LoginPage(): React.ReactElement {
     </div>
   );
 }
-

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { Button } from '@atoms/Button';
 import {
+  INFINITY_SYMBOL,
   ONE_HUNDRED_PERCENT_TEXT,
   SubscriptionPlan,
   SubscriptionStats,
@@ -102,7 +103,7 @@ export function SubscriptionDetailsModal({
                 : `${((stat.limit - stat.used) / stat.limit) * 100}%`;
             const displayText =
               stat.limit === UNLIMITED_LIMIT
-                ? UNLIMITED_LIMIT
+                ? INFINITY_SYMBOL
                 : `${stat.used}/${stat.limit}`;
 
             return (
