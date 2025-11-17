@@ -1,15 +1,13 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Home, UtensilsCrossed, BarChart3, User, ScanLine } from 'lucide-react';
 import { AppRoutePath } from '@/routes/paths';
-import { usePWA } from '@hooks/usePWA';
+import { BarChart3, Home, ScanLine, User, UtensilsCrossed } from 'lucide-react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export function BottomNavigation(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isStandalone } = usePWA();
 
   const navItems = [
     { icon: Home, label: t('navigation.home'), path: AppRoutePath.Root },
@@ -28,13 +26,7 @@ export function BottomNavigation(): React.ReactElement {
 
   return (
     <nav 
-      className="fixed left-0 right-0 w-full bg-background border-t z-40"
-      style={{
-        bottom: isStandalone ? 'calc(env(safe-area-inset-bottom, 0) + 8px)' : 0,
-        paddingBottom: 'env(safe-area-inset-bottom, 0)',
-        paddingLeft: 'env(safe-area-inset-left, 0)',
-        paddingRight: 'env(safe-area-inset-right, 0)',
-      }}
+      className="fixed left-0 right-0 bottom-0 pb-0 w-full bg-background border-t z-40"
     >
       <div className="w-full flex items-center justify-around h-14 sm:h-16 relative px-2 sm:px-4">
         {navItems.map((item) => {
