@@ -8,11 +8,18 @@ export interface Macros {
   fat: number;
 }
 
+export interface MealComponent {
+  name: Translatable;
+  quantity: string;
+  notes: Translatable;
+}
+
 export interface MealItem {
   name: Translatable;
   description?: Translatable;
   quantity: string;
   macros: Macros;
+  components?: MealComponent[];
 }
 
 export interface Meal {

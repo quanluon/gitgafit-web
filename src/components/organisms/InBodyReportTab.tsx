@@ -1,24 +1,26 @@
 import { useToast } from '@/hooks/useToast';
 import { GenerationType } from '@/store/generationStore';
-import { InbodyMetricsSummary } from '@/types/inbody';
 import { cn } from '@/utils/cn';
 import { validateImage, ValidationResult } from '@/utils/imageValidation';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
-import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
 import { inbodyService } from '@services/inbodyService';
-import { socketService, WebSocketEvent } from '@services/socketService';
+import { FileUploadCard } from '@molecules/FileUploadCard';
 import dayjs from 'dayjs';
 import { AlertCircle, Check } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+type SubscriptionQuotaInfo = ReturnType<typeof useSubscriptionStats> extends {
+  getQuotaInfo: (type: GenerationType) => infer R;
+}
+  ? R
+  : { formatted?: string; isDepleted?: boolean };
+
 interface InBodyReportTabProps {
-  quota?: ReturnType<typeof useSubscriptionStats>['getQuotaInfo'] extends (type: GenerationType) => infer R
-    ? R
-    : any;
+  quota?: SubscriptionQuotaInfo;
   onRefresh?: () => Promise<void>;
 }
 
@@ -28,22 +30,13 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
   const { refresh } = useSubscriptionStats();
   const [file, setFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<Date>(() => new Date());
-  const [ocrText, setOcrText] = useState<string>('');
   const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [showPreview, setShowPreview] = useState<boolean>(false);
-  const [metrics, setMetrics] = useState<InbodyMetricsSummary | undefined>();
-  const [s3Url, setS3Url] = useState<string>('');
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [progress, setProgress] = useState<number>(0);
-  const [progressMessage, setProgressMessage] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      await validateAndSetFile(selectedFile);
-    }
+  const handleFilePicked = async (selectedFile: File): Promise<void> => {
+    await validateAndSetFile(selectedFile);
   };
 
   const validateAndSetFile = async (fileToValidate: File): Promise<void> => {
@@ -54,10 +47,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
 
       if (validation.isValid) {
         setFile(fileToValidate);
-        setOcrText('');
-        setShowPreview(false);
-        setMetrics(undefined);
-        setS3Url('');
         showSuccess(t('inbody.imageValid'), { duration: 2000 });
       } else {
         const errorMessages = validation.errorKeys.map((key: string) => t(key)).join('. ');
@@ -72,116 +61,9 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
   };
 
 
-  useEffect(() => {
-    const handleStarted = (data: {
-      message?: string;
-      progress?: number;
-    }): void => {
-      if (data.progress !== undefined) {
-        setProgress(data.progress);
-      }
-      if (data.message) {
-        setProgressMessage(data.message);
-        setIsScanning(true);
-      }
-    };
-
-    const handleProgress = (data: {
-      progress?: number;
-      message?: string;
-    }): void => {
-      if (data.progress !== undefined) {
-        setProgress(data.progress);
-      }
-      if (data.message) {
-        setProgressMessage(data.message);
-      }
-    };
-
-    const handleComplete = (data: { message?: string }): void => {
-      setProgress(100);
-      setTimeout(() => {
-        setIsScanning(false);
-        setProgress(0);
-        setProgressMessage('');
-      }, 500);
-      if (data.message) {
-        showSuccess(data.message, { id: 'inbody-scan', duration: 3000 });
-      }
-    };
-
-    const handleError = (data: { message?: string }): void => {
-      setIsScanning(false);
-      setProgress(0);
-      setProgressMessage('');
-      if (data.message) {
-        showError(data.message, { id: 'inbody-scan', duration: 4000 });
-      }
-    };
-
-    const unsubscribeStarted = socketService.on(
-      WebSocketEvent.INBODY_SCAN_STARTED,
-      handleStarted,
-    );
-    const unsubscribeProgress = socketService.on(
-      WebSocketEvent.INBODY_SCAN_PROGRESS,
-      handleProgress,
-    );
-    const unsubscribeComplete = socketService.on(
-      WebSocketEvent.INBODY_SCAN_COMPLETE,
-      handleComplete,
-    );
-    const unsubscribeError = socketService.on(WebSocketEvent.INBODY_SCAN_ERROR, handleError);
-
-    return () => {
-      unsubscribeStarted();
-      unsubscribeProgress();
-      unsubscribeComplete();
-      unsubscribeError();
-    };
-  }, [t]);
-
-  const handleScan = async (): Promise<void> => {
+  const handleAnalyze = async (): Promise<void> => {
     if (!file) {
       showError(t('inbody.fileRequired'));
-      return;
-    }
-
-    try {
-      setIsScanning(true);
-      if (showPreview) {
-        setShowPreview(false);
-        setOcrText('');
-        setMetrics(undefined);
-      }
-
-      const { uploadUrl, s3Url: url } = await inbodyService.getPresignedUrl(file.name);
-      await inbodyService.uploadToS3(uploadUrl, file);
-      setS3Url(url);
-
-      const result = await inbodyService.scanImage(
-        url,
-        file.name,
-        takenAt ? dayjs(takenAt).toISOString() : undefined,
-      );
-
-      setOcrText(result.ocrText || '');
-      setMetrics(result.metrics);
-      setShowPreview(true);
-      showSuccess(t('inbody.scanSuccess'), { duration: 3000 });
-      await refresh();
-      await onRefresh?.();
-    } catch (error) {
-      console.error('Scan failed', error);
-      showError(t('inbody.scanError'), { duration: 4000 });
-    } finally {
-      setIsScanning(false);
-    }
-  };
-
-  const handleProcess = async (): Promise<void> => {
-    if (!file || !ocrText.trim()) {
-      showError(t('inbody.ocrTextRequired'));
       return;
     }
     if (quota?.isDepleted) {
@@ -190,38 +72,34 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
     }
 
     try {
-      setIsLoading(true);
+      setIsScanning(true);
 
-      let finalS3Url = s3Url;
-      if (!finalS3Url) {
-        const { uploadUrl, s3Url: url } = await inbodyService.getPresignedUrl(file.name);
-        await inbodyService.uploadToS3(uploadUrl, file);
-        finalS3Url = url;
-        setS3Url(url);
-      }
+      const { uploadUrl, s3Url } = await inbodyService.getPresignedUrl(file.name);
+      await inbodyService.uploadToS3(uploadUrl, file);
 
-      await inbodyService.processInbody({
-        s3Url: finalS3Url,
+      await inbodyService.analyzeInBackground({
+        s3Url,
         originalFilename: file.name,
-        ocrText: ocrText.trim(),
-        metrics,
         takenAt: takenAt ? dayjs(takenAt).toISOString() : undefined,
       });
 
-      showSuccess(t('inbody.processSuccess'), { duration: 3000 });
+      showSuccess(t('inbody.analysisQueued'), { duration: 3000 });
       setFile(null);
-      setOcrText('');
       setTakenAt(new Date());
-      setShowPreview(false);
-      setMetrics(undefined);
-      setS3Url('');
+      setValidationResult(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       await refresh();
       await onRefresh?.();
     } catch (error) {
-      console.error('Process failed', error);
-      showError(t('inbody.processError'), { duration: 4000 });
+      console.error('Failed to submit InBody analysis', error);
+      showError(t('inbody.scanError'), { duration: 4000 });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } finally {
-      setIsLoading(false);
+      setIsScanning(false);
     }
   };
 
@@ -246,27 +124,18 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
 
       <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>{t('inbody.selectFile')}</Label>
-            <div className="flex gap-2">
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                disabled={isLoading || isScanning || isValidating}
-                className="flex-1"
-              />
-              {/* <Button
-                type="button"
-                variant="outline"
-                onClick={(): void => setShowCamera(true)}
-                disabled={isLoading || isScanning || isValidating}
-                className="gap-2"
-              >
-                <Camera className="h-4 w-4" />
-              </Button> */}
-            </div>
-          </div>
+          <FileUploadCard
+            ref={fileInputRef}
+            inputId="inbody-upload"
+            label={t('inbody.selectFile')}
+            placeholder={t('inbody.chooseImage')}
+            helperText={t('inbody.supportedFormats')}
+            buttonLabel={t('inbody.tapToUpload')}
+            fileName={file?.name}
+            disabled={isScanning || isValidating || !!quota?.isDepleted}
+            accept="image/*"
+            onFileSelect={handleFilePicked}
+          />
           <div className="space-y-2">
             <Label>{t('inbody.scanDate')}</Label>
             <Input
@@ -277,7 +146,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
                 const dateValue = event.target.value;
                 setTakenAt(dateValue ? dayjs(dateValue).toDate() : new Date());
               }}
-              disabled={isLoading || isScanning}
+              disabled={isScanning}
             />
           </div>
         </div>
@@ -327,98 +196,26 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
         )}
       </div>
 
-      {file && !showPreview && (
+      {quota?.isDepleted && (
+        <p className="text-sm text-destructive text-center bg-destructive/10 rounded-lg py-2">
+          {t('inbody.quotaDepleted')}
+        </p>
+      )}
+
+      {file && !quota?.isDepleted && (
         <Button
-          onClick={handleScan}
+          onClick={handleAnalyze}
           disabled={isScanning || quota?.isDepleted || isValidating}
           className="w-full"
         >
-          {isScanning ? t('inbody.scanning') : t('inbody.scanImage')}
+          {isScanning ? t('inbody.scanning') : t('inbody.scanAndAnalyze')}
         </Button>
       )}
 
-      {/* <CameraModal
-        isOpen={showCamera}
-        onClose={(): void => setShowCamera(false)}
-        onCapture={handleCameraCapture}
-        facingMode="environment"
-        title={t('inbody.cameraTitle')}
-      /> */}
-
-      <AnalysisProgressModal
-        isOpen={isScanning}
-        progress={progress}
-        message={progressMessage}
-        estimatedTime={10}
-      />
-
-      {showPreview && (
-        <div className="space-y-4 border-t pt-4">
-          <div>
-            <Label>{t('inbody.ocrPreview')}</Label>
-            <textarea
-              className={cn(
-                'flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-              )}
-              value={ocrText}
-              onChange={(e): void => setOcrText(e.target.value)}
-              placeholder={t('inbody.ocrPreviewPlaceholder')}
-            />
-          </div>
-
-          {metrics && (
-            <div className="bg-muted/30 border rounded-md p-3 text-sm">
-              <div className="font-semibold mb-2">{t('inbody.detectedMetrics')}</div>
-              <div className="grid grid-cols-2 gap-2">
-                {metrics.weight && (
-                  <div>
-                    <span className="text-muted-foreground">{t('inbody.weight')}: </span>
-                    <span className="font-medium">{metrics.weight} kg</span>
-                  </div>
-                )}
-                {metrics.bmi && (
-                  <div>
-                    <span className="text-muted-foreground">{t('inbody.bmi')}: </span>
-                    <span className="font-medium">{metrics.bmi}</span>
-                  </div>
-                )}
-                {metrics.bodyFatPercent && (
-                  <div>
-                    <span className="text-muted-foreground">{t('inbody.bodyFat')}: </span>
-                    <span className="font-medium">{metrics.bodyFatPercent}%</span>
-                  </div>
-                )}
-                {metrics.skeletalMuscleMass && (
-                  <div>
-                    <span className="text-muted-foreground">{t('inbody.muscleMass')}: </span>
-                    <span className="font-medium">{metrics.skeletalMuscleMass} kg</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
-              <Button
-                onClick={handleProcess}
-                disabled={isLoading || quota?.isDepleted}
-                className="flex-1"
-              >
-                {isLoading ? t('common.loading') : t('inbody.processButton')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={(): void => {
-                  setShowPreview(false);
-                  setOcrText('');
-                }}
-              >
-                {t('common.cancel')}
-              </Button>
-            </div>
-          </div>
-        </div>
+      {file && (
+        <p className="text-xs text-muted-foreground text-center">
+          {t('inbody.backgroundInfo')}
+        </p>
       )}
     </div>
   );

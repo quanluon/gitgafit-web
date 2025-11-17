@@ -26,7 +26,7 @@ export function BottomNavigation(): React.ReactElement {
 
   return (
     <nav 
-      className="fixed left-0 right-0 bottom-1 pb-1 w-full bg-background border-t z-40"
+      className="fixed left-0 right-0 bottom-0 pb-1 w-full bg-background border-t z-40"
     >
       <div className="w-full flex items-center justify-around h-14 sm:h-16 relative px-2 sm:px-4">
         {navItems.map((item) => {

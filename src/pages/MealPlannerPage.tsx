@@ -1,5 +1,6 @@
-import { Language, MealType } from '@/types/enums';
+import { DayOfWeek, Language, MealType } from '@/types/enums';
 import { DailyMealPlan, Meal, MealPlan } from '@/types/meal';
+import { Translatable } from '@/types';
 import { Button } from '@atoms/Button';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { MacrosCard } from '@molecules/MacrosCard';
@@ -109,7 +110,7 @@ export function MealPlannerPage(): React.ReactElement {
 
       const notesPayload = notes.trim() || undefined;
       // Start background generation
-      const response = await mealService.generateMealPlan({ fullWeek: true, useAI: true, notes: notesPayload });
+      const response = await mealService.generateMealPlan({ fullWeek: true, notes: notesPayload });
 
       if (response.jobId) {
         startGeneration(response.jobId, GenerationType.MEAL);
@@ -135,6 +136,11 @@ export function MealPlannerPage(): React.ReactElement {
     [MealType.SNACK]: t('meal.snack'),
   };
 
+  const translateText = (value?: Translatable, fallback: string = ''): string => {
+    if (!value) return fallback;
+    return value[currentLang] || value.en || value.vi || fallback;
+  };
+
   const quotaDisplay = formatQuotaDisplay(GenerationType.MEAL);
   const quotaInfo = getQuotaInfo(GenerationType.MEAL);
 
@@ -147,6 +153,34 @@ export function MealPlannerPage(): React.ReactElement {
     };
     return icons[type];
   };
+
+  const formatNumber = (value: number): string => {
+    if (!Number.isFinite(value)) {
+      return '0';
+    }
+    return Math.round(value).toLocaleString();
+  };
+
+  const dayOrder: DayOfWeek[] = [
+    DayOfWeek.MONDAY,
+    DayOfWeek.TUESDAY,
+    DayOfWeek.WEDNESDAY,
+    DayOfWeek.THURSDAY,
+    DayOfWeek.FRIDAY,
+    DayOfWeek.SATURDAY,
+    DayOfWeek.SUNDAY,
+  ];
+
+  const orderedSchedule = mealPlan
+    ? [...mealPlan.schedule].sort(
+        (a, b) =>
+          dayOrder.indexOf(a.dayOfWeek as DayOfWeek) - dayOrder.indexOf(b.dayOfWeek as DayOfWeek),
+      )
+    : [];
+
+  const maintenanceCalories = mealPlan?.tdee ?? 0;
+  const targetCalories = mealPlan?.dailyTargets.calories ?? 0;
+  const calorieDelta = targetCalories - maintenanceCalories;
 
   if (isLoading) {
     return (
@@ -264,16 +298,38 @@ export function MealPlannerPage(): React.ReactElement {
               <h2 className="text-xl font-bold">{t('meal.nutritionTargets')}</h2>
 
               <div className="bg-card border rounded-lg p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">{t('meal.tdee')}</p>
-                    <p className="text-2xl font-bold">{mealPlan.tdee}</p>
+                    <p className="text-muted-foreground">{t('meal.maintenanceIntake')}</p>
+                    <p className="text-2xl font-bold">{formatNumber(maintenanceCalories)}</p>
                     <p className="text-xs text-muted-foreground">{t('meal.maintenanceCalories')}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">{t('meal.target')}</p>
-                    <p className="text-2xl font-bold">{mealPlan.dailyTargets.calories}</p>
+                    <p className="text-2xl font-bold">{formatNumber(targetCalories)}</p>
                     <p className="text-xs text-muted-foreground">{t('meal.dailyGoal')}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">{t('meal.calorieDelta')}</p>
+                    <p
+                      className={`text-2xl font-bold ${
+                        calorieDelta === 0
+                          ? ''
+                          : calorieDelta > 0
+                            ? 'text-amber-500'
+                            : 'text-emerald-500'
+                      }`}
+                    >
+                      {calorieDelta > 0 ? '+' : ''}
+                      {formatNumber(calorieDelta)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {calorieDelta === 0
+                        ? t('meal.neutralIntake')
+                        : calorieDelta > 0
+                          ? t('meal.calorieSurplus')
+                          : t('meal.calorieDeficit')}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -290,7 +346,7 @@ export function MealPlannerPage(): React.ReactElement {
             <div className="space-y-4">
               <h2 className="text-xl font-bold">{t('meal.weeklyPlan')}</h2>
 
-              {mealPlan.schedule.map((day: DailyMealPlan) => {
+              {orderedSchedule.map((day: DailyMealPlan) => {
                 const dayName = day.dayOfWeek.charAt(0).toUpperCase() + day.dayOfWeek.slice(1);
                 const isExpanded = expandedDay === day.dayOfWeek;
 
@@ -342,15 +398,40 @@ export function MealPlannerPage(): React.ReactElement {
                                   className="flex items-start justify-between p-3 bg-secondary rounded-lg"
                                 >
                                   <div className="flex-1">
-                                    <p className="font-medium text-sm">{item.name[currentLang]}</p>
+                                    <p className="font-medium text-sm">{translateText(item.name)}</p>
                                     {item.description && (
                                       <p className="text-xs text-muted-foreground mt-1">
-                                        {item.description[currentLang]}
+                                        {translateText(item.description)}
                                       </p>
                                     )}
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {item.quantity}
                                     </p>
+                                    {item.components && item.components.length > 0 && (
+                                      <div className="mt-2 space-y-1">
+                                        <p className="text-[11px] font-semibold text-foreground">
+                                          {t('meal.ingredients')}
+                                        </p>
+                                        <ul className="space-y-1 text-[11px] text-muted-foreground">
+                                          {item.components.map((component, componentIndex) => {
+                                            const componentNote = translateText(component.notes);
+                                            return (
+                                              <li key={componentIndex} className="leading-relaxed">
+                                                <span className="text-foreground">
+                                                  {translateText(component.name)} ·{' '}
+                                                  <span className="font-medium">{component.quantity}</span>
+                                                </span>
+                                                {componentNote && (
+                                                  <span className="block text-[10px] text-muted-foreground">
+                                                    {componentNote}
+                                                  </span>
+                                                )}
+                                              </li>
+                                            );
+                                          })}
+                                        </ul>
+                                      </div>
+                                    )}
                                   </div>
                                   <div className="text-right text-xs">
                                     <p className="font-semibold">

@@ -14,7 +14,6 @@ import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types
 import { UserProfile } from '@/types/user';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@atoms/Select';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
-import { UNLIMITED_LIMIT } from '@/types/subscription';
 import { useOnboardingStore, OnboardingStep } from '@store/onboardingStore';
 
 type OnboardingForm = UserProfile & {
@@ -686,13 +685,6 @@ export function OnboardingPage(): React.ReactElement {
                     }
                   >
                     {quotaInfo?.formatted}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {' '}
-                    /{' '}
-                    {quotaInfo?.limit === UNLIMITED_LIMIT
-                      ? t('subscription.unlimited')
-                      : quotaInfo?.limit}
                   </span>
                 </div>
               )}

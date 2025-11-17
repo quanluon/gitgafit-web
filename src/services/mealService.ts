@@ -5,7 +5,6 @@ import { DayOfWeek } from '@/types/enums';
 
 interface GenerateMealPlanRequest {
   scheduleDays?: DayOfWeek[];
-  useAI?: boolean;
   fullWeek?: boolean;
   notes?: string;
 }

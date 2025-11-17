@@ -55,6 +55,15 @@ class InbodyService {
     return response.data.data!;
   }
 
+  async analyzeInBackground(payload: {
+    s3Url: string;
+    originalFilename: string;
+    takenAt?: string;
+  }): Promise<{ jobId: string }> {
+    const response = await apiClient.post<ApiResponse<{ jobId: string }>>('/inbody/analyze', payload);
+    return response.data.data!;
+  }
+
   async list(limit = 20, offset = 0): Promise<InbodyResult[]> {
     const response = await apiClient.get<ApiResponse<InbodyResult[]>>(
       `/inbody?limit=${limit}&offset=${offset}`,

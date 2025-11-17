@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
-import { Camera, Upload, Lightbulb } from 'lucide-react';
+import { Camera, Lightbulb } from 'lucide-react';
 import { validateImage, ValidationResult } from '@/utils/imageValidation';
 import { GenerationType } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
@@ -13,6 +13,7 @@ import { cn } from '@/utils/cn';
 import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
 import { inbodyService } from '@/services/inbodyService';
 import { socketService, WebSocketEvent } from '@services/socketService';
+import { FileUploadCard } from '@molecules/FileUploadCard';
 
 interface BodyPhotoTabProps {
   quota?: ReturnType<typeof useSubscriptionStats>['getQuotaInfo'] extends (
@@ -40,11 +41,8 @@ export function BodyPhotoTab({
   const [progressMessage, setProgressMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      await validateAndSetFile(selectedFile);
-    }
+  const handleFilePicked = async (selectedFile: File): Promise<void> => {
+    await validateAndSetFile(selectedFile);
   };
 
   const validateAndSetFile = async (fileToValidate: File): Promise<void> => {
@@ -148,7 +146,7 @@ export function BodyPhotoTab({
       unsubscribeComplete();
       unsubscribeError();
     };
-  }, [t, onRefresh]);
+  }, [t, onRefresh, onAnalyzingChange, showError, showSuccess]);
 
   const handleAnalyze = async (): Promise<void> => {
     if (!file) {
@@ -210,38 +208,18 @@ export function BodyPhotoTab({
 
       <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label>{t('inbody.bodyPhoto.selectPhoto')}</Label>
-            <div className="flex gap-2">
-              <Input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                disabled={isAnalyzing || isValidating}
-                className="flex-1 hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={(): void => fileInputRef.current?.click()}
-                disabled={isAnalyzing || isValidating}
-                className="flex-1 gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                {t('inbody.bodyPhoto.selectFromGallery')}
-              </Button>
-              {/* <Button
-                type="button"
-                variant="outline"
-                onClick={(): void => setShowCamera(true)}
-                disabled={isAnalyzing || isValidating}
-                className="gap-2"
-              >
-                <Camera className="h-4 w-4" />
-              </Button> */}
-            </div>
-          </div>
+          <FileUploadCard
+            ref={fileInputRef}
+            inputId="body-photo-upload"
+            label={t('inbody.bodyPhoto.selectPhoto')}
+            placeholder={t('inbody.bodyPhoto.selectFromGallery')}
+            helperText={t('inbody.supportedFormats')}
+            buttonLabel={t('inbody.tapToUpload')}
+            fileName={file?.name}
+            disabled={isAnalyzing || isValidating || !!quota?.isDepleted}
+            accept="image/*"
+            onFileSelect={handleFilePicked}
+          />
           <div className="space-y-2">
             <Label>{t('inbody.scanDate')}</Label>
             <Input
@@ -296,7 +274,13 @@ export function BodyPhotoTab({
           </div>
         )}
 
-        {file && validationResult?.isValid && (
+        {quota?.isDepleted && (
+          <p className="text-sm text-destructive text-center bg-destructive/10 rounded-lg py-2">
+            {t('inbody.quotaDepleted')}
+          </p>
+        )}
+
+        {file && validationResult?.isValid && !quota?.isDepleted && (
           <Button
             onClick={handleAnalyze}
             disabled={isAnalyzing || quota?.isDepleted}
@@ -320,14 +304,6 @@ export function BodyPhotoTab({
           </div>
         </div>
       </div>
-
-      {/* <CameraModal
-        isOpen={showCamera}
-        onClose={(): void => setShowCamera(false)}
-        onCapture={handleCameraCapture}
-        facingMode="user"
-        title={t('inbody.bodyPhoto.cameraTitle')}
-      /> */}
 
       <AnalysisProgressModal
         isOpen={isAnalyzing}
