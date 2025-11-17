@@ -1,7 +1,6 @@
 import { Language, MealType } from '@/types/enums';
 import { DailyMealPlan, Meal, MealPlan } from '@/types/meal';
 import { Button } from '@atoms/Button';
-import { Label } from '@atoms/Label';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { MacrosCard } from '@molecules/MacrosCard';
 import { mealService } from '@services/mealService';
