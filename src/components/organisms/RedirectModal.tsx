@@ -54,47 +54,43 @@ export function RedirectModal({
 
   if (!isOpen) return null;
 
-  const handleGoNow = (): void => {
-    navigate(redirectPath);
-  };
+    const handleGoNow = (): void => {
+      navigate(redirectPath);
+    };
 
-  const defaultTitle = title || t('common.redirectModal.title');
-  // If message is provided, use it with countdown interpolation, otherwise use default
-  const defaultMessage = message 
-    ? message.replace('{{seconds}}', countdown.toString())
-    : t('common.redirectModal.message', { seconds: countdown });
-  const defaultGoNowLabel = goNowLabel || t('common.redirectModal.goNow');
+    const defaultTitle = title || t('common.redirectModal.title');
+    // If message is provided, use it with countdown interpolation, otherwise use default
+    const defaultMessage = message
+      ? message.replace('{{seconds}}', countdown.toString())
+      : t('common.redirectModal.message', { seconds: countdown });
+    const defaultGoNowLabel = goNowLabel || t('common.redirectModal.goNow');
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-container border p-6 space-y-4 animate-in fade-in-0 zoom-in-95">
-        <div className="flex items-center justify-center">
-          <div className="rounded-full bg-primary/10 p-3">
-            <Sparkles className="h-6 w-6 text-primary" />
+    return (
+      <div className="modal-overlay">
+        <div className="modal-container border p-6 space-y-4 animate-in fade-in-0 zoom-in-95">
+          <div className="flex items-center justify-center">
+            <div className="rounded-full bg-primary/10 p-3">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </div>
+          </div>
+
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-semibold">{defaultTitle}</h3>
+            <p className="text-sm text-muted-foreground">{defaultMessage}</p>
+          </div>
+
+          <div className="flex gap-3">
+            {showCancel && onClose && (
+              <Button variant="outline" onClick={onClose} className="flex-1">
+                {t('common.cancel')}
+              </Button>
+            )}
+            <Button onClick={handleGoNow} className={showCancel && onClose ? 'flex-1' : 'w-full'}>
+              {defaultGoNowLabel}
+            </Button>
           </div>
         </div>
-
-        <div className="text-center space-y-2">
-          <h3 className="text-lg font-semibold">{defaultTitle}</h3>
-          <p className="text-sm text-muted-foreground">
-            {message 
-              ? message.replace('{{seconds}}', countdown.toString())
-              : t('common.redirectModal.message', { seconds: countdown })}
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-          {showCancel && onClose && (
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              {t('common.cancel')}
-            </Button>
-          )}
-          <Button onClick={handleGoNow} className={showCancel && onClose ? 'flex-1' : 'w-full'}>
-            {defaultGoNowLabel}
-          </Button>
-        </div>
       </div>
-    </div>
-  );
+    );
 }
 
