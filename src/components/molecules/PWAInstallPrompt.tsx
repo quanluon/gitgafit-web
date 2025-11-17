@@ -71,7 +71,7 @@ export function PWAInstallPrompt(): React.ReactElement | null {
 
   return (
     <PWAInstallerPrompt
-      render={({ onClick }) => (
+      render={({ onClick }: { onClick: () => void }) => (
         <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40 animate-in slide-in-from-bottom-5">
           <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg shadow-2xl p-4 border border-primary-foreground/20 relative">
             {/* Close button */}

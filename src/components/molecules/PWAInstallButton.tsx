@@ -49,7 +49,7 @@ export function PWAInstallButton({
 
   return (
     <PWAInstallerPrompt
-      render={({ onClick }) => (
+      render={({ onClick }: { onClick: () => void }) => (
         <Button
           onClick={onClick}
           variant={variant}
