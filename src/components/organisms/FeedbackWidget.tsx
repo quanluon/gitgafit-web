@@ -4,6 +4,7 @@ import { MessageCircle, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { FeedbackModal } from './FeedbackModal';
 import { logFeedbackEvent } from '@/services/firebase';
+import { FeedbackContext } from '@/types';
 
 export function FeedbackWidget(): React.ReactElement {
   const { t } = useTranslation();
@@ -11,20 +12,20 @@ export function FeedbackWidget(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
-  const derivedContext = useMemo(() => {
+  const derivedContext = useMemo<FeedbackContext>(() => {
     if (location.pathname.includes('planner') || location.pathname.includes('workout')) {
-      return 'workout';
+      return FeedbackContext.WORKOUT;
     }
     if (location.pathname.includes('meal')) {
-      return 'meal';
+      return FeedbackContext.MEAL;
     }
     if (location.pathname.includes('inbody')) {
-      return 'inbody';
+      return FeedbackContext.INBODY;
     }
     if (location.pathname.includes('profile')) {
-      return 'profile';
+      return FeedbackContext.PROFILE;
     }
-    return 'general';
+    return FeedbackContext.GENERAL;
   }, [location.pathname]);
 
   const handleOpen = (): void => {

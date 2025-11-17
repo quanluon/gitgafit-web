@@ -8,11 +8,12 @@ import { useToast } from '@/hooks/useToast';
 import { submitFeedback } from '@/services/feedbackService';
 import { logFeedbackEvent } from '@/services/firebase';
 import { useAuthStore } from '@/store/authStore';
+import { FeedbackContext } from '@/types';
 
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialContext?: string;
+  initialContext?: FeedbackContext;
   path?: string;
 }
 
@@ -21,25 +22,25 @@ const MAX_MESSAGE_LENGTH = 600;
 export function FeedbackModal({
   isOpen,
   onClose,
-  initialContext = 'general',
+  initialContext = FeedbackContext.GENERAL,
   path,
 }: FeedbackModalProps): React.ReactElement | null {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showSuccess, showError } = useToast();
   const { user } = useAuthStore();
   const [email, setEmail] = useState<string>(user?.email || '');
-  const [context, setContext] = useState<string>(initialContext);
+  const [context, setContext] = useState<FeedbackContext>(initialContext);
   const [message, setMessage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const contextOptions = useMemo(
     () => [
-      { value: 'general', label: t('feedback.contexts.general') },
-      { value: 'workout', label: t('feedback.contexts.workout') },
-      { value: 'meal', label: t('feedback.contexts.meal') },
-      { value: 'inbody', label: t('feedback.contexts.inbody') },
-      { value: 'profile', label: t('feedback.contexts.profile') },
-      { value: 'other', label: t('feedback.contexts.other') },
+      { value: FeedbackContext.GENERAL, label: t('feedback.contexts.general') },
+      { value: FeedbackContext.WORKOUT, label: t('feedback.contexts.workout') },
+      { value: FeedbackContext.MEAL, label: t('feedback.contexts.meal') },
+      { value: FeedbackContext.INBODY, label: t('feedback.contexts.inbody') },
+      { value: FeedbackContext.PROFILE, label: t('feedback.contexts.profile') },
+      { value: FeedbackContext.OTHER, label: t('feedback.contexts.other') },
     ],
     [t],
   );
@@ -68,6 +69,7 @@ export function FeedbackModal({
       context,
       userId: user?._id,
       path,
+      locale: i18n.language,
     };
 
     // Optimistic UX: close modal & notify immediately, then persist in background
@@ -124,7 +126,7 @@ export function FeedbackModal({
               id="feedback-context"
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={context}
-              onChange={(event): void => setContext(event.target.value)}
+              onChange={(event): void => setContext(event.target.value as FeedbackContext)}
             >
               {contextOptions.map((option) => (
                 <option key={option.value} value={option.value}>
