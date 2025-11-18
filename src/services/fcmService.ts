@@ -250,9 +250,9 @@ class FCMService {
         });
         // Reset failed flag on success
         this.initializationFailed = false;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Handle API errors gracefully
-        const status = error?.response?.status;
+        const status = (error as { response?: { status?: number } })?.response?.status;
         if (status === 401 || status === 403) {
           console.warn('[FCM] Not authenticated - skipping token registration');
           // Don't mark as failed for auth errors - user might not be logged in yet

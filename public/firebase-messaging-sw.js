@@ -2,226 +2,220 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
-let firebaseAppInstance = null;
-let messagingInstance = null;
-let cachedConfig = null;
-let persistedConfigPromise = null;
-
-const FCM_STORAGE = Object.freeze({
-  dbName: 'gigafit-fcm-sw',
-  storeName: 'firebase-config',
-  configKey: 'firebase-config',
-  version: 1,
-});
-const {
-  dbName: FCM_DB_NAME,
-  storeName: FCM_STORE_NAME,
-  configKey: FCM_CONFIG_KEY,
-  version: FCM_DB_VERSION,
-} = FCM_STORAGE;
-
-const isIndexedDBAvailable = typeof indexedDB !== 'undefined';
-
-const configDbPromise = isIndexedDBAvailable
-  ? new Promise((resolve, reject) => {
-      const request = indexedDB.open(FCM_DB_NAME, FCM_DB_VERSION);
-
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(FCM_STORE_NAME)) {
-          db.createObjectStore(FCM_STORE_NAME);
-        }
-      };
-
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    })
-  : null;
-
-const withConfigStore = async (mode, handler) => {
-  if (!configDbPromise) return null;
-
-  try {
-    const db = await configDbPromise;
-    return await new Promise((resolve, reject) => {
-      const transaction = db.transaction(FCM_STORE_NAME, mode);
-      const store = transaction.objectStore(FCM_STORE_NAME);
-      const request = handler(store);
-
-      if (!request) {
-        resolve(null);
-        return;
-      }
-
-      transaction.oncomplete = () => resolve(request.result ?? null);
-      transaction.onabort = () => reject(transaction.error);
-      transaction.onerror = () => reject(transaction.error);
-    });
-  } catch (error) {
-    console.warn('[FCM SW] IndexedDB transaction failed:', error);
-    return null;
-  }
-};
-
-const persistFirebaseConfig = async (config) => {
-  if (!config) return null;
-
-  return withConfigStore('readwrite', (store) =>
-    store.put(config, FCM_CONFIG_KEY),
-  ).catch((error) => {
-    console.warn('[FCM SW] Failed to persist config:', error);
-    return null;
-  });
-};
-
-const readPersistedFirebaseConfig = async () =>
-  withConfigStore('readonly', (store) => store.get(FCM_CONFIG_KEY));
-
+// Constants
+const FCM_CONFIG_KEY = 'firebase-config';
 const DEFAULT_ICON = '/icons/icon-192x192.png';
 
-const ensureMessaging = (config) => {
+let firebaseApp = null;
+let messaging = null;
+
+// Initialize Firebase with config from IndexedDB or message
+function initializeFirebase(config) {
   if (!config) {
-    console.warn('[FCM SW] Missing firebase config payload.');
+    console.warn('[FCM SW] No firebase config available');
+    return false;
+  }
+
+  try {
+    if (!firebaseApp) {
+      if (firebase?.apps?.length) {
+        firebaseApp = firebase.apps[0];
+      } else {
+        firebaseApp = firebase.initializeApp(config);
+      }
+      console.log('[FCM SW] Firebase app initialized');
+    }
+
+    if (!messaging) {
+      messaging = firebase.messaging();
+      setupBackgroundMessageHandler();
+      console.log('[FCM SW] Messaging initialized');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('[FCM SW] Failed to initialize Firebase:', error);
+    return false;
+  }
+}
+
+// Setup background message handler
+function setupBackgroundMessageHandler() {
+  if (!messaging) return;
+
+  console.log('setupBackgroundMessageHandler',messaging.onBackgroundMessage);
+  
+
+  messaging.onBackgroundMessage((payload) => {
+    console.log('[FCM SW] Background message received:', payload);
+
+    const { notification, data } = payload || {};
+
+    // Extract notification data
+    const title = notification?.title || data?.title || 'GigaFit';
+    const body = notification?.body || data?.body || '';
+    const icon = notification?.icon || DEFAULT_ICON;
+
+    // Show notification
+    return self.registration.showNotification(title, {
+      body,
+      icon,
+      data: data || {},
+      tag: data?.jobId || data?.generationType || undefined,
+      badge: DEFAULT_ICON,
+      vibrate: [200, 100, 200],
+    });
+  });
+}
+
+// IndexedDB helpers for config persistence
+async function saveConfig(config) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction('config', 'readwrite');
+    const store = tx.objectStore('config');
+    await store.put(config, FCM_CONFIG_KEY);
+    console.log('[FCM SW] Config saved to IndexedDB');
+  } catch (error) {
+    console.warn('[FCM SW] Failed to save config:', error);
+  }
+}
+
+async function loadConfig() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction('config', 'readonly');
+    const store = tx.objectStore('config');
+    const config = await store.get(FCM_CONFIG_KEY);
+    if (config) {
+      console.log('[FCM SW] Config loaded from IndexedDB');
+    }
+    return config;
+  } catch (error) {
+    console.warn('[FCM SW] Failed to load config:', error);
     return null;
   }
+}
 
-  if (!firebaseAppInstance) {
-    try {
-      if (firebase.apps && firebase.apps.length > 0) {
-        firebaseAppInstance = firebase.apps[0];
-      } else {
-        firebaseAppInstance = firebase.initializeApp(config);
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('gigafit-fcm-sw', 1);
+
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains('config')) {
+        db.createObjectStore('config');
       }
-    } catch (error) {
-      console.error('[FCM SW] Failed to initialize Firebase app:', error);
-      return null;
-    }
-  }
+    };
 
-  if (!messagingInstance) {
-    try {
-      messagingInstance = firebase.messaging();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
 
-      messagingInstance.onBackgroundMessage((payload) => {
-
-        const {
-          notification: notificationPayload = {},
-          data = {},
-        } = payload;
-        const {
-          title: notificationTitle,
-          body: notificationBody,
-          icon: notificationIcon,
-        } = notificationPayload;
-        const {
-          title: dataTitle,
-          body: dataBody,
-          jobId,
-          generationType,
-        } = data;
-
-        const title = notificationTitle || dataTitle || 'GigaFit';
-        const body = notificationBody || dataBody || '';
-
-
-        return self.registration.showNotification(title, {
-          body,
-          icon: notificationIcon || DEFAULT_ICON,
-          data,
-          tag: jobId || generationType || undefined,
-        });
-      });
-    } catch (error) {
-      console.error('[FCM SW] Failed to initialize messaging:', error);
-      messagingInstance = null;
-    }
-  }
-
-  return messagingInstance;
-};
-
-const hydrateConfigFromStorage = () => {
-  if (!persistedConfigPromise) {
-    persistedConfigPromise = readPersistedFirebaseConfig()
-      .then((storedConfig) => {
-        if (storedConfig && !cachedConfig) {
-          cachedConfig = storedConfig;
-          ensureMessaging(cachedConfig);
-        }
-        return storedConfig;
-      })
-      .catch((error) => {
-        console.warn('[FCM SW] Failed to read persisted config:', error);
-        return null;
-      });
-  }
-  return persistedConfigPromise;
-};
-
-hydrateConfigFromStorage();
-
+// Service Worker Lifecycle Events
 self.addEventListener('install', (event) => {
+  console.log('[FCM SW] Installing...');
   self.skipWaiting();
   event.waitUntil(Promise.resolve());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  console.log('[FCM SW] Activating...');
+  event.waitUntil(
+    self.clients.claim().then(() => {
+      console.log('[FCM SW] Activated and claimed clients');
+    }),
+  );
 });
 
+// Handle messages from the main app
 self.addEventListener('message', (event) => {
   const { data } = event;
-  if (!data?.type) return;
 
-  if (data.type === 'FIREBASE_CONFIG') {
-    cachedConfig = data.payload;
-    ensureMessaging(cachedConfig);
-    event.waitUntil(
-      persistFirebaseConfig(cachedConfig),
-    );
+  if (data?.type === 'FIREBASE_CONFIG') {
+    console.log('[FCM SW] Received Firebase config from app');
+    const config = data.payload;
+
+    // Initialize Firebase with the received config
+    if (initializeFirebase(config)) {
+      // Save config for future use
+      event.waitUntil(saveConfig(config));
+    }
   }
 });
 
+// Handle push events
 self.addEventListener('push', (event) => {
+  console.log('[FCM SW] Push event received');
+
   event.waitUntil(
     (async () => {
       try {
-        // Ensure Firebase is initialized before FCM processes the message
-        if (!cachedConfig) {
-          cachedConfig = (await hydrateConfigFromStorage()) || null;
+        // Ensure Firebase is initialized
+        if (!messaging) {
+          const config = await loadConfig();
+          if (config) {
+            initializeFirebase(config);
+          } else {
+            console.warn('[FCM SW] No config available for push event');
+          }
         }
-        if (!messagingInstance && cachedConfig) {
-          ensureMessaging(cachedConfig);
-        }
-        // FCM's onBackgroundMessage handler will process the notification
+
+        // Firebase Messaging will handle the rest via onBackgroundMessage
       } catch (error) {
-        console.error('[FCM SW] Error handling push event:', error);
+        console.error('[FCM SW] Error handling push:', error);
       }
     })(),
   );
 });
 
+// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-  const { notification } = event;
-  notification.close();
+  console.log('[FCM SW] Notification clicked:', event.notification);
 
-  const destination = notification?.data?.url || '/';
+  event.notification.close();
+
+  const data = event.notification.data || {};
+  const url = data.url || '/';
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ('focus' in client) {
-          client.postMessage({
-            type: 'GENERATION_NOTIFICATION_CLICK',
-            payload: notification.data,
-          });
-          return client.focus();
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Check if there's already a window open
+        for (const client of clientList) {
+          if (client.url === url && 'focus' in client) {
+            // Send message to the existing window
+            client.postMessage({
+              type: 'NOTIFICATION_CLICKED',
+              payload: data,
+            });
+            return client.focus();
+          }
         }
-      }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(destination);
-      }
-      return undefined;
-    }),
+
+        // If no window is open, open a new one
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(url);
+        }
+      })
+      .catch((error) => {
+        console.error('[FCM SW] Error handling notification click:', error);
+      }),
   );
 });
+
+// Try to load config on startup
+(async () => {
+  try {
+    const config = await loadConfig();
+    if (config) {
+      initializeFirebase(config);
+    }
+  } catch (error) {
+    console.warn('[FCM SW] Failed to load config on startup:', error);
+  }
+})();
+
+console.log('[FCM SW] Service worker loaded');

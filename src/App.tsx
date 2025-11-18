@@ -1,17 +1,18 @@
-import { Suspense, lazy, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Language } from '@/types/enums';
+import { userService } from '@services/userService';
 import { useAuthStore } from '@store/authStore';
 import { useLocaleStore } from '@store/localeStore';
-import { useGenerationNotifications } from './hooks/useGenerationNotifications';
-import { userService } from '@services/userService';
-import { Language } from '@/types/enums';
-import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
+import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { RouteLoadingFallback } from './components/molecules/RouteLoadingFallback';
 import { FeedbackWidget } from './components/organisms/FeedbackWidget';
-import { AppRoutePath, AppRouteConfig } from './routes/paths';
-import './App.css';
+import { useGenerationNotifications } from './hooks/useGenerationNotifications';
+import { AppRouteConfig, AppRoutePath } from './routes/paths';
 
 const HomePage = lazy(async () => {
   const module = await import('./pages/HomePage');
@@ -76,6 +77,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }): React.Reac
 function App(): React.ReactElement {
   const { isAuthenticated, updateUser } = useAuthStore();
   const { setLanguage } = useLocaleStore();
+  const { t } = useTranslation();
+  const [showNotificationModal, setShowNotificationModal] = useState<boolean>(false);
 
   const appRoutes: AppRouteConfig[] = [
     { path: AppRoutePath.Login, element: <LoginPage /> },
