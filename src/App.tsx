@@ -2,9 +2,8 @@ import { Language } from '@/types/enums';
 import { userService } from '@services/userService';
 import { useAuthStore } from '@store/authStore';
 import { useLocaleStore } from '@store/localeStore';
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { useTranslation } from 'react-i18next';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
@@ -77,8 +76,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }): React.Reac
 function App(): React.ReactElement {
   const { isAuthenticated, updateUser } = useAuthStore();
   const { setLanguage } = useLocaleStore();
-  const { t } = useTranslation();
-  const [showNotificationModal, setShowNotificationModal] = useState<boolean>(false);
 
   const appRoutes: AppRouteConfig[] = [
     { path: AppRoutePath.Login, element: <LoginPage /> },
