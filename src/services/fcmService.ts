@@ -1,5 +1,6 @@
 import { getMessaging, getToken, isSupported, Messaging, onMessage } from 'firebase/messaging';
 import { apiClient } from './api';
+import { firebaseConfig } from './firebase';
 
 type DevicePlatform = 'ios' | 'android' | 'web' | 'unknown';
 
@@ -22,6 +23,8 @@ class FCMService {
   private initializationPromise: Promise<void> | null = null;
   private unsubscribeOnMessage?: () => void;
   private handlers: Set<MessageHandler> = new Set();
+  private serviceWorkerRegistration: ServiceWorkerRegistration | null = null;
+  private configPosted = false;
 
   private getDeviceId(): string | null {
     if (typeof window === 'undefined') return null;
@@ -57,6 +60,74 @@ class FCMService {
       this.messaging = getMessaging();
     }
     return this.messaging;
+  }
+
+  private async registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+    if (
+      typeof window === 'undefined' ||
+      typeof navigator === 'undefined' ||
+      !('serviceWorker' in navigator)
+    ) {
+      console.warn('[FCM] Service workers are not supported in this environment.');
+      return null;
+    }
+
+    if (this.serviceWorkerRegistration) {
+      return this.serviceWorkerRegistration;
+    }
+
+    try {
+      this.serviceWorkerRegistration = await navigator.serviceWorker.register(
+        '/firebase-messaging-sw.js',
+      );
+      return this.serviceWorkerRegistration;
+    } catch (error) {
+      console.error('[FCM] Failed to register messaging service worker:', error);
+      return null;
+    }
+  }
+
+  private async sendConfigToServiceWorker(
+    registration: ServiceWorkerRegistration,
+  ): Promise<void> {
+    if (this.configPosted) return;
+
+    const postToWorker = (worker: ServiceWorker | null): void => {
+      if (!worker) return;
+      worker.postMessage({
+        type: 'FIREBASE_CONFIG',
+        payload: firebaseConfig,
+      });
+      this.configPosted = true;
+    };
+
+    if (registration.active) {
+      postToWorker(registration.active);
+      return;
+    }
+
+    if (registration.installing) {
+      const installingWorker = registration.installing;
+      installingWorker.addEventListener('statechange', () => {
+        if (
+          installingWorker.state === 'activated' ||
+          installingWorker.state === 'redundant'
+        ) {
+          postToWorker(registration.active);
+        }
+      });
+      return;
+    }
+
+    if (registration.waiting) {
+      postToWorker(registration.waiting);
+      return;
+    }
+
+    const readyRegistration = await navigator.serviceWorker.ready.catch(() => null);
+    if (readyRegistration?.active) {
+      postToWorker(readyRegistration.active);
+    }
   }
 
   private subscribeToForegroundMessages(): void {
@@ -107,7 +178,15 @@ class FCMService {
     }
 
     try {
-      const token = await getToken(messaging, { vapidKey });
+      const registration = await this.registerServiceWorker();
+      if (!registration) return;
+
+      await this.sendConfigToServiceWorker(registration);
+
+      const token = await getToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: registration,
+      });
       if (!token) {
         console.warn('[FCM] Unable to retrieve FCM token.');
         return;
