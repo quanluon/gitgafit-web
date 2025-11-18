@@ -30,13 +30,18 @@ export function ExerciseLogModal({
   const { language } = useLocaleStore();
   const currentLang = language as Language;
 
-  // Initialize with existing sets or create one empty set for first time
+  // Initialize with existing sets or create sets based on exercise target
   const initializeSets = (): ExerciseSet[] => {
     if (existingSets.length > 0) {
       return existingSets;
     }
-    // Create only one empty set for first time
-    return [{ reps: 0, weight: 0 }];
+    // Create sets based on exercise.sets count, fill reps from exercise.reps
+    const targetReps = parseInt(exercise.reps) || 0;
+    const setsCount = exercise.sets || 1;
+    return Array.from({ length: setsCount }, () => ({
+      reps: targetReps,
+      weight: 0,
+    }));
   };
 
   const [sets, setSets] = useState<ExerciseSet[]>(initializeSets());
@@ -151,11 +156,7 @@ export function ExerciseLogModal({
                     )}
                   </h3>
                   {sets.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(): void => handleRemoveSet(index)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={(): void => handleRemoveSet(index)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   )}
@@ -176,7 +177,9 @@ export function ExerciseLogModal({
                       className={`text-lg ${errors[`${index}-reps`] ? 'border-destructive focus:border-destructive' : ''}`}
                     />
                     {errors[`${index}-reps`] && (
-                      <p className="text-xs text-destructive font-medium">{errors[`${index}-reps`]}</p>
+                      <p className="text-xs text-destructive font-medium">
+                        {errors[`${index}-reps`]}
+                      </p>
                     )}
                   </div>
 
@@ -195,29 +198,18 @@ export function ExerciseLogModal({
                       className={`text-lg ${errors[`${index}-weight`] ? 'border-destructive focus:border-destructive' : ''}`}
                     />
                     {errors[`${index}-weight`] && (
-                      <p className="text-xs text-destructive font-medium">{errors[`${index}-weight`]}</p>
+                      <p className="text-xs text-destructive font-medium">
+                        {errors[`${index}-weight`]}
+                      </p>
                     )}
                   </div>
                 </div>
-
-                {/* Set Summary */}
-                {set.reps > 0 && set.weight > 0 && (
-                  <div className="text-sm text-center p-2 bg-primary/10 rounded-md">
-                    <span className="font-semibold">
-                      {set.reps} {t('workout.reps')} × {set.weight} kg
-                    </span>
-                  </div>
-                )}
               </div>
             ))}
           </div>
 
           {/* Add Set Button */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleAddSet}
-          >
+          <Button variant="outline" className="w-full" onClick={handleAddSet}>
             <Plus className="h-4 w-4 mr-2" />
             {t('workout.addSet')}
           </Button>
@@ -230,7 +222,9 @@ export function ExerciseLogModal({
                 {sets.map((set, index) =>
                   set.reps > 0 ? (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t('workout.set')} {index + 1}:</span>
+                      <span className="text-muted-foreground">
+                        {t('workout.set')} {index + 1}:
+                      </span>
                       <span className="font-medium">
                         {set.reps} {t('workout.reps')} × {set.weight} kg
                       </span>
@@ -242,7 +236,7 @@ export function ExerciseLogModal({
           )}
 
           {/* Save Button */}
-          <Button className="w-full" size="lg" onClick={handleSave}>
+          <Button className="w-full sticky bottom-0 pb-1" size="lg" onClick={handleSave}>
             {t('workout.saveLog')}
           </Button>
         </div>

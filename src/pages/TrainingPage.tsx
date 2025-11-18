@@ -34,7 +34,7 @@ export function TrainingPage(): React.ReactElement {
   const { showError } = useToast();
   const { language } = useLocaleStore();
   const { todaysWorkout } = useWorkoutStore();
-  const { currentSession, clearSession } = useTrainingStore();
+  const { currentSession, clearSession, setCurrentSession } = useTrainingStore();
 
   const [exerciseProgress, setExerciseProgress] = useState<ExerciseProgress>({});
   const [selectedExercise, setSelectedExercise] = useState<ExerciseWithIndex | null>(null);
@@ -43,8 +43,61 @@ export function TrainingPage(): React.ReactElement {
   useEffect(() => {
     if (!currentSession || !todaysWorkout) {
       navigate(AppRoutePath.Planner);
+      return;
+    }
+
+    // Load exercise progress from session if it exists
+    if (currentSession.exercises && currentSession.exercises.length > 0) {
+      const loadedProgress: ExerciseProgress = {};
+      currentSession.exercises.forEach((exerciseLog) => {
+        // Extract exercise index from exerciseId (format: "exercise_0", "exercise_1", etc.)
+        const match = exerciseLog.exerciseId?.match(/^exercise_(\d+)$/);
+        if (match) {
+          const exerciseIndex = parseInt(match[1], 10);
+          const exerciseKey = `exercise_${exerciseIndex}`;
+          if (exerciseLog.sets && exerciseLog.sets.length > 0) {
+            loadedProgress[exerciseKey] = exerciseLog.sets;
+          }
+        }
+      });
+      setExerciseProgress(loadedProgress);
     }
   }, [currentSession, todaysWorkout, navigate]);
+
+  // Load session data when component mounts or session changes
+  useEffect(() => {
+    const loadSessionData = async (): Promise<void> => {
+      if (!currentSession?._id || !todaysWorkout) return;
+
+      try {
+        // Fetch latest session data from backend
+        const session = await trainingService.getSessionById(currentSession._id);
+        
+        // Update session in store
+        setCurrentSession(session);
+
+        // Load exercise progress from session
+        if (session.exercises && session.exercises.length > 0) {
+          const loadedProgress: ExerciseProgress = {};
+          session.exercises.forEach((exerciseLog) => {
+            const match = exerciseLog.exerciseId?.match(/^exercise_(\d+)$/);
+            if (match) {
+              const exerciseIndex = parseInt(match[1], 10);
+              const exerciseKey = `exercise_${exerciseIndex}`;
+              if (exerciseLog.sets && exerciseLog.sets.length > 0) {
+                loadedProgress[exerciseKey] = exerciseLog.sets;
+              }
+            }
+          });
+          setExerciseProgress(loadedProgress);
+        }
+      } catch (err) {
+        console.error('Failed to load session data:', err);
+      }
+    };
+
+    void loadSessionData();
+  }, [currentSession?._id, todaysWorkout, setCurrentSession]);
 
   useEffect(() => {
     // Save to IndexedDB whenever progress changes
@@ -84,7 +137,7 @@ export function TrainingPage(): React.ReactElement {
   };
 
   const handleSaveSets = async (sets: ExerciseSet[]): Promise<void> => {
-    if (selectedExercise === null) {
+    if (!selectedExercise) {
       console.error('No exercise selected');
       return;
     }
