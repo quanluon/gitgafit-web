@@ -103,6 +103,7 @@ const ensureMessaging = (config) => {
       messagingInstance = firebase.messaging();
 
       messagingInstance.onBackgroundMessage((payload) => {
+
         const {
           notification: notificationPayload = {},
           data = {},
@@ -122,7 +123,8 @@ const ensureMessaging = (config) => {
         const title = notificationTitle || dataTitle || 'GigaFit';
         const body = notificationBody || dataBody || '';
 
-        self.registration.showNotification(title, {
+
+        return self.registration.showNotification(title, {
           body,
           icon: notificationIcon || DEFAULT_ICON,
           data,
@@ -158,13 +160,13 @@ const hydrateConfigFromStorage = () => {
 
 hydrateConfigFromStorage();
 
-self.addEventListener('install', ({ waitUntil }) => {
+self.addEventListener('install', (event) => {
   self.skipWaiting();
-  waitUntil(Promise.resolve());
+  event.waitUntil(Promise.resolve());
 });
 
-self.addEventListener('activate', ({ waitUntil }) => {
-  waitUntil(self.clients.claim());
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('message', (event) => {
@@ -180,14 +182,20 @@ self.addEventListener('message', (event) => {
   }
 });
 
-self.addEventListener('push', ({ waitUntil }) => {
-  waitUntil(
+self.addEventListener('push', (event) => {
+  event.waitUntil(
     (async () => {
-      if (!cachedConfig) {
-        cachedConfig = (await hydrateConfigFromStorage()) || null;
-      }
-      if (!messagingInstance && cachedConfig) {
-        ensureMessaging(cachedConfig);
+      try {
+        // Ensure Firebase is initialized before FCM processes the message
+        if (!cachedConfig) {
+          cachedConfig = (await hydrateConfigFromStorage()) || null;
+        }
+        if (!messagingInstance && cachedConfig) {
+          ensureMessaging(cachedConfig);
+        }
+        // FCM's onBackgroundMessage handler will process the notification
+      } catch (error) {
+        console.error('[FCM SW] Error handling push event:', error);
       }
     })(),
   );

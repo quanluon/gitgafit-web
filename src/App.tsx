@@ -91,8 +91,30 @@ function App(): React.ReactElement {
     { path: AppRoutePath.Inbody, element: <InbodyPage />, isProtected: true },
   ];
   
-  // Initialize Socket.IO connection
+  // Initialize FCM notifications
   useGenerationNotifications();
+
+  // Listen for service worker messages (notification clicks)
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator) || !isAuthenticated) {
+      return;
+    }
+
+    const handleServiceWorkerMessage = (event: MessageEvent): void => {
+      if (event.data?.type === 'GENERATION_NOTIFICATION_CLICK') {
+        const { payload } = event.data;
+        // Handle notification click - could navigate to relevant page
+        // For now, just log it - navigation can be added later if needed
+        console.log('[App] Notification clicked:', payload);
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+    };
+  }, [isAuthenticated]);
 
   // Initialize auth state from persisted storage on app load
   useEffect(() => {

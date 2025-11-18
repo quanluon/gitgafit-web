@@ -39,8 +39,11 @@ export const useAuthStore = create<AuthState>()(
           useLocaleStore.getState().setLanguage(user.language as Language);
         }
 
+        // Initialize FCM only when authenticated
         if (token) {
-          void fcmService.initMessaging();
+          void fcmService.initMessaging(true).catch((error) => {
+            console.warn('[AuthStore] FCM initialization failed:', error);
+          });
         }
       },
       setTokens: (token: string, refreshToken: string): void => {
@@ -55,8 +58,11 @@ export const useAuthStore = create<AuthState>()(
           console.warn('Failed to backup tokens to localStorage:', error);
         }
 
+        // Initialize FCM only when authenticated
         if (token) {
-          void fcmService.initMessaging();
+          void fcmService.initMessaging(true).catch((error) => {
+            console.warn('[AuthStore] FCM initialization failed:', error);
+          });
         }
       },
       clearAuth: (): void => {
@@ -118,8 +124,11 @@ export const useAuthStore = create<AuthState>()(
               }
             }
 
-            if (state.token) {
-              void fcmService.initMessaging();
+            // Only initialize FCM if authenticated (has token and user)
+            if (state.token && state.isAuthenticated) {
+              void fcmService.initMessaging(true).catch((error) => {
+                console.warn('[AuthStore] FCM initialization failed on rehydrate:', error);
+              });
             }
           }
         };

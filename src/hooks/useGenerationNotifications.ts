@@ -37,9 +37,18 @@ export function useGenerationNotifications(): void {
   }, [isAuthenticated, setJobs, t, user?._id]);
 
   useEffect(() => {
+    // Only initialize FCM if authenticated
+    if (!isAuthenticated) {
+      console.log('[useGenerationNotifications] Skipping FCM init - not authenticated');
+      return;
+    }
+
     const unsubscribe = fcmService.addMessageListener((payload) => {
+
       const data = payload.data;
-      if (!data?.generationType || !data.jobId) return;
+      if (!data?.generationType || !data.jobId) {
+        return;
+      }
 
       const type = data.generationType as GenerationType;
       const jobId = data.jobId;
@@ -66,11 +75,12 @@ export function useGenerationNotifications(): void {
       }
     });
 
-    void fcmService.initMessaging();
+    // Don't call initMessaging here - it's handled by authStore
+    // Just set up the listener
 
     return () => {
       unsubscribe?.();
     };
-  }, [completeGeneration, failGeneration, showError, showSuccess, t]);
+  }, [isAuthenticated, completeGeneration, failGeneration, showError, showSuccess, t]);
 }
 
