@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/useToast';
 import dayjs from 'dayjs';
@@ -7,13 +7,13 @@ import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { Camera, Lightbulb } from 'lucide-react';
 import { validateImage, ValidationResult } from '@/utils/imageValidation';
-import { GenerationType } from '@/store/generationStore';
+import { GenerationStatus, GenerationType, useGenerationStore } from '@/store/generationStore';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { cn } from '@/utils/cn';
 import { AnalysisProgressModal } from '@organisms/AnalysisProgressModal';
 import { inbodyService } from '@/services/inbodyService';
-import { socketService, WebSocketEvent } from '@services/socketService';
 import { FileUploadCard } from '@molecules/FileUploadCard';
+import { useGenerationJob } from '@/hooks/useGenerationJob';
 
 interface BodyPhotoTabProps {
   quota?: ReturnType<typeof useSubscriptionStats>['getQuotaInfo'] extends (
@@ -31,6 +31,7 @@ export function BodyPhotoTab({
 }: BodyPhotoTabProps): React.ReactElement {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
+  const { startGeneration } = useGenerationStore();
   const [file, setFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<Date>(() => new Date());
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -38,6 +39,7 @@ export function BodyPhotoTab({
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [progressMessage, setProgressMessage] = useState<string>('');
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFilePicked = async (selectedFile: File): Promise<void> => {
@@ -66,86 +68,78 @@ export function BodyPhotoTab({
   };
 
 
-  useEffect(() => {
-    const handleStarted = (data: {
-      resultId?: string;
-      message?: string;
-      progress?: number;
-    }): void => {
-      if (data.progress !== undefined) {
-        setProgress(data.progress);
-      }
-      if (data.message) {
-        setProgressMessage(data.message);
-        setIsAnalyzing(true);
-      }
-    };
+  const resetUploadState = useCallback(() => {
+    setFile(null);
+    setValidationResult(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
-    const handleProgress = (data: {
-      resultId?: string;
-      progress?: number;
-      message?: string;
-    }): void => {
-      if (data.progress !== undefined) {
-        setProgress(data.progress);
+  const handleJobComplete = useCallback(
+    async (resultId?: string) => {
+      const effectiveResultId = resultId || currentJobId;
+      if (!effectiveResultId || (currentJobId && effectiveResultId !== currentJobId)) {
+        return;
       }
-      if (data.message) {
-        setProgressMessage(data.message);
-      }
-    };
 
-    const handleComplete = async (data: { resultId?: string; message?: string }): Promise<void> => {
       setProgress(100);
+
       setTimeout(() => {
         setIsAnalyzing(false);
         setProgress(0);
         setProgressMessage('');
         onAnalyzingChange?.(false);
-      }, 500);
-      showSuccess(data.message || t('inbody.bodyPhoto.analysisStarted'), {
-        id: 'body-photo-analysis',
-        duration: 3000,
-      });
-      setFile(null);
-      setValidationResult(null);
-      await onRefresh?.();
-    };
+        setCurrentJobId(null);
+      }, 300);
 
-    const handleError = (data: { resultId?: string; message?: string }): void => {
+      showSuccess(t('generation.bodyPhotoComplete') || 'Body photo analyzed successfully!');
+      resetUploadState();
+      await onRefresh?.();
+    },
+    [currentJobId, onAnalyzingChange, onRefresh, resetUploadState, showSuccess, t],
+  );
+
+  const { activeJob } = useGenerationJob({
+    type: GenerationType.BODY_PHOTO,
+    onComplete: handleJobComplete,
+  });
+
+  useEffect(() => {
+    if (
+      currentJobId &&
+      activeJob &&
+      activeJob.jobId === currentJobId &&
+      activeJob.status === GenerationStatus.ERROR
+    ) {
       setIsAnalyzing(false);
       setProgress(0);
       setProgressMessage('');
       onAnalyzingChange?.(false);
-      showError(data.message || t('inbody.bodyPhoto.analysisError'), {
-        id: 'body-photo-analysis',
-        duration: 4000,
-      });
-    };
+      setCurrentJobId(null);
+      showError(activeJob.error || t('generation.failed'));
+    }
+  }, [activeJob, currentJobId, onAnalyzingChange, showError, t]);
 
-    const unsubscribeStarted = socketService.on(
-      WebSocketEvent.BODY_PHOTO_ANALYSIS_STARTED,
-      handleStarted,
-    );
-    const unsubscribeProgress = socketService.on(
-      WebSocketEvent.BODY_PHOTO_ANALYSIS_PROGRESS,
-      handleProgress,
-    );
-    const unsubscribeComplete = socketService.on(
-      WebSocketEvent.BODY_PHOTO_ANALYSIS_COMPLETE,
-      handleComplete,
-    );
-    const unsubscribeError = socketService.on(
-      WebSocketEvent.BODY_PHOTO_ANALYSIS_ERROR,
-      handleError,
-    );
+  useEffect(() => {
+    if (!isAnalyzing) return undefined;
+
+    setProgress((prev) => (prev === 0 ? 5 : prev));
+    setProgressMessage(t('inbody.bodyPhoto.analyzing'));
+
+    const interval = window.setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          return 90;
+        }
+        return prev + 5;
+      });
+    }, 1500);
 
     return () => {
-      unsubscribeStarted();
-      unsubscribeProgress();
-      unsubscribeComplete();
-      unsubscribeError();
+      window.clearInterval(interval);
     };
-  }, [t, onRefresh, onAnalyzingChange, showError, showSuccess]);
+  }, [isAnalyzing, t]);
 
   const handleAnalyze = async (): Promise<void> => {
     if (!file) {
@@ -162,18 +156,28 @@ export function BodyPhotoTab({
       const { uploadUrl, s3Url } = await inbodyService.getPresignedUrl(file.name);
       await inbodyService.uploadToS3(uploadUrl, file);
 
-      await inbodyService.analyzeBodyPhoto(
+      const result = await inbodyService.analyzeBodyPhoto(
         s3Url,
         file.name,
         takenAt ? dayjs(takenAt).toISOString() : undefined,
       );
 
+      if (result?._id) {
+        startGeneration(result._id, GenerationType.BODY_PHOTO);
+        setCurrentJobId(result._id);
+        setProgress(5);
+      }
+
+      setProgressMessage(t('inbody.bodyPhoto.analyzing'));
       showSuccess(t('inbody.bodyPhoto.analysisStarted'), { duration: 3000 });
     } catch (error) {
       console.error('Analysis failed', error);
       showError(t('inbody.bodyPhoto.analysisError'), { duration: 4000 });
       setIsAnalyzing(false);
       onAnalyzingChange?.(false);
+      setCurrentJobId(null);
+      setProgress(0);
+      setProgressMessage('');
     }
   };
 

@@ -1,5 +1,5 @@
 import { useToast } from '@/hooks/useToast';
-import { GenerationType } from '@/store/generationStore';
+import { GenerationType, useGenerationStore } from '@/store/generationStore';
 import { cn } from '@/utils/cn';
 import { validateImage, ValidationResult } from '@/utils/imageValidation';
 import { Button } from '@atoms/Button';
@@ -27,6 +27,7 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const { refresh } = useSubscriptionStats();
+  const { startGeneration } = useGenerationStore();
   const [file, setFile] = useState<File | null>(null);
   const [takenAt, setTakenAt] = useState<Date>(() => new Date());
   const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -75,11 +76,15 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       const { uploadUrl, s3Url } = await inbodyService.getPresignedUrl(file.name);
       await inbodyService.uploadToS3(uploadUrl, file);
 
-      await inbodyService.analyzeInBackground({
+      const job = await inbodyService.analyzeInBackground({
         s3Url,
         originalFilename: file.name,
         takenAt: takenAt ? dayjs(takenAt).toISOString() : undefined,
       });
+
+      if (job.jobId) {
+        startGeneration(job.jobId, GenerationType.INBODY);
+      }
 
       showSuccess(t('inbody.analysisQueued'), { duration: 3000 });
       setFile(null);

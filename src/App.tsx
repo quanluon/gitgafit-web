@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from '@store/authStore';
 import { useLocaleStore } from '@store/localeStore';
-import { useSocket } from './hooks/useSocket';
+import { useGenerationNotifications } from './hooks/useGenerationNotifications';
 import { userService } from '@services/userService';
 import { Language } from '@/types/enums';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
@@ -92,7 +92,7 @@ function App(): React.ReactElement {
   ];
   
   // Initialize Socket.IO connection
-  useSocket();
+  useGenerationNotifications();
 
   // Initialize auth state from persisted storage on app load
   useEffect(() => {

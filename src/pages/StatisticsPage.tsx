@@ -109,7 +109,7 @@ export function StatisticsPage(): React.ReactElement {
             />
             <StatCard
               title={t('statistics.currentStreak')}
-              value={`${progressStats.currentStreak} ${t('common.days.days')}`}
+              value={`${progressStats.currentStreak} ${t('statistics.perSession')}`}
               icon={<Flame className="h-4 w-4" />}
             />
             <StatCard

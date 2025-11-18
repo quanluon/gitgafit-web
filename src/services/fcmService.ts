@@ -1,5 +1,4 @@
 import { getMessaging, getToken, isSupported, Messaging, onMessage } from 'firebase/messaging';
-import { app } from './firebase';
 import { apiClient } from './api';
 
 type DevicePlatform = 'ios' | 'android' | 'web' | 'unknown';
@@ -55,7 +54,7 @@ class FCMService {
       return null;
     }
     if (!this.messaging) {
-      this.messaging = getMessaging(app);
+      this.messaging = getMessaging();
     }
     return this.messaging;
   }
@@ -141,6 +140,13 @@ class FCMService {
       await apiClient.delete(`/user/device-token/${deviceId}`);
     } catch (error) {
       console.warn('[FCM] Failed to remove device token:', error);
+    }
+
+    this.currentToken = null;
+    this.initialized = false;
+    if (this.unsubscribeOnMessage) {
+      this.unsubscribeOnMessage();
+      this.unsubscribeOnMessage = undefined;
     }
   }
 }

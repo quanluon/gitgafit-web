@@ -16,6 +16,7 @@ import { InBodyReportTab } from '@organisms/InBodyReportTab';
 import { BodyPhotoTab } from '@organisms/BodyPhotoTab';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { GenerationType } from '@/store/generationStore';
+import { useGenerationJob } from '@/hooks/useGenerationJob';
 
 type TabType = 'report' | 'photo';
 
@@ -45,8 +46,15 @@ export function InbodyPage(): React.ReactElement {
         showError(t('inbody.loadError'));
       }
     },
-    [t],
+    [showError, t],
   );
+
+  useGenerationJob({
+    type: GenerationType.INBODY,
+    onComplete: () => {
+      void loadResults();
+    },
+  });
 
   useEffect(() => {
     void loadResults();

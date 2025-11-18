@@ -1,8 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useGenerationStore, GenerationType, GenerationStatus, GenerationJob } from '@store/generationStore';
-import { socketService, WebSocketEvent } from '@services/socketService';
-import { useToast } from '@/hooks/useToast';
-import { useTranslation } from 'react-i18next';
 
 interface UseGenerationJobOptions {
   type: GenerationType;
@@ -10,9 +7,9 @@ interface UseGenerationJobOptions {
 }
 /**
  * Hook to manage generation job lifecycle
- * - Checks job status once when active job is found
- * - Listens for completion via socket (for alerts)
- * - Manages job state in generation store
+ * - Tracks jobs stored in generation store
+ * - Notifies caller when a job completes
+ * - Mirrors latest progress/message for UI
  */
 export function useGenerationJob({
   type,
@@ -23,10 +20,8 @@ export function useGenerationJob({
   progress: number;
   message: string;
 } {
-  const { t } = useTranslation();
-  const { showSuccess, showError } = useToast();
-  const { jobs, completeGeneration, failGeneration } = useGenerationStore();
-  const handledJobIdsRef = useRef<Set<string>>(new Set());
+  const { jobs } = useGenerationStore();
+  const statusMapRef = useRef<Map<string, GenerationStatus>>(new Map());
 
   // Get active job for this type
   const activeJob = jobs.find(
@@ -35,66 +30,30 @@ export function useGenerationJob({
 
   const hasActiveGeneration = !!activeJob;
 
-  // Listen for completion events via socket (for alerts only)
   useEffect(() => {
-    const eventMap: Record<GenerationType, WebSocketEvent> = {
-      [GenerationType.WORKOUT]: WebSocketEvent.WORKOUT_GENERATION_COMPLETE,
-      [GenerationType.MEAL]: WebSocketEvent.MEAL_GENERATION_COMPLETE,
-      [GenerationType.INBODY]: WebSocketEvent.INBODY_OCR_COMPLETE,
-      [GenerationType.BODY_PHOTO]: WebSocketEvent.BODY_PHOTO_ANALYSIS_COMPLETE,
-    };
+    jobs.forEach((job) => {
+      const previousStatus = statusMapRef.current.get(job.jobId);
+      if (previousStatus !== job.status) {
+        statusMapRef.current.set(job.jobId, job.status);
+      }
 
-    const errorEventMap: Record<GenerationType, WebSocketEvent> = {
-      [GenerationType.WORKOUT]: WebSocketEvent.WORKOUT_GENERATION_ERROR,
-      [GenerationType.MEAL]: WebSocketEvent.MEAL_GENERATION_ERROR,
-      [GenerationType.INBODY]: WebSocketEvent.INBODY_OCR_ERROR,
-      [GenerationType.BODY_PHOTO]: WebSocketEvent.BODY_PHOTO_ANALYSIS_ERROR,
-    };
-
-    const completeEvent = eventMap[type];
-    const errorEvent = errorEventMap[type];
-
-    if (!completeEvent || !errorEvent) return;
-
-    const unsubscribeComplete = socketService.on(completeEvent, (data) => {
-      if (data.jobId) {
-        const jobId = data.jobId.toString();
-        if (!handledJobIdsRef.current.has(jobId)) {
-          handledJobIdsRef.current.add(jobId);
-          completeGeneration(jobId, data.planId || data.resultId);
-          onComplete?.(data.planId || data.resultId);
-
-          const messages: Record<GenerationType, string> = {
-            [GenerationType.WORKOUT]:
-              t('generation.workoutComplete') || 'Workout plan generated successfully!',
-            [GenerationType.MEAL]:
-              t('generation.mealPlanComplete') || 'Meal plan generated successfully!',
-            [GenerationType.INBODY]:
-              t('generation.inbodyComplete') || 'InBody scan analyzed successfully!',
-            [GenerationType.BODY_PHOTO]:
-              t('generation.bodyPhotoComplete') || 'Body photo analyzed successfully!',
-          };
-          showSuccess(messages[type]);
-        }
+      if (
+        job.type === type &&
+        job.status === GenerationStatus.COMPLETED &&
+        previousStatus !== GenerationStatus.COMPLETED
+      ) {
+        onComplete?.(job.resultId);
       }
     });
 
-    const unsubscribeError = socketService.on(errorEvent, (data) => {
-      if (data.jobId) {
-        const jobId = data.jobId.toString();
-        if (!handledJobIdsRef.current.has(jobId)) {
-          handledJobIdsRef.current.add(jobId);
-          failGeneration(jobId, data.error || 'Generation failed');
-          showError(data.error || t('generation.failed') || 'Generation failed');
-        }
+    // Remove entries for jobs no longer tracked
+    const currentJobIds = new Set(jobs.map((job) => job.jobId));
+    Array.from(statusMapRef.current.keys()).forEach((jobId) => {
+      if (!currentJobIds.has(jobId)) {
+        statusMapRef.current.delete(jobId);
       }
     });
-
-    return (): void => {
-      unsubscribeComplete();
-      unsubscribeError();
-    };
-  }, [type, showSuccess, showError, t, completeGeneration, failGeneration, onComplete]);
+  }, [jobs, onComplete, type]);
 
   return {
     hasActiveGeneration,

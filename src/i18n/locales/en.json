@@ -11,7 +11,7 @@
     "back": "Back",
     "regenerate": "Regenerate",
     "generate": "Generate",
-      "search": "Search",
+    "search": "Search",
     "update": "Update",
     "close": "Close",
     "refresh": "Refresh",
@@ -216,7 +216,7 @@
     "limitReached": "Monthly limit reached",
     "upgradeToGenerate": "Upgrade your plan to get more personalized plans"
   },
-    "workout": {
+  "workout": {
     "planner": "Planner",
     "todaysTraining": "Today's training",
     "startTraining": "Start Training",
@@ -511,14 +511,14 @@
       "tip3": "Wear fitted clothing"
     }
   },
-    "statistics": {
+  "statistics": {
     "totalWorkouts": "Total Workouts",
     "currentStreak": "Current Streak",
     "totalTime": "Total Time",
     "avgDuration": "Avg Duration",
     "trainingHistory": "Training History",
     "awards": "Awards",
-      "awardPercentile": "Better than {{percentile}}% of members",
+    "awardPercentile": "Better than {{percentile}}% of members",
     "today": "Today",
     "workout": "workout",
     "workouts": "workouts",
@@ -555,16 +555,16 @@
     "updateButton": "Update",
     "target": "Target"
   },
-    "muscles": {
-      "chest": "Chest",
-      "back": "Back",
-      "legs": "Legs",
-      "shoulders": "Shoulders",
-      "arms": "Arms",
-      "core": "Core",
-      "cardio": "Cardio",
-      "full_body": "Full body"
-    },
+  "muscles": {
+    "chest": "Chest",
+    "back": "Back",
+    "legs": "Legs",
+    "shoulders": "Shoulders",
+    "arms": "Arms",
+    "core": "Core",
+    "cardio": "Cardio",
+    "full_body": "Full body"
+  },
   "days": {
     "monday": "Monday",
     "tuesday": "Tuesday",
