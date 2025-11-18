@@ -8,7 +8,6 @@ interface RedirectToProfileModalProps {
   onClose?: () => void;
   redirectDelay?: number;
 }
-
 export function RedirectToProfileModal({
   isOpen,
   onClose,
@@ -28,4 +27,3 @@ export function RedirectToProfileModal({
     />
   );
 }
-

@@ -11,7 +11,6 @@ interface AnalysisProgressModalProps {
   onClose?: () => void;
   estimatedTime?: number; // in seconds, default 10
 }
-
 export function AnalysisProgressModal({
   isOpen,
   progress,
@@ -115,4 +114,3 @@ export function AnalysisProgressModal({
     </div>
   );
 }
-

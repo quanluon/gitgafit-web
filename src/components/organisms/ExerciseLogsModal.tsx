@@ -12,13 +12,14 @@ interface ExerciseLogsModalProps {
   date: Date;
   isOpen: boolean;
   onClose: () => void;
+  readOnly?: boolean;
 }
-
 export function ExerciseLogsModal({
   sessions,
   date,
   isOpen,
   onClose,
+  readOnly = false,
 }: ExerciseLogsModalProps): React.ReactElement | null {
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || 'en') as Language;
@@ -192,7 +193,6 @@ export function ExerciseLogsModal({
               <p>{t('statistics.noWorkoutsThisDay')}</p>
             </div>
           )}
-
           {sessions.length > 0 && (
             <>
               <DaySummaryCard
@@ -220,12 +220,12 @@ export function ExerciseLogsModal({
                         onRemoveSet={(setIdx) => removeSet(exerciseId, setIdx)}
                         formatTime={formatTime}
                         formatDuration={formatDuration}
+                        readOnly={readOnly}
                       />
                     );
                   })}
                 </div>
               )}
-
               {/* Day Summary Stats */}
               {(totalStats.totalSets > 0 || totalStats.totalVolume > 0) && (
                 <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
@@ -262,4 +262,3 @@ export function ExerciseLogsModal({
     </div>
   );
 }
-

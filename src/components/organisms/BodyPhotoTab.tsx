@@ -24,7 +24,6 @@ interface BodyPhotoTabProps {
   onRefresh?: () => Promise<void>;
   onAnalyzingChange?: (isAnalyzing: boolean) => void;
 }
-
 export function BodyPhotoTab({
   quota,
   onRefresh,
@@ -157,7 +156,6 @@ export function BodyPhotoTab({
       showError(t('subscription.limitReached'));
       return;
     }
-
     try {
       setIsAnalyzing(true);
       onAnalyzingChange?.(true);
@@ -267,19 +265,16 @@ export function BodyPhotoTab({
             </div>
           </div>
         )}
-
         {isValidating && (
           <div className="text-sm text-muted-foreground text-center py-2">
             {t('inbody.validating')}...
           </div>
         )}
-
         {quota?.isDepleted && (
           <p className="text-sm text-destructive text-center bg-destructive/10 rounded-lg py-2">
             {t('inbody.quotaDepleted')}
           </p>
         )}
-
         {file && validationResult?.isValid && !quota?.isDepleted && (
           <Button
             onClick={handleAnalyze}

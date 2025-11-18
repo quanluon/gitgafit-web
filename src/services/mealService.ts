@@ -19,12 +19,10 @@ class MealServiceClass {
     const response = await apiClient.post<ApiResponse<JobResponse>>('/meal/plan/generate', data || {});
     return response.data.data!;
   }
-
   async getCurrentPlan(): Promise<MealPlan> {
     const response = await apiClient.get<ApiResponse<MealPlan>>('/meal/plan');
     return response.data.data!;
   }
-
   async getTDEE(): Promise<TDEECalculation> {
     const response = await apiClient.get<ApiResponse<TDEECalculation>>('/meal/tdee');
     return response.data.data!;

@@ -9,7 +9,6 @@ interface DaySummaryCardProps {
   formatTime: (date: string) => string;
   formatDuration: (minutes: number) => string;
 }
-
 export function DaySummaryCard({
   sessions,
   totalStats,
@@ -54,4 +53,3 @@ export function DaySummaryCard({
     </div>
   );
 }
-

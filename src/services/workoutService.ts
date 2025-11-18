@@ -24,19 +24,16 @@ class WorkoutServiceClass {
     const response = await apiClient.post<ApiResponse<JobResponse>>('/workout/plan/generate', data);
     return response.data.data!;
   }
-
   async getCurrentPlan(): Promise<WorkoutPlan> {
     const response = await apiClient.get<ApiResponse<WorkoutPlan>>('/workout/plan');
     return response.data.data!;
   }
-
   async getWorkoutByDay(day: DayOfWeek): Promise<WorkoutDay | null> {
     const response = await apiClient.get<ApiResponse<WorkoutDay | null>>('/workout/plan/day', {
       params: { day },
     });
     return response.data.data!;
   }
-
   async updatePlan(planId: string, updateData: CustomPlanPayload): Promise<WorkoutPlan> {
     const response = await apiClient.patch<ApiResponse<WorkoutPlan>>(
       `/workout/plan/${planId}`,
@@ -44,7 +41,6 @@ class WorkoutServiceClass {
     );
     return response.data.data!;
   }
-
   async createCustomPlan(planData: CustomPlanPayload): Promise<WorkoutPlan> {
     const response = await apiClient.post<ApiResponse<WorkoutPlan>>(
       '/workout/plan/custom',
@@ -52,7 +48,6 @@ class WorkoutServiceClass {
     );
     return response.data.data!;
   }
-
   async deletePlan(planId: string): Promise<void> {
     await apiClient.delete<ApiResponse<{ success: boolean }>>(`/workout/plan/${planId}`);
   }

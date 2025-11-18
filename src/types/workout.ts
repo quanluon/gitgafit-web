@@ -66,4 +66,3 @@ export interface TrainingSession {
   createdAt: string;
   updatedAt: string;
 }
-

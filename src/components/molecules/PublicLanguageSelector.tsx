@@ -7,7 +7,6 @@ interface PublicLanguageSelectorProps {
   className?: string;
   triggerClassName?: string;
 }
-
 export function PublicLanguageSelector({
   className,
   triggerClassName,
@@ -31,7 +30,6 @@ export function PublicLanguageSelector({
     </div>
   );
 }
-
 export function AuthLanguageSelector(): React.ReactElement {
   return (
     <div className="fixed top-10 right-4">

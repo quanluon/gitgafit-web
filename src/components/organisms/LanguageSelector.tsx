@@ -49,4 +49,3 @@ export function LanguageSelector(): React.ReactElement {
     </div>
   );
 }
-

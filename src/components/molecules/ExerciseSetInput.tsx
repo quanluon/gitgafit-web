@@ -10,15 +10,26 @@ interface ExerciseSetInputProps {
   onUpdate: (field: 'reps' | 'weight', value: number) => void;
   onRemove?: () => void;
   canRemove: boolean;
+  readOnly?: boolean;
 }
-
 export function ExerciseSetInput({
   set,
   setIndex,
   onUpdate,
   onRemove,
   canRemove,
+  readOnly = false,
 }: ExerciseSetInputProps): React.ReactElement {
+  if (readOnly) {
+    return (
+      <div className="flex items-center gap-2 bg-muted/30 rounded-md p-2">
+        <span className="text-xs text-muted-foreground w-12">Set {setIndex + 1}</span>
+        <span className="text-sm font-medium">{set.reps}</span>
+        <span className="text-xs text-muted-foreground">x</span>
+        <span className="text-sm font-medium">{set.weight}kg</span>
+      </div>
+    );
+  }
   return (
     <div className="flex items-center gap-2 bg-muted/30 rounded-md p-2">
       <div className="flex items-center gap-2 flex-1">
@@ -56,4 +67,3 @@ export function ExerciseSetInput({
     </div>
   );
 }
-

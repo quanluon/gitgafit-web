@@ -137,7 +137,6 @@ export function HomePage(): React.ReactElement {
               </div>
             </div>
           )}
-
           {/* Today's Workout */}
           {!isLoading && todaysWorkout && (
             <div>
@@ -155,7 +154,6 @@ export function HomePage(): React.ReactElement {
               )}
             </div>
           )}
-
           {!isLoading && !todaysWorkout && (
             <div className="bg-card border rounded-lg p-6 text-center">
               <p className="text-muted-foreground">{t('workout.noWorkoutToday')}</p>
@@ -164,13 +162,11 @@ export function HomePage(): React.ReactElement {
               </Button>
             </div>
           )}
-
           {isLoading && (
             <div className="bg-card border rounded-lg p-6 text-center">
               <p className="text-muted-foreground">{t('common.loading')}</p>
             </div>
           )}
-
           {/* Weight Tracking */}
           {!isLoading && user?.weight && (
             <div>
@@ -183,7 +179,6 @@ export function HomePage(): React.ReactElement {
               />
             </div>
           )}
-
           {/* Awards */}
           {!isLoading && awards.length > 0 && (
             <div className="space-y-4">
@@ -215,7 +210,6 @@ export function HomePage(): React.ReactElement {
           onClose={(): void => setShowWeightModal(false)}
         />
       )}
-
       {/* Workout Details Modal */}
       {showWorkoutDetails && todaysWorkout && (
         <WorkoutDetailsModal
@@ -230,4 +224,3 @@ export function HomePage(): React.ReactElement {
     </MainLayout>
   );
 }
-

@@ -13,7 +13,6 @@ interface ToastOptions {
     | 'bottom-center'
     | 'bottom-right';
 }
-
 interface UseToastReturn {
   showSuccess: (message: string | ((t: Toast) => Renderable), options?: ToastOptions) => void;
   showError: (message: string | ((t: Toast) => Renderable), options?: ToastOptions) => void;
@@ -22,7 +21,6 @@ interface UseToastReturn {
   dismiss: (id?: string) => void;
   dismissAll: () => void;
 }
-
 export function useToast(): UseToastReturn {
   const showSuccess = useCallback(
     (message: string | ((t: Toast) => Renderable), options?: ToastOptions): void => {

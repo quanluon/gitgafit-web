@@ -16,7 +16,6 @@ interface SubscriptionDetailsModalProps {
   stats: SubscriptionStats | null;
   onClose: () => void;
 }
-
 export function SubscriptionDetailsModal({
   isOpen,
   stats,
@@ -181,7 +180,6 @@ export function SubscriptionDetailsModal({
             </div>
           </div>
         )}
-
         {/* Enterprise Badge */}
         {stats.plan === SubscriptionPlan.ENTERPRISE && (
           <div className="border-t bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-4 text-center">
@@ -194,4 +192,3 @@ export function SubscriptionDetailsModal({
     </div>
   );
 }
-

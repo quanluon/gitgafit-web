@@ -14,7 +14,6 @@ interface RedirectModalProps {
   goNowLabel?: string;
   showCancel?: boolean;
 }
-
 export function RedirectModal({
   isOpen,
   onClose,
@@ -61,11 +60,9 @@ export function RedirectModal({
     if (!message) {
       return t('common.redirectModal.message', { seconds: countdown });
     }
-
     if (message.includes('{{seconds}}')) {
       return message.replace('{{seconds}}', countdown.toString());
     }
-
     return `${message} (${countdown}s)`;
   }, [message, countdown, t]);
 
@@ -107,4 +104,3 @@ export function RedirectModal({
       </div>
     );
 }
-

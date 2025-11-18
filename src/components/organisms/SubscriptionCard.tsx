@@ -34,7 +34,6 @@ export function SubscriptionCard(): React.ReactElement {
       </div>
     );
   }
-
   const planConfig = {
     [SubscriptionPlan.FREE]: {
       icon: Zap,

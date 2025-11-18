@@ -28,12 +28,10 @@ class AuthServiceClass {
     const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/register', data);
     return response.data.data!;
   }
-
   async login(data: LoginRequest): Promise<AuthResponse> {
     const response = await apiClient.post<ApiResponse<AuthResponse>>('/auth/login', data);
     return response.data.data!;
   }
-
   async refreshToken(refreshToken: string): Promise<RefreshResponse> {
     const response = await apiClient.post<ApiResponse<RefreshResponse>>('/auth/refresh', {
       refreshToken,

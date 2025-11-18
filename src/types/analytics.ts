@@ -38,4 +38,3 @@ export interface Award {
   createdAt: string;
   updatedAt: string;
 }
-

@@ -28,4 +28,3 @@ export interface UserProfile {
   activityLevel?: ActivityLevel;
   scheduleDays: DayOfWeek[];
 }
-

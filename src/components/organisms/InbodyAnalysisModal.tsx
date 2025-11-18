@@ -13,7 +13,6 @@ interface InbodyAnalysisModalProps {
   s3Url?: string | null;
   onClose: () => void;
 }
-
 function isStructuredAnalysis(
   analysis: Translatable | InbodyAnalysis,
 ): analysis is InbodyAnalysis {
@@ -27,7 +26,6 @@ function isStructuredAnalysis(
     'body_composition_summary' in ((analysis as { en: unknown }).en as object)
   );
 }
-
 export function InbodyAnalysisModal({
   analysis,
   s3Url,
@@ -71,7 +69,6 @@ export function InbodyAnalysisModal({
               </ul>
             </div>
           )}
-
           {/* Training & Nutrition Advice */}
           {current.training_nutrition_advice && (
             <div className="space-y-2">
@@ -88,7 +85,6 @@ export function InbodyAnalysisModal({
         </div>
       );
     }
-
     // Fallback to old string format
     const analysisText = analysis[currentLang] || analysis.vi || analysis.en || '';
     return (
@@ -114,7 +110,6 @@ export function InbodyAnalysisModal({
           <div className="space-y-6">
             {/* Analysis Content */}
             {renderContent()}
-
             {/* Image Collapse Section */}
             {s3Url && (
               <div className="border rounded-lg overflow-hidden">

@@ -39,7 +39,6 @@ export function WorkoutPreviewPage(): React.ReactElement {
       setError('Missing user profile data. Please complete onboarding again.');
       return;
     }
-
     // Navigate to onboarding to start background generation
     navigate(AppRoutePath.Onboarding);
   };
@@ -55,7 +54,6 @@ export function WorkoutPreviewPage(): React.ReactElement {
       </div>
     );
   }
-
   const currentLang = language as Language;
 
   const dayOrder: DayOfWeek[] = [
@@ -92,7 +90,6 @@ export function WorkoutPreviewPage(): React.ReactElement {
             {error}
           </div>
         )}
-
         {/* Plan Overview */}
         <div className="bg-card border rounded-lg p-6 space-y-3">
           <h2 className="font-semibold">Plan Overview</h2>
@@ -184,4 +181,3 @@ export function WorkoutPreviewPage(): React.ReactElement {
     </div>
   );
 }
-

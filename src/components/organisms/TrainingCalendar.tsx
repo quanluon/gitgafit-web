@@ -8,7 +8,6 @@ import { TrainingSession } from '@/types/workout';
 interface TrainingCalendarProps {
   onDayClick: (date: Date, sessions: TrainingSession[]) => void;
 }
-
 export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.ReactElement {
   const { t } = useTranslation();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -123,7 +122,6 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
         {Array.from({ length: firstDayOfWeek }).map((_, index) => (
           <div key={`empty-${index}`} className="aspect-square" />
         ))}
-
         {/* Days of month */}
         {Array.from({ length: daysInMonth }).map((_, index) => {
           const day = index + 1;
@@ -179,4 +177,3 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
     </div>
   );
 }
-

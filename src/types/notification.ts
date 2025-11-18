@@ -12,7 +12,6 @@ export enum NotificationEvent {
   // General events
   NOTIFICATION = 'notification',
 }
-
 export interface NotificationData {
   jobId?: string | number;
   progress?: number;
@@ -20,7 +19,6 @@ export interface NotificationData {
   planId?: string;
   error?: string;
 }
-
 export interface JobStatus {
   id: string;
   state: string;
@@ -31,4 +29,3 @@ export interface JobStatus {
   };
   failedReason?: string;
 }
-

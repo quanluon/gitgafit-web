@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { User } from '@/types/user';
 import { useLocaleStore } from './localeStore';
 import { Language } from '@/types/enums';
+import { fcmService } from '@/services/fcmService';
 
 interface AuthState {
   token: string | null;
@@ -33,10 +34,13 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.warn('Failed to backup tokens to localStorage:', error);
         }
-
         // Set language from user profile
         if (user.language) {
           useLocaleStore.getState().setLanguage(user.language as Language);
+        }
+
+        if (token) {
+          void fcmService.initMessaging();
         }
       },
       setTokens: (token: string, refreshToken: string): void => {
@@ -50,6 +54,10 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.warn('Failed to backup tokens to localStorage:', error);
         }
+
+        if (token) {
+          void fcmService.initMessaging();
+        }
       },
       clearAuth: (): void => {
         // Zustand persist middleware will handle storage cleanup automatically
@@ -62,9 +70,10 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.warn('Failed to clear tokens from localStorage:', error);
         }
-
         // Reset language to default (en)
         useLocaleStore.getState().setLanguage(Language.EN);
+
+        void fcmService.cleanupToken();
       },
       updateUser: (user: User): void => {
         set({ user });
@@ -94,7 +103,6 @@ export const useAuthStore = create<AuthState>()(
             if (hasToken !== state.isAuthenticated) {
               state.isAuthenticated = hasToken;
             }
-
             // Restore tokens from localStorage backup if Zustand state is empty (Android fix)
             if (!state.token) {
               try {
@@ -108,6 +116,10 @@ export const useAuthStore = create<AuthState>()(
               } catch (error) {
                 console.warn('Failed to restore tokens from localStorage backup:', error);
               }
+            }
+
+            if (state.token) {
+              void fcmService.initMessaging();
             }
           }
         };

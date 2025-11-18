@@ -6,7 +6,6 @@ interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
-
 export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps): React.ReactElement {
   const sizeClasses = {
     sm: 'h-4 w-4',
@@ -21,4 +20,3 @@ export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps):
     />
   );
 }
-

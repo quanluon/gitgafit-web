@@ -11,4 +11,3 @@ export function RouteLoadingFallback(): React.ReactElement {
     </div>
   );
 }
-

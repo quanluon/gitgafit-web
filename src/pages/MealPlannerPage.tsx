@@ -1,20 +1,21 @@
+import { useGenerationJob } from '@/hooks/useGenerationJob';
+import { useToast } from '@/hooks/useToast';
+import { Translatable } from '@/types';
 import { DayOfWeek, Language, MealType } from '@/types/enums';
 import { DailyMealPlan, Meal, MealPlan } from '@/types/meal';
-import { Translatable } from '@/types';
 import { Button } from '@atoms/Button';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { MacrosCard } from '@molecules/MacrosCard';
+import { MealPlanGenerationModal } from '@organisms/MealPlanGenerationModal';
+import { RedirectToProfileModal } from '@organisms/RedirectToProfileModal';
 import { mealService } from '@services/mealService';
 import { useAuthStore } from '@store/authStore';
-import { GenerationStatus, GenerationType, useGenerationStore } from '@store/generationStore';
+import { GenerationType, useGenerationStore } from '@store/generationStore';
 import { useLocaleStore } from '@store/localeStore';
 import { MainLayout } from '@templates/MainLayout';
 import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useToast } from '@/hooks/useToast';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RedirectToProfileModal } from '@organisms/RedirectToProfileModal';
-import { MealPlanGenerationModal } from '@organisms/MealPlanGenerationModal';
 
 export function MealPlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export function MealPlannerPage(): React.ReactElement {
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
 
-  const { startGeneration, jobs } = useGenerationStore();
+  const { startGeneration } = useGenerationStore();
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -35,11 +36,13 @@ export function MealPlannerPage(): React.ReactElement {
     formatQuotaDisplay,
     getQuotaInfo,
   } = useSubscriptionStats();
-
-  // Check if there's already a meal generation in progress
-  const hasActiveMealGeneration = jobs.some(
-    (job) => job.type === GenerationType.MEAL && job.status === GenerationStatus.GENERATING,
-  );
+  const { hasActiveGeneration: hasActiveMealGeneration } = useGenerationJob({
+    type: GenerationType.MEAL,
+    onComplete: () => {
+      void loadMealPlan();
+      void refreshSubscriptionStats();
+    },
+  });
 
   const loadMealPlan = useCallback(async (): Promise<void> => {
     try {
@@ -62,21 +65,6 @@ export function MealPlannerPage(): React.ReactElement {
     void loadMealPlan();
   }, [loadMealPlan]);
 
-  const refreshedMealJobs = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    jobs.forEach((job) => {
-      if (
-        job.type === GenerationType.MEAL &&
-        job.status === GenerationStatus.COMPLETED &&
-        !refreshedMealJobs.current.has(job.jobId)
-      ) {
-        refreshedMealJobs.current.add(job.jobId);
-        void loadMealPlan();
-        void refreshSubscriptionStats();
-      }
-    });
-  }, [jobs, loadMealPlan, refreshSubscriptionStats]);
 
   const handleOpenGenerationModal = (): void => {
     // Prevent multiple generations
@@ -87,19 +75,16 @@ export function MealPlannerPage(): React.ReactElement {
       );
       return;
     }
-
     // Check subscription quota for AI generation
     if (quotaInfo?.isDepleted) {
       showError(t('subscription.limitReached'));
       return;
     }
-
     // Check if user has required data
     if (!user?.weight || !user?.height || !user?.age || !user?.gender || !user?.activityLevel) {
       setShowRedirectModal(true);
       return;
     }
-
     setShowGenerationModal(true);
   };
 
@@ -191,7 +176,6 @@ export function MealPlannerPage(): React.ReactElement {
       </MainLayout>
     );
   }
-
   return (
     <MainLayout>
       {/* Header */}
@@ -236,7 +220,6 @@ export function MealPlannerPage(): React.ReactElement {
             {error}
           </div>
         )}
-
         {/* No Plan Yet */}
         {!mealPlan && (
           <div className="text-center py-6 space-y-6">
@@ -255,7 +238,6 @@ export function MealPlannerPage(): React.ReactElement {
                 </span>
               </div>
             )}
-
             <div className="flex flex-col gap-3 max-w-sm mx-auto">
               <Button
                 onClick={handleOpenGenerationModal}
@@ -289,7 +271,6 @@ export function MealPlannerPage(): React.ReactElement {
             )}
           </div>
         )}
-
         {/* Meal Plan Display */}
         {mealPlan && (
           <>

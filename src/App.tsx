@@ -6,7 +6,6 @@ import { useLocaleStore } from '@store/localeStore';
 import { useSocket } from './hooks/useSocket';
 import { userService } from '@services/userService';
 import { Language } from '@/types/enums';
-import { GenerationProgress } from './components/organisms/GenerationProgress';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
 import { RouteLoadingFallback } from './components/molecules/RouteLoadingFallback';
@@ -172,8 +171,6 @@ function App(): React.ReactElement {
       />
       <Router>
         <Suspense fallback={<RouteLoadingFallback />}>
-          {/* Floating generation progress bubble - must be inside Router for useNavigate */}
-          <GenerationProgress />
           {/* PWA install prompts - shows when installable (Android/Chrome) */}
           <PWAInstallPrompt />
           {/* iOS Safari install instructions */}

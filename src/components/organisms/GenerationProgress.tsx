@@ -42,7 +42,6 @@ export function GenerationProgress(): React.ReactElement | null {
       if (notifiedJobs.has(job.jobId)) {
         return;
       }
-
       const readyMessage =
         job.type === GenerationType.WORKOUT
           ? t('generation.workoutReady')
@@ -98,7 +97,6 @@ export function GenerationProgress(): React.ReactElement | null {
       if (notifiedJobs.has(job.jobId)) {
         return;
       }
-
       // Mark as notified
       setNotifiedJobs((prev) => new Set(prev).add(job.jobId));
 
@@ -122,7 +120,6 @@ export function GenerationProgress(): React.ReactElement | null {
   if (jobs.length === 0) {
     return null;
   }
-
   const isGenerating = currentJob?.status === GenerationStatus.GENERATING;
   const isCompleted = currentJob?.status === GenerationStatus.COMPLETED;
   const isError = currentJob?.status === GenerationStatus.ERROR;
@@ -136,6 +133,8 @@ export function GenerationProgress(): React.ReactElement | null {
 
   // Count active generations
   const activeCount = activeJobs.length;
+
+  return <></>;
 
   return (
     <div className="z-50">
@@ -194,7 +193,6 @@ export function GenerationProgress(): React.ReactElement | null {
           </div>
         </Draggable>
       )}
-
       {isExpanded && (
         <div className="fixed bottom-4 right-4 w-80 bg-card border rounded-lg shadow-xl overflow-hidden animate-in slide-in-from-bottom-4">
           {/* Header */}
@@ -248,7 +246,6 @@ export function GenerationProgress(): React.ReactElement | null {
                 })}
               </div>
             )}
-
             {/* Current job details */}
             {currentJob && (
               <>
@@ -277,14 +274,12 @@ export function GenerationProgress(): React.ReactElement | null {
                     </div>
                   </div>
                 )}
-
                 {/* Error Message */}
                 {isError && currentJob.error && (
                   <div className="bg-destructive/10 text-destructive p-3 rounded-md text-xs">
                     {currentJob.error}
                   </div>
                 )}
-
                 {/* Action Buttons */}
                 {isCompleted && (
                   <Button
@@ -303,7 +298,6 @@ export function GenerationProgress(): React.ReactElement | null {
                     {t('generation.viewPlan')} {jobTypeLabel}
                   </Button>
                 )}
-
                 {isError && (
                   <Button
                     variant="outline"
@@ -313,7 +307,6 @@ export function GenerationProgress(): React.ReactElement | null {
                     {t('generation.dismiss')}
                   </Button>
                 )}
-
                 {/* Info Text */}
                 {isGenerating && (
                   <p className="text-xs text-muted-foreground text-center">

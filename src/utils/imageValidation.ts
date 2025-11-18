@@ -10,14 +10,12 @@ export interface ValidationResult {
   score: number;
   errorKeys: string[]; // i18n keys instead of hardcoded messages
 }
-
 /**
  * Get grayscale value from RGBA data
  */
 function getGray(data: Uint8ClampedArray, idx: number): number {
   return (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
 }
-
 /**
  * Calculate Laplacian variance to detect blur
  * Higher variance = sharper image
@@ -39,7 +37,6 @@ function calculateBlurScore(imageData: ImageData): number {
       laplacians.push(Math.abs(4 * gray - prevGray - nextGray - leftGray - rightGray));
     }
   }
-
   if (laplacians.length === 0) return 0;
 
   const mean = laplacians.reduce((a, b) => a + b, 0) / laplacians.length;
@@ -47,7 +44,6 @@ function calculateBlurScore(imageData: ImageData): number {
 
   return variance;
 }
-
 /**
  * Check if image is flat (not tilted/perspective distortion)
  */
@@ -61,13 +57,11 @@ function checkFlatness(imageData: ImageData): boolean {
     const bottomGray = getGray(data, ((height - 1) * width + x) * 4);
     edgeDiffs.push(Math.abs(topGray - bottomGray));
   }
-
   const mean = edgeDiffs.reduce((a, b) => a + b, 0) / edgeDiffs.length;
   const variance = edgeDiffs.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / edgeDiffs.length;
 
   return variance < 1000; // Low variance = flat image
 }
-
 /**
  * Validate image file
  */
@@ -91,7 +85,6 @@ export async function validateImage(file: File): Promise<ValidationResult> {
       });
       return;
     }
-
     img.onload = (): void => {
       try {
         // Check aspect ratio
@@ -99,7 +92,6 @@ export async function validateImage(file: File): Promise<ValidationResult> {
         // if (aspectRatio < 0.5 || aspectRatio > 2) {
         //   errorKeys.push('inbody.validation.extremeAspectRatio');
         // }
-
         // Resize for processing
         const scale = Math.min(1, MAX_SIZE / Math.max(img.width, img.height));
         canvas.width = Math.floor(img.width * scale);
@@ -114,13 +106,11 @@ export async function validateImage(file: File): Promise<ValidationResult> {
         // if (!isSharp) {
         //   errorKeys.push('inbody.validation.blurry');
         // }
-
         // Check flatness
         const isFlat = checkFlatness(imageData);
         // if (!isFlat) {
         //   errorKeys.push('inbody.validation.tilted');
         // }
-
         const score = Math.min(100, (blurScore / 1000) * 50 + (isFlat ? 50 : 0));
 
         resolve({
@@ -155,4 +145,3 @@ export async function validateImage(file: File): Promise<ValidationResult> {
     img.src = URL.createObjectURL(file);
   });
 }
-

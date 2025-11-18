@@ -12,7 +12,6 @@ interface CameraModalProps {
   facingMode?: 'user' | 'environment';
   title?: string;
 }
-
 export function CameraModal({
   isOpen,
   onClose,
@@ -63,7 +62,6 @@ export function CameraModal({
     if (!imageSrc) {
       return;
     }
-
     try {
       setIsCapturing(true);
       const blob = await fetch(imageSrc).then((res) => res.blob());
@@ -152,4 +150,3 @@ export function CameraModal({
     </div>
   );
 }
-

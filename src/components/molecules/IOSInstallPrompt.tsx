@@ -39,7 +39,6 @@ export function IOSInstallPrompt(): React.ReactElement | null {
   if (!isVisible || isDismissed) {
     return null;
   }
-
   return (
     <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40 animate-in slide-in-from-bottom-5">
       <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg shadow-2xl p-4 border border-blue-400/30">
@@ -107,4 +106,3 @@ export function IOSInstallPrompt(): React.ReactElement | null {
     </div>
   );
 }
-

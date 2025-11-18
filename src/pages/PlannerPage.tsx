@@ -1,10 +1,14 @@
-import { GenerationStatus, GenerationType, useGenerationStore } from '@/store/generationStore';
+import { useGenerationJob } from '@/hooks/useGenerationJob';
+import { useToast } from '@/hooks/useToast';
+import { AppRoutePath } from '@/routes/paths';
+import { GenerationType } from '@/store/generationStore';
 import { DayOfWeek, PlanSource } from '@/types/enums';
 import { CustomPlanPayload, WorkoutDay, WorkoutPlan } from '@/types/workout';
 import { Button } from '@atoms/Button';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
 import { DaySelector } from '@molecules/DaySelector';
 import { CreateCustomPlanModal } from '@organisms/CreateCustomPlanModal';
+import { RedirectToOnboardingModal } from '@organisms/RedirectToOnboardingModal';
 import { WorkoutCard } from '@organisms/WorkoutCard';
 import { WorkoutDetailsModal } from '@organisms/WorkoutDetailsModal';
 import { trainingService } from '@services/trainingService';
@@ -13,12 +17,9 @@ import { useTrainingStore } from '@store/trainingStore';
 import { useWorkoutStore } from '@store/workoutStore';
 import { MainLayout } from '@templates/MainLayout';
 import { Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useToast } from '@/hooks/useToast';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { AppRoutePath } from '@/routes/paths';
-import { RedirectToOnboardingModal } from '@organisms/RedirectToOnboardingModal';
 
 export function PlannerPage(): React.ReactElement {
   const { t } = useTranslation();
@@ -26,8 +27,6 @@ export function PlannerPage(): React.ReactElement {
   const { showSuccess, showError } = useToast();
   const { currentPlan, setCurrentPlan, setTodaysWorkout } = useWorkoutStore();
   const { currentSession, setCurrentSession } = useTrainingStore();
-  const { jobs } = useGenerationStore();
-
   const [selectedDay, setSelectedDay] = useState<DayOfWeek | null>(null);
   const [todaysWorkout, setTodaysWorkoutLocal] = useState<WorkoutDay | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -82,21 +81,14 @@ export function PlannerPage(): React.ReactElement {
     }
   }, [selectedDay, currentPlan, setTodaysWorkout]);
 
-  const refreshedJobIds = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    jobs.forEach((job) => {
-      if (
-        job.type === GenerationType.WORKOUT &&
-        job.status === GenerationStatus.COMPLETED &&
-        !refreshedJobIds.current.has(job.jobId)
-      ) {
-        refreshedJobIds.current.add(job.jobId);
-        void loadWorkoutPlan();
-        void refreshSubscriptionStats();
-      }
-    });
-  }, [jobs, loadWorkoutPlan, refreshSubscriptionStats]);
+  // Use hook to handle generation completion
+  useGenerationJob({
+    type: GenerationType.WORKOUT,
+    onComplete: () => {
+      void loadWorkoutPlan();
+      void refreshSubscriptionStats();
+    },
+  });
 
   const handleStartTraining = async (): Promise<void> => {
     if (!currentPlan || !selectedDay) return;
@@ -106,7 +98,6 @@ export function PlannerPage(): React.ReactElement {
       setError(t('training.completeFirst'));
       return;
     }
-
     try {
       const session = await trainingService.startSession({
         planId: currentPlan._id,
@@ -173,7 +164,6 @@ export function PlannerPage(): React.ReactElement {
       </MainLayout>
     );
   }
-
   return (
     <MainLayout>
       {/* Header */}
@@ -239,7 +229,6 @@ export function PlannerPage(): React.ReactElement {
             {error}
           </div>
         )}
-
         {/* Active Session Alert */}
         {currentSession && (
           <div className="bg-primary/10 border border-primary rounded-lg p-4">
@@ -256,7 +245,6 @@ export function PlannerPage(): React.ReactElement {
             </div>
           </div>
         )}
-
         {/* Day Selector */}
         {currentPlan && (
           <>
@@ -270,7 +258,6 @@ export function PlannerPage(): React.ReactElement {
             </div>
           </>
         )}
-
         {/* Today's Workout Card */}
         {todaysWorkout && (
           <WorkoutCard
@@ -281,7 +268,6 @@ export function PlannerPage(): React.ReactElement {
             disabled={!!currentSession}
           />
         )}
-
         {!todaysWorkout && selectedDay && (
           <div className="text-center py-12 text-muted-foreground">
             <p>{t('workout.noWorkoutScheduled')}</p>
@@ -300,7 +286,6 @@ export function PlannerPage(): React.ReactElement {
           }}
         />
       )}
-
       {/* Create Custom Plan Modal */}
       <CreateCustomPlanModal
         isOpen={isCustomPlanModalOpen}

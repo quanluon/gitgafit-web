@@ -7,7 +7,8 @@ import { Button } from '@atoms/Button';
 import { Input } from '@atoms/Input';
 import { Label } from '@atoms/Label';
 import { useAuthStore } from '@store/authStore';
-import { useGenerationStore, GenerationType, GenerationStatus } from '@store/generationStore';
+import { GenerationType, useGenerationStore } from '@store/generationStore';
+import { useGenerationJob } from '@/hooks/useGenerationJob';
 import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
 import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types/enums';
@@ -26,15 +27,17 @@ export function OnboardingPage(): React.ReactElement {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
   const { user, updateUser } = useAuthStore();
-  const { startGeneration, jobs } = useGenerationStore();
+  const { startGeneration } = useGenerationStore();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { draft, currentStep, setCurrentStep, updateDraft, resetDraft } = useOnboardingStore();
   const { stats: subscriptionStats, getQuotaInfo } = useSubscriptionStats();
-
-  // Check if there's already a workout generation in progress
-  const hasActiveWorkoutGeneration = jobs.some(
-    (job) => job.type === GenerationType.WORKOUT && job.status === GenerationStatus.GENERATING,
-  );
+  const { hasActiveGeneration: hasActiveWorkoutGeneration } = useGenerationJob({
+    type: GenerationType.WORKOUT,
+    onComplete: () => {
+      // Reload user profile after completion
+      void userService.getProfile().then(updateUser);
+    },
+  });
 
   const {
     register,
@@ -170,13 +173,11 @@ export function OnboardingPage(): React.ReactElement {
       );
       return;
     }
-
     // Check subscription quota
     if (quotaInfo?.isDepleted) {
       showError(t('subscription.limitReached'));
       return;
     }
-
     try {
       setIsLoading(true);
 
@@ -283,13 +284,11 @@ export function OnboardingPage(): React.ReactElement {
                 )}
               />
               {errors.goal && <p className="text-sm text-destructive">{errors.goal.message}</p>}
-
               <Button type="button" onClick={nextStep} className="w-full" disabled={!formData.goal}>
                 {t('onboarding.continue')}
               </Button>
             </div>
           )}
-
           {/* Step: Experience */}
           {currentStep === 'experience' && (
             <div className="space-y-6">
@@ -337,7 +336,6 @@ export function OnboardingPage(): React.ReactElement {
               </div>
             </div>
           )}
-
           {/* Step: Body Metrics */}
           {currentStep === 'body' && (
             <div className="space-y-6">
@@ -496,7 +494,6 @@ export function OnboardingPage(): React.ReactElement {
               </div>
             </div>
           )}
-
           {/* Step: Schedule */}
           {currentStep === 'schedule' && (
             <div className="space-y-6">
@@ -554,7 +551,6 @@ export function OnboardingPage(): React.ReactElement {
               </div>
             </div>
           )}
-
           {/* Step: Summary */}
           {currentStep === 'summary' && (
             <div className="space-y-6">
@@ -688,13 +684,11 @@ export function OnboardingPage(): React.ReactElement {
                   </span>
                 </div>
               )}
-
               {quotaInfo?.isDepleted && (
                 <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm text-center">
                   {t('subscription.upgradeToGenerate')}
                 </div>
               )}
-
               <div className="flex gap-4">
                 <Button type="button" variant="outline" onClick={prevStep} className="flex-1">
                   {t('onboarding.back')}

@@ -11,7 +11,6 @@ interface PWAInstallButtonProps {
   className?: string;
   showIcon?: boolean;
 }
-
 /**
  * PWA Install Button Component
  * Can be placed anywhere in the app to trigger PWA installation
@@ -31,7 +30,6 @@ export function PWAInstallButton({
   if (isStandalone || !isInstallable) {
     return null;
   }
-
   // Handle installation status updates
   const handleCallback = (data: {
     isInstallAllowed: boolean;

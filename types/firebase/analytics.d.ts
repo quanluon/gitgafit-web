@@ -5,4 +5,3 @@ declare module 'firebase/analytics' {
   export function getAnalytics(app: FirebaseApp): Analytics;
   export function logEvent(analytics: Analytics, eventName: string, params?: Record<string, unknown>): void;
 }
-

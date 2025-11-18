@@ -21,7 +21,7 @@ type EventHandler = (data: NotificationPayload) => void;
  */
 export function useSocket(): void {
   const { user, isAuthenticated } = useAuthStore();
-  const { startGeneration, updateProgress, completeGeneration, failGeneration, setJobs } =
+  const { startGeneration, completeGeneration, failGeneration, setJobs } =
     useGenerationStore();
 
 
@@ -56,20 +56,8 @@ export function useSocket(): void {
       // Connect socket when user is authenticated
       socketService.connect(user._id);
 
-      // Setup automatic generation progress updates
-      const unsubscribeWorkoutProgress = socketService.on(
-        WebSocketEvent.WORKOUT_GENERATION_PROGRESS,
-        (data) => {
-          if (data.jobId) {
-            updateProgress(
-              data.jobId.toString(),
-              data.progress || 0,
-              data.message || 'Generating workout plan...'
-            );
-          }
-        }
-      );
-
+      // Only listen for completion/error events (for alerts)
+      // Progress is now handled by useGenerationJob hook via polling
       const unsubscribeWorkoutComplete = socketService.on(
         WebSocketEvent.WORKOUT_GENERATION_COMPLETE,
         (data) => {
@@ -84,19 +72,6 @@ export function useSocket(): void {
         (data) => {
           if (data.jobId) {
             failGeneration(data.jobId.toString(), data.error || 'Generation failed');
-          }
-        }
-      );
-
-      const unsubscribeMealProgress = socketService.on(
-        WebSocketEvent.MEAL_GENERATION_PROGRESS,
-        (data) => {
-          if (data.jobId) {
-            updateProgress(
-              data.jobId.toString(),
-              data.progress || 0,
-              data.message || 'Generating meal plan...'
-            );
           }
         }
       );
@@ -128,19 +103,6 @@ export function useSocket(): void {
         }
       );
 
-      const unsubscribeInbodyProgress = socketService.on(
-        WebSocketEvent.INBODY_OCR_PROGRESS,
-        (data) => {
-          if (data.jobId) {
-            updateProgress(
-              data.jobId.toString(),
-              data.progress || 0,
-              data.message || 'Analyzing InBody scan...'
-            );
-          }
-        }
-      );
-
       const unsubscribeInbodyComplete = socketService.on(
         WebSocketEvent.INBODY_OCR_COMPLETE,
         (data: { jobId?: string | number; resultId?: string }) => {
@@ -161,14 +123,11 @@ export function useSocket(): void {
 
       return (): void => {
         // Cleanup subscriptions
-        unsubscribeWorkoutProgress();
         unsubscribeWorkoutComplete();
         unsubscribeWorkoutError();
-        unsubscribeMealProgress();
         unsubscribeMealComplete();
         unsubscribeMealError();
         unsubscribeInbodyStarted();
-        unsubscribeInbodyProgress();
         unsubscribeInbodyComplete();
         unsubscribeInbodyError();
         
@@ -177,9 +136,8 @@ export function useSocket(): void {
       };
     }
     return undefined;
-  }, [isAuthenticated, user?._id, startGeneration, updateProgress, completeGeneration, failGeneration]);
+  }, [isAuthenticated, user?._id, startGeneration, completeGeneration, failGeneration]);
 }
-
 /**
  * Hook to subscribe to specific WebSocket event
  */

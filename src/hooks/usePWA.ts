@@ -15,7 +15,6 @@ interface PWAState {
   isStandalone: boolean;
   installStatus: PWAInstallStatus | null;
 }
-
 /**
  * Custom hook for PWA installation status management
  * Tracks installation state from react-pwa-installer-prompt callback

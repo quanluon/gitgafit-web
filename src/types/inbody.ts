@@ -9,13 +9,11 @@ export enum InbodyStatus {
   COMPLETED = 'completed',
   FAILED = 'failed',
 }
-
 export interface SegmentMeasurement {
   label?: string;
   value?: number;
   percentage?: number;
 }
-
 export interface InbodyMetricsSummary {
   weight?: number;
   skeletalMuscleMass?: number;
@@ -30,7 +28,6 @@ export interface InbodyMetricsSummary {
   segmentalLean?: SegmentMeasurement[];
   segmentalFat?: SegmentMeasurement[];
 }
-
 /**
  * InBody analysis structure per language
  */
@@ -39,7 +36,6 @@ export interface InbodyAnalysisPerLanguage {
   recommendations: string[];
   training_nutrition_advice: string;
 }
-
 /**
  * Bilingual InBody analysis with structured fields
  */
@@ -47,7 +43,6 @@ export interface InbodyAnalysis {
   en: InbodyAnalysisPerLanguage;
   vi: InbodyAnalysisPerLanguage;
 }
-
 export interface InbodyResult {
   _id: string;
   userId: string;
@@ -63,4 +58,3 @@ export interface InbodyResult {
   updatedAt: string;
   errorMessage?: string;
 }
-

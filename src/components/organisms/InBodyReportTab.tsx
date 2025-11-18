@@ -23,7 +23,6 @@ interface InBodyReportTabProps {
   quota?: SubscriptionQuotaInfo;
   onRefresh?: () => Promise<void>;
 }
-
 export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): React.ReactElement {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
@@ -70,7 +69,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
       showError(t('subscription.limitReached'));
       return;
     }
-
     try {
       setIsScanning(true);
 
@@ -188,7 +186,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
             </div>
           </div>
         )}
-
         {isValidating && (
           <div className="text-sm text-muted-foreground text-center py-2">
             {t('inbody.validating')}...
@@ -201,7 +198,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
           {t('inbody.quotaDepleted')}
         </p>
       )}
-
       {file && !quota?.isDepleted && (
         <Button
           onClick={handleAnalyze}
@@ -211,7 +207,6 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
           {isScanning ? t('inbody.scanning') : t('inbody.scanAndAnalyze')}
         </Button>
       )}
-
       {file && (
         <p className="text-xs text-muted-foreground text-center">
           {t('inbody.backgroundInfo')}
@@ -220,4 +215,3 @@ export function InBodyReportTab({ quota, onRefresh }: InBodyReportTabProps): Rea
     </div>
   );
 }
-

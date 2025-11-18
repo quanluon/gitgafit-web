@@ -59,21 +59,33 @@ export function ProfilePage(): React.ReactElement {
       updateUser(updatedUser);
       showSuccess(t('profile.updateSuccess'));
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string | string[] | Array<{ property?: string; constraints?: Record<string, string> }> }; status?: number } };
-      
+      const error = err as {
+        response?: {
+          data?: {
+            message?:
+              | string
+              | string[]
+              | Array<{ property?: string; constraints?: Record<string, string> }>;
+          };
+          status?: number;
+        };
+      };
+
       // Extract validation errors
       const missingFields = new Set<string>();
       let errorMessage = t('profile.updateError');
 
       if (error.response?.data?.message) {
         const message = error.response.data.message;
-        
+
         if (Array.isArray(message)) {
           // Handle array of validation messages
           message.forEach((msg) => {
             if (typeof msg === 'string') {
               // Try to extract field name from error message
-              const fieldMatch = msg.match(/(height|weight|targetWeight|age|gender|activityLevel|goal|experienceLevel|scheduleDays)/i);
+              const fieldMatch = msg.match(
+                /(height|weight|targetWeight|age|gender|activityLevel|goal|experienceLevel|scheduleDays)/i,
+              );
               if (fieldMatch) {
                 missingFields.add(fieldMatch[1].toLowerCase());
               }
@@ -85,7 +97,17 @@ export function ProfilePage(): React.ReactElement {
         } else if (typeof message === 'string') {
           errorMessage = message;
           // Try to extract field names from error message
-          const fieldNames = ['height', 'weight', 'targetWeight', 'age', 'gender', 'activityLevel', 'goal', 'experienceLevel', 'scheduleDays'];
+          const fieldNames = [
+            'height',
+            'weight',
+            'targetWeight',
+            'age',
+            'gender',
+            'activityLevel',
+            'goal',
+            'experienceLevel',
+            'scheduleDays',
+          ];
           fieldNames.forEach((field) => {
             if (message.toLowerCase().includes(field)) {
               missingFields.add(field);
@@ -93,7 +115,6 @@ export function ProfilePage(): React.ReactElement {
           });
         }
       }
-
       // Map fields to their sections
       const personalFields = ['height', 'weight', 'targetWeight', 'age', 'gender', 'activityLevel'];
       const fitnessFields = ['goal', 'experienceLevel'];
@@ -102,9 +123,15 @@ export function ProfilePage(): React.ReactElement {
       let sectionToOpen: CollapsibleSection = null;
       if (missingFields.size > 0) {
         // Determine which section to open
-        const hasPersonalError = Array.from(missingFields).some((field) => personalFields.includes(field));
-        const hasFitnessError = Array.from(missingFields).some((field) => fitnessFields.includes(field));
-        const hasScheduleError = Array.from(missingFields).some((field) => scheduleFields.includes(field));
+        const hasPersonalError = Array.from(missingFields).some((field) =>
+          personalFields.includes(field),
+        );
+        const hasFitnessError = Array.from(missingFields).some((field) =>
+          fitnessFields.includes(field),
+        );
+        const hasScheduleError = Array.from(missingFields).some((field) =>
+          scheduleFields.includes(field),
+        );
 
         if (hasPersonalError) {
           sectionToOpen = 'personal';
@@ -113,7 +140,6 @@ export function ProfilePage(): React.ReactElement {
         } else if (hasScheduleError) {
           sectionToOpen = 'schedule';
         }
-
         // Open the section containing errors
         if (sectionToOpen) {
           setExpandedSection(sectionToOpen);
@@ -125,10 +151,8 @@ export function ProfilePage(): React.ReactElement {
             }
           }, 100);
         }
-
         setErrorFields(missingFields);
       }
-
       showError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -154,11 +178,31 @@ export function ProfilePage(): React.ReactElement {
   ];
 
   const activityLevelOptions = [
-    { value: ActivityLevel.SEDENTARY, label: t('profile.sedentary'), description: t('profile.sedentaryDesc') },
-    { value: ActivityLevel.LIGHTLY_ACTIVE, label: t('profile.lightlyActive'), description: t('profile.lightlyActiveDesc') },
-    { value: ActivityLevel.MODERATELY_ACTIVE, label: t('profile.moderatelyActive'), description: t('profile.moderatelyActiveDesc') },
-    { value: ActivityLevel.VERY_ACTIVE, label: t('profile.veryActive'), description: t('profile.veryActiveDesc') },
-    { value: ActivityLevel.EXTREMELY_ACTIVE, label: t('profile.extremelyActive'), description: t('profile.extremelyActiveDesc') },
+    {
+      value: ActivityLevel.SEDENTARY,
+      label: t('profile.sedentary'),
+      description: t('profile.sedentaryDesc'),
+    },
+    {
+      value: ActivityLevel.LIGHTLY_ACTIVE,
+      label: t('profile.lightlyActive'),
+      description: t('profile.lightlyActiveDesc'),
+    },
+    {
+      value: ActivityLevel.MODERATELY_ACTIVE,
+      label: t('profile.moderatelyActive'),
+      description: t('profile.moderatelyActiveDesc'),
+    },
+    {
+      value: ActivityLevel.VERY_ACTIVE,
+      label: t('profile.veryActive'),
+      description: t('profile.veryActiveDesc'),
+    },
+    {
+      value: ActivityLevel.EXTREMELY_ACTIVE,
+      label: t('profile.extremelyActive'),
+      description: t('profile.extremelyActiveDesc'),
+    },
   ];
 
   const dayOptions = [
@@ -225,7 +269,9 @@ export function ProfilePage(): React.ReactElement {
                         id="height"
                         type="number"
                         placeholder="175"
-                        className={errorFields.has('height') ? 'border-destructive ring-destructive' : ''}
+                        className={
+                          errorFields.has('height') ? 'border-destructive ring-destructive' : ''
+                        }
                         {...register('height', {
                           required: t('profile.errors.heightRequired'),
                           min: { value: 1, message: t('profile.errors.heightPositive') },
@@ -240,7 +286,9 @@ export function ProfilePage(): React.ReactElement {
                           },
                         })}
                       />
-                      {errors.height && <p className="text-sm text-destructive">{errors.height.message}</p>}
+                      {errors.height && (
+                        <p className="text-sm text-destructive">{errors.height.message}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -251,7 +299,9 @@ export function ProfilePage(): React.ReactElement {
                         id="weight"
                         type="number"
                         placeholder="70"
-                        className={errorFields.has('weight') ? 'border-destructive ring-destructive' : ''}
+                        className={
+                          errorFields.has('weight') ? 'border-destructive ring-destructive' : ''
+                        }
                         {...register('weight', {
                           required: t('profile.errors.weightRequired'),
                           min: { value: 1, message: t('profile.errors.weightPositive') },
@@ -266,7 +316,9 @@ export function ProfilePage(): React.ReactElement {
                           },
                         })}
                       />
-                      {errors.weight && <p className="text-sm text-destructive">{errors.weight.message}</p>}
+                      {errors.weight && (
+                        <p className="text-sm text-destructive">{errors.weight.message}</p>
+                      )}
                     </div>
                   </div>
 
@@ -277,7 +329,9 @@ export function ProfilePage(): React.ReactElement {
                       id="targetWeight"
                       type="number"
                       placeholder="65"
-                      className={errorFields.has('targetweight') ? 'border-destructive ring-destructive' : ''}
+                      className={
+                        errorFields.has('targetweight') ? 'border-destructive ring-destructive' : ''
+                      }
                       {...register('targetWeight', {
                         min: { value: 1, message: t('profile.errors.targetWeightPositive') },
                       })}
@@ -288,33 +342,36 @@ export function ProfilePage(): React.ReactElement {
                   </div>
 
                   {/* Age, Gender, Activity Level */}
-                  <div className="space-y-2">
-                    <Label htmlFor="age">{t('profile.age')}</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      placeholder="25"
-                      className={errorFields.has('age') ? 'border-destructive ring-destructive' : ''}
-                      {...register('age', {
-                        min: { value: 1, message: t('profile.errors.agePositive') },
-                        max: { value: 120, message: t('profile.errors.ageValid') },
-                      })}
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {t('profile.requiredForMealPlan')}
-                    </p>
-                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
-                  </div>
-
                   <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="age">{t('profile.age')}</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        placeholder="25"
+                        className={
+                          errorFields.has('age') ? 'border-destructive ring-destructive' : ''
+                        }
+                        {...register('age', {
+                          min: { value: 1, message: t('profile.errors.agePositive') },
+                          max: { value: 120, message: t('profile.errors.ageValid') },
+                        })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {t('profile.requiredForMealPlan')}
+                      </p>
+                      {errors.age && (
+                        <p className="text-sm text-destructive">{errors.age.message}</p>
+                      )}
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="gender">{t('profile.gender')}</Label>
                       <Controller
                         name="gender"
                         control={control}
                         render={({ field }): React.ReactElement => (
-                          <Select 
-                            value={field.value} 
+                          <Select
+                            value={field.value}
                             onValueChange={(value) => {
                               field.onChange(value);
                               if (errorFields.has('gender')) {
@@ -326,7 +383,13 @@ export function ProfilePage(): React.ReactElement {
                               }
                             }}
                           >
-                            <SelectTrigger className={errorFields.has('gender') ? 'border-destructive ring-destructive' : ''}>
+                            <SelectTrigger
+                              className={
+                                errorFields.has('gender')
+                                  ? 'border-destructive ring-destructive'
+                                  : ''
+                              }
+                            >
                               <SelectValue placeholder={t('profile.selectGender')} />
                             </SelectTrigger>
                             <SelectContent>
@@ -339,46 +402,56 @@ export function ProfilePage(): React.ReactElement {
                           </Select>
                         )}
                       />
-                      <p className="text-xs text-muted-foreground">{t('profile.requiredForTDEE')}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t('profile.requiredForTDEE')}
+                      </p>
                     </div>
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="activityLevel">{t('profile.activityLevel')}</Label>
-                      <Controller
-                        name="activityLevel"
-                        control={control}
-                        render={({ field }): React.ReactElement => (
-                          <Select 
-                            value={field.value} 
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              if (errorFields.has('activitylevel')) {
-                                setErrorFields((prev) => {
-                                  const newSet = new Set(prev);
-                                  newSet.delete('activitylevel');
-                                  return newSet;
-                                });
-                              }
-                            }}
+                  <div className="space-y-2">
+                    <Label htmlFor="activityLevel">{t('profile.activityLevel')}</Label>
+                    <Controller
+                      name="activityLevel"
+                      control={control}
+                      render={({ field }): React.ReactElement => (
+                        <Select
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            if (errorFields.has('activitylevel')) {
+                              setErrorFields((prev) => {
+                                const newSet = new Set(prev);
+                                newSet.delete('activitylevel');
+                                return newSet;
+                              });
+                            }
+                          }}
+                        >
+                          <SelectTrigger
+                            className={
+                              errorFields.has('activitylevel')
+                                ? 'border-destructive ring-destructive'
+                                : ''
+                            }
                           >
-                            <SelectTrigger className={errorFields.has('activitylevel') ? 'border-destructive ring-destructive' : ''}>
-                              <SelectValue placeholder={t('profile.selectActivity')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {activityLevelOptions.map((option) => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  <div>
-                                    <div className="font-medium">{option.label}</div>
-                                    <div className="text-xs text-muted-foreground">{option.description}</div>
+                            <SelectValue placeholder={t('profile.selectActivity')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {activityLevelOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                <div>
+                                  <div className="font-medium text-start">{option.label}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {option.description}
                                   </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      <p className="text-xs text-muted-foreground">{t('profile.requiredForTDEE')}</p>
-                    </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground">{t('profile.requiredForTDEE')}</p>
                   </div>
                 </div>
               )}
@@ -412,7 +485,11 @@ export function ProfilePage(): React.ReactElement {
                       rules={{ required: t('profile.errors.goalRequired') }}
                       render={({ field }): React.ReactElement => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className={errorFields.has('goal') ? 'border-destructive ring-destructive' : ''}>
+                          <SelectTrigger
+                            className={
+                              errorFields.has('goal') ? 'border-destructive ring-destructive' : ''
+                            }
+                          >
                             <SelectValue placeholder={t('profile.selectGoal')} />
                           </SelectTrigger>
                           <SelectContent>
@@ -425,7 +502,9 @@ export function ProfilePage(): React.ReactElement {
                         </Select>
                       )}
                     />
-                    {errors.goal && <p className="text-sm text-destructive">{errors.goal.message}</p>}
+                    {errors.goal && (
+                      <p className="text-sm text-destructive">{errors.goal.message}</p>
+                    )}
                   </div>
 
                   {/* Experience Level */}
@@ -439,7 +518,13 @@ export function ProfilePage(): React.ReactElement {
                       rules={{ required: t('profile.errors.experienceLevelRequired') }}
                       render={({ field }): React.ReactElement => (
                         <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger className={errorFields.has('experiencelevel') ? 'border-destructive ring-destructive' : ''}>
+                          <SelectTrigger
+                            className={
+                              errorFields.has('experiencelevel')
+                                ? 'border-destructive ring-destructive'
+                                : ''
+                            }
+                          >
                             <SelectValue placeholder={t('profile.selectExperienceLevel')} />
                           </SelectTrigger>
                           <SelectContent>
@@ -490,7 +575,7 @@ export function ProfilePage(): React.ReactElement {
                           const currentDays = watch('scheduleDays') || [];
                           const allDays = Object.values(DayOfWeek);
                           const allSelected = allDays.length === currentDays.length;
-                          
+
                           if (allSelected) {
                             setValue('scheduleDays', []);
                           } else {
@@ -520,7 +605,11 @@ export function ProfilePage(): React.ReactElement {
                                 type="button"
                                 variant={isSelected ? 'default' : 'outline'}
                                 size="sm"
-                                className={errorFields.has('scheduledays') && !isSelected ? 'border-destructive border-2' : ''}
+                                className={
+                                  errorFields.has('scheduledays') && !isSelected
+                                    ? 'border-destructive border-2'
+                                    : ''
+                                }
                                 onClick={(): void => {
                                   const current = field.value || [];
                                   const updated = isSelected

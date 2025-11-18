@@ -130,18 +130,15 @@ interface AuthState {
   login: (email, password) => Promise<void>;
   logout: () => void;
 }
-
 // workoutStore.ts - Workout plans
 interface WorkoutState {
   currentPlan: WorkoutPlan | null;
   todaysWorkout: WorkoutDay | null;
 }
-
 // trainingStore.ts - Active sessions
 interface TrainingState {
   currentSession: TrainingSession | null;
 }
-
 // localeStore.ts - Language preference
 interface LocaleState {
   language: 'en' | 'vi';
@@ -207,6 +204,7 @@ VITE_FIREBASE_STORAGE_BUCKET=
 VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 VITE_FIREBASE_MEASUREMENT_ID=
+VITE_FIREBASE_VAPID_KEY=
 ```
 
 ### Environment Files
@@ -577,7 +575,6 @@ Users can install GigaFit to their home screen:
     "newKey": "English text"
   }
 }
-
 // vi.json
 {
   "feature": {

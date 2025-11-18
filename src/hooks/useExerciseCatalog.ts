@@ -8,7 +8,6 @@ interface UseExerciseCatalogResult {
   error: string | null;
   search: (params?: ExerciseSearchParams) => Promise<void>;
 }
-
 export function useExerciseCatalog(
   initialParams: ExerciseSearchParams = {},
 ): UseExerciseCatalogResult {
@@ -43,5 +42,4 @@ export function useExerciseCatalog(
     search,
   };
 }
-
 

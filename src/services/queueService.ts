@@ -16,7 +16,6 @@ export interface ActiveJobResponse {
   progress: number;
   message?: string;
 }
-
 /**
  * Queue Service
  * Handles job-related API calls
@@ -36,7 +35,6 @@ class QueueService {
       } else if (job.type === 'inbody-ocr') {
         type = GenerationType.INBODY;
       }
-
       return {
         jobId: job.jobId,
         type,
@@ -45,6 +43,23 @@ class QueueService {
         message: job.message,
       };
     });
+  }
+  /**
+   * Get job status by jobId
+   */
+  async getJobStatus(jobId: string): Promise<{
+    status: string;
+    progress: number;
+    message?: string;
+    resultId?: string;
+    error?: string;
+  }> {
+    const response = await apiClient.get<{ data: ActiveJob }>(`/workout/plan/generate/status/${jobId}`);
+    return {
+      status: response.data.data.status,
+      progress: response.data.data.progress,
+      message: response.data.data.message,
+    };
   }
 }
 

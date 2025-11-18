@@ -42,7 +42,6 @@ export function PWAInstallPrompt(): React.ReactElement | null {
   ) {
     return null;
   }
-
   const handleDismiss = (): void => {
     setIsDismissed(true);
     // Store dismissal in localStorage to not show again for 7 days

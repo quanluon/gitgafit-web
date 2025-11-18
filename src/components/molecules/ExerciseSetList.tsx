@@ -10,13 +10,14 @@ interface ExerciseSetListProps {
   onUpdate: (setIndex: number, field: 'reps' | 'weight', value: number) => void;
   onAdd: () => void;
   onRemove: (setIndex: number) => void;
+  readOnly?: boolean;
 }
-
 export function ExerciseSetList({
   sets,
   onUpdate,
   onAdd,
   onRemove,
+  readOnly = false,
 }: ExerciseSetListProps): React.ReactElement {
   const { t } = useTranslation();
 
@@ -26,15 +27,17 @@ export function ExerciseSetList({
         <h4 className="text-xs font-semibold text-muted-foreground">
           {t('statistics.sets')}
         </h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 px-2 text-xs"
-          onClick={onAdd}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          {t('common.add') || 'Add'}
-        </Button>
+        {!readOnly && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs"
+            onClick={onAdd}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            {t('common.add') || 'Add'}
+          </Button>
+        )}
       </div>
       <div className="grid grid-cols-1 gap-2">
         {sets.map((set, setIdx) => (
@@ -43,12 +46,12 @@ export function ExerciseSetList({
             set={set}
             setIndex={setIdx}
             onUpdate={(field, value) => onUpdate(setIdx, field, value)}
-            onRemove={sets.length > 1 ? () => onRemove(setIdx) : undefined}
-            canRemove={sets.length > 1}
+            onRemove={!readOnly && sets.length > 1 ? () => onRemove(setIdx) : undefined}
+            canRemove={!readOnly && sets.length > 1}
+            readOnly={readOnly}
           />
         ))}
       </div>
     </div>
   );
 }
-

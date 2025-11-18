@@ -41,7 +41,6 @@ export function FeedbackWidget(): React.ReactElement {
   if (!isVisible) {
     return <></>;
   }
-
   return (
     <>
       <button
@@ -55,7 +54,7 @@ export function FeedbackWidget(): React.ReactElement {
       <button
         type="button"
         onClick={handleHide}
-        className="fixed bottom-36 right-4 z-40 rounded-full bg-background/80 p-2 shadow-md border text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="fixed bottom-[7.7rem] right-4 z-40 rounded-full bg-background/100 p-2 border text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={t('common.close')}
       >
         <X className="h-4 w-4" />
@@ -69,4 +68,3 @@ export function FeedbackWidget(): React.ReactElement {
     </>
   );
 }
-

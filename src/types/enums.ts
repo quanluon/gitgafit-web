@@ -25,7 +25,6 @@ export enum SessionStatus {
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',
 }
-
 // WebSocket event names for real-time notifications
 export enum WebSocketEvent {
   // Connection

@@ -10,7 +10,6 @@ class ExerciseServiceClass {
     return response.data.data ?? [];
   }
 }
-
 export const exerciseService = new ExerciseServiceClass();
 
 

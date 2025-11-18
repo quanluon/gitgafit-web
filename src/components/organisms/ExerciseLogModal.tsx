@@ -103,14 +103,12 @@ export function ExerciseLogModal({
     if (!validateSets()) {
       return;
     }
-
     // Filter out empty sets
     const validSets = sets.filter((set) => set.reps > 0);
     if (validSets.length === 0) {
       setErrors({ general: t('training.logAtLeastOneSet') });
       return;
     }
-
     onSave(validSets);
     onClose();
   };
@@ -138,7 +136,6 @@ export function ExerciseLogModal({
               {errors.general}
             </div>
           )}
-
           {/* Sets List */}
           <div className="space-y-3">
             {sets.map((set, index) => (
@@ -234,7 +231,6 @@ export function ExerciseLogModal({
               </div>
             </div>
           )}
-
           {/* Save Button */}
           <Button className="w-full sticky bottom-0 pb-1" size="lg" onClick={handleSave}>
             {t('workout.saveLog')}

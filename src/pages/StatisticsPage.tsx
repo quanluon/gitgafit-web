@@ -87,7 +87,6 @@ export function StatisticsPage(): React.ReactElement {
       </MainLayout>
     );
   }
-
   return (
     <MainLayout>
       {/* Header */}
@@ -125,7 +124,6 @@ export function StatisticsPage(): React.ReactElement {
             />
           </div>
         )}
-
         {/* Weight Chart */}
         <WeightChart
           data={weightHistory}
@@ -170,15 +168,14 @@ export function StatisticsPage(): React.ReactElement {
           onClose={(): void => setShowWeightModal(false)}
         />
       )}
-
       {/* Exercise Logs Modal */}
       <ExerciseLogsModal
         sessions={selectedSessions}
         date={selectedDate}
         isOpen={showLogsModal}
         onClose={(): void => setShowLogsModal(false)}
+        readOnly={true}
       />
     </MainLayout>
   );
 }
-

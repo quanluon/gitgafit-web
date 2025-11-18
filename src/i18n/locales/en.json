@@ -634,6 +634,10 @@
     "continueUsingMultiple": "You can continue using the app. We'll notify you when they're ready!",
     "generationFailed": "Plan creation failed",
     "progress": "Progress",
-    "inbodyAnalyzing": "Analyzing your InBody scan..."
+    "inbodyAnalyzing": "Analyzing your InBody scan...",
+    "workoutComplete": "Workout plan generated successfully!",
+    "mealPlanComplete": "Meal plan generated successfully!",
+    "inbodyComplete": "InBody scan analyzed successfully!",
+    "bodyPhotoComplete": "Body photo analyzed successfully!"
   }
 }

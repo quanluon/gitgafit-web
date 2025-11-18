@@ -18,8 +18,8 @@ interface ExerciseCardProps {
   onRemoveSet: (setIndex: number) => void;
   formatTime: (date: string) => string;
   formatDuration: (minutes: number) => string;
+  readOnly?: boolean;
 }
-
 export function ExerciseCard({
   exercise,
   currentLang,
@@ -29,6 +29,7 @@ export function ExerciseCard({
   onRemoveSet,
   formatTime,
   formatDuration,
+  readOnly = false,
 }: ExerciseCardProps): React.ReactElement {
   const { t } = useTranslation();
   const totalExerciseDuration = exercise.sessionDurations.reduce((sum, dur) => sum + dur, 0);
@@ -82,10 +83,11 @@ export function ExerciseCard({
       </div>
 
       <ExerciseSetList
-        sets={editableSets}
+        sets={readOnly ? exercise.sets : editableSets}
         onUpdate={onUpdateSet}
         onAdd={onAddSet}
         onRemove={onRemoveSet}
+        readOnly={readOnly}
       />
 
       {exercise.notes && (
@@ -94,4 +96,3 @@ export function ExerciseCard({
     </div>
   );
 }
-

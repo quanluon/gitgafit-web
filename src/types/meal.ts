@@ -54,4 +54,3 @@ export interface TDEECalculation {
   carbs: number;
   fat: number;
 }
-

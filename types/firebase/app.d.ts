@@ -4,4 +4,3 @@ declare module 'firebase/app' {
   export function getApps(): FirebaseApp[];
   export function getApp(): FirebaseApp;
 }
-

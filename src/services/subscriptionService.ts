@@ -10,6 +10,5 @@ class SubscriptionService {
     return response.data.data!;
   }
 }
-
 export const subscriptionService = new SubscriptionService();
 

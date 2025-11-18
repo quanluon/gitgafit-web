@@ -45,7 +45,6 @@ export function TrainingPage(): React.ReactElement {
       navigate(AppRoutePath.Planner);
       return;
     }
-
     // Load exercise progress from session if it exists
     if (currentSession.exercises && currentSession.exercises.length > 0) {
       const loadedProgress: ExerciseProgress = {};
@@ -128,7 +127,6 @@ export function TrainingPage(): React.ReactElement {
       </div>
     );
   }
-
   const currentLang = language as Language;
   const workoutFocus = todaysWorkout.focus[currentLang];
 
@@ -141,12 +139,10 @@ export function TrainingPage(): React.ReactElement {
       console.error('No exercise selected');
       return;
     }
-
     if (!currentSession?._id) {
       console.error('No active session');
       return;
     }
-
     const exerciseKey = `exercise_${selectedExercise.index}`;
     const updatedProgress = {
       ...exerciseProgress,
@@ -260,7 +256,6 @@ export function TrainingPage(): React.ReactElement {
             />
           );
         })}
-
         {/* Complete Button */}
         <div className="pt-4 space-y-3">
           <Button
@@ -291,4 +286,3 @@ export function TrainingPage(): React.ReactElement {
     </div>
   );
 }
-

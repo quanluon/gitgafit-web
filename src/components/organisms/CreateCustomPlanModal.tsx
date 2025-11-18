@@ -18,7 +18,6 @@ interface CreateCustomPlanModalProps {
   onClose: () => void;
   onSave: (payload: CustomPlanPayload) => Promise<void>;
 }
-
 const getEmptyExercise = (): Exercise => ({
   name: { en: '', vi: '' },
   description: { en: '', vi: '' },
@@ -215,7 +214,6 @@ export function CreateCustomPlanModal({
       showError(validationMessage);
       return;
     }
-
     try {
       setIsSaving(true);
       await onSave({
@@ -260,7 +258,6 @@ export function CreateCustomPlanModal({
               <p className="text-sm">{t('workout.clickAddDay')}</p>
             </div>
           )}
-
           {schedule.map((day, dayIndex) => (
             <div key={`${day.dayOfWeek}-${dayIndex}`} className="space-y-4 rounded-lg border p-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -463,7 +460,6 @@ export function CreateCustomPlanModal({
                     </div>
                   </div>
                 ))}
-
                 <Button
                   variant="outline"
                   size="sm"
@@ -511,13 +507,11 @@ export function CreateCustomPlanModal({
     </div>
   );
 }
-
 interface ExerciseLibraryPanelProps {
   dayLabel: string;
   onClose: () => void;
   onSelect: (exercise: ExerciseCatalogItem) => void;
 }
-
 function ExerciseLibraryPanel({
   dayLabel,
   onClose,
@@ -544,7 +538,6 @@ function ExerciseLibraryPanel({
   if (typeof document === 'undefined') {
     return <></>;
   }
-
   return createPortal(
     <div className="modal-overlay z-[70] items-stretch justify-end p-0">
       <div className="ml-auto flex h-full w-full max-w-lg flex-col bg-card px-6 py-5 shadow-2xl">

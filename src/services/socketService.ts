@@ -62,7 +62,6 @@ class SocketService {
     if (this.socket?.connected) {
       this.disconnect();
     }
-
     this.socket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
@@ -88,7 +87,6 @@ class SocketService {
     // Setup event listeners
     this.setupEventListeners();
   }
-
   /**
    * Register user with socket server
    */
@@ -97,7 +95,6 @@ class SocketService {
       this.socket.emit(WebSocketEvent.REGISTER_USER, { userId });
     }
   }
-
   /**
    * Setup all event listeners
    */
@@ -121,7 +118,6 @@ class SocketService {
       });
     });
   }
-
   /**
    * Subscribe to an event
    */
@@ -129,7 +125,6 @@ class SocketService {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
     }
-
     this.eventHandlers.get(event)?.add(handler);
 
     // Return unsubscribe function
@@ -137,14 +132,12 @@ class SocketService {
       this.eventHandlers.get(event)?.delete(handler);
     };
   }
-
   /**
    * Unsubscribe from an event
    */
   off(event: WebSocketEvent, handler: EventHandler): void {
     this.eventHandlers.get(event)?.delete(handler);
   }
-
   /**
    * Disconnect socket
    */
@@ -156,14 +149,12 @@ class SocketService {
       console.log('[Socket] Disconnected and cleaned up');
     }
   }
-
   /**
    * Check if connected
    */
   isConnected(): boolean {
     return this.socket?.connected || false;
   }
-
   /**
    * Get current user ID
    */

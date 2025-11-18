@@ -45,4 +45,3 @@ export function MainLayout({
     </div>
   );
 }
-

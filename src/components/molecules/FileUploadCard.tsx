@@ -13,7 +13,6 @@ interface FileUploadCardProps extends Omit<React.InputHTMLAttributes<HTMLInputEl
   disabled?: boolean;
   onFileSelect: (file: File) => void;
 }
-
 export const FileUploadCard = forwardRef<HTMLInputElement, FileUploadCardProps>(
   (
     {
@@ -53,7 +52,6 @@ export const FileUploadCard = forwardRef<HTMLInputElement, FileUploadCardProps>(
         >
           <p className="text-sm font-semibold mb-1 break-all">{fileName || placeholder}</p>
           {helperText && <p className="text-xs text-muted-foreground">{helperText}</p>}
-
           <div className="mt-3 flex gap-2 justify-center">
             <Input
               ref={ref}

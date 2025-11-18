@@ -13,10 +13,8 @@ export enum AppRoutePath {
   MealPlanner = '/meal-planner',
   Inbody = '/inbody',
 }
-
 export interface AppRouteConfig {
   path: AppRoutePath;
   element: React.ReactElement;
   isProtected?: boolean;
 }
-

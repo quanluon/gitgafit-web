@@ -18,7 +18,6 @@ function assertFirebaseConfig(): void {
     console.warn(`[firebase] Missing config value for ${missingKey[0]}. Analytics disabled until configured.`);
   }
 }
-
 assertFirebaseConfig();
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -33,12 +32,10 @@ if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
     console.warn('[firebase] Failed to initialize analytics:', error);
   }
 }
-
 export function logFeedbackEvent(eventName: string, params?: Record<string, unknown>): void {
   if (analytics) {
     logEvent(analytics, eventName, params);
   }
 }
-
 export { app, firestore, analytics };
 

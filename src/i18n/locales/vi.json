@@ -633,6 +633,10 @@
     "continueUsingMultiple": "Bạn có thể tiếp tục sử dụng ứng dụng. Chúng tôi sẽ thông báo khi chúng hoàn thành!",
     "generationFailed": "Tạo kế hoạch thất bại",
     "progress": "Tiến độ",
-    "inbodyAnalyzing": "Đang phân tích báo cáo InBody..."
+    "inbodyAnalyzing": "Đang phân tích báo cáo InBody...",
+    "workoutComplete": "Kế hoạch tập luyện đã được tạo!",
+    "mealPlanComplete": "Kế hoạch ăn uống đã được tạo!",
+    "inbodyComplete": "Phân tích InBody đã hoàn tất!",
+    "bodyPhotoComplete": "Ảnh cơ thể đã được phân tích!"
   }
 }

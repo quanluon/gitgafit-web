@@ -3,7 +3,6 @@ export enum SubscriptionPlan {
   PREMIUM = 'premium',
   ENTERPRISE = 'enterprise',
 }
-
 export const UNLIMITED_LIMIT = -1;
 
 export const INFINITY_SYMBOL = '∞';
@@ -18,7 +17,6 @@ export interface GenerationStats {
   remaining: number;
   resetsOn: string;
 }
-
 export interface SubscriptionStats {
   plan: SubscriptionPlan;
   periodStart: string;
@@ -27,4 +25,3 @@ export interface SubscriptionStats {
   inbody: GenerationStats;
   bodyPhoto: GenerationStats;
 }
-

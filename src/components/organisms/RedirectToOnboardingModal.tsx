@@ -8,7 +8,6 @@ interface RedirectToOnboardingModalProps {
   onClose?: () => void;
   redirectDelay?: number;
 }
-
 export function RedirectToOnboardingModal({
   isOpen,
   onClose,
@@ -28,4 +27,3 @@ export function RedirectToOnboardingModal({
     />
   );
 }
-

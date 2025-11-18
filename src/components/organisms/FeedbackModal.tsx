@@ -16,7 +16,6 @@ interface FeedbackModalProps {
   initialContext?: FeedbackContext;
   path?: string;
 }
-
 const MAX_MESSAGE_LENGTH = 600;
 
 export function FeedbackModal({
@@ -48,7 +47,6 @@ export function FeedbackModal({
   if (!isOpen) {
     return null;
   }
-
   const remainingChars = MAX_MESSAGE_LENGTH - message.length;
   const isSubmitDisabled = message.trim().length < 10 || message.length > MAX_MESSAGE_LENGTH || isSubmitting;
 
@@ -170,4 +168,3 @@ export function FeedbackModal({
     </div>
   );
 }
-

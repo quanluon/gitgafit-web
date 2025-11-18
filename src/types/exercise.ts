@@ -13,11 +13,9 @@ export interface ExerciseCatalogItem {
     title?: string;
   };
 }
-
 export interface ExerciseSearchParams {
   search?: string;
   muscleGroup?: MuscleGroup;
   limit?: number;
 }
-
 

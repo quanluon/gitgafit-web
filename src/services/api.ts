@@ -40,7 +40,6 @@ class ApiService {
 
     this.setupInterceptors();
   }
-
   private setupInterceptors(): void {
     // Request interceptor
     this.client.interceptors.request.use(
@@ -82,7 +81,6 @@ class ApiService {
 
             return Promise.reject(error);
           }
-
           // If already refreshing, queue this request
           if (isRefreshing) {
             return new Promise((resolve, reject) => {
@@ -98,7 +96,6 @@ class ApiService {
                 return Promise.reject(err);
               });
           }
-
           originalRequest._retry = true;
           isRefreshing = true;
 
@@ -110,7 +107,6 @@ class ApiService {
             forceLogout();
             return Promise.reject(error);
           }
-
           try {
             // Call refresh endpoint
             const response = await authService.refreshToken(refreshToken);
@@ -124,7 +120,6 @@ class ApiService {
             if (originalRequest.headers) {
               originalRequest.headers.Authorization = `Bearer ${accessToken}`;
             }
-
             // Process queued requests
             processQueue(null, accessToken);
 
@@ -141,12 +136,10 @@ class ApiService {
             return Promise.reject(refreshError);
           }
         }
-
         return Promise.reject(error);
       },
     );
   }
-
   public getClient(): AxiosInstance {
     return this.client;
   }

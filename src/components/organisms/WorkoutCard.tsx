@@ -62,11 +62,9 @@ export function WorkoutCard({
           </div>
         </button>
       )}
-
       <Button className="w-full" size="lg" onClick={onStartTraining} disabled={disabled}>
         {t('workout.startTraining')}
       </Button>
     </div>
   );
 }
-

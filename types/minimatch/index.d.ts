@@ -13,7 +13,6 @@ declare module 'minimatch' {
     flipNegate?: boolean;
     [key: string]: unknown;
   }
-
   function minimatch(path: string, pattern: string, options?: IOptions): boolean;
 
   namespace minimatch {
@@ -34,7 +33,5 @@ declare module 'minimatch' {
       match(path: string): boolean;
     }
   }
-
   export = minimatch;
 }
-

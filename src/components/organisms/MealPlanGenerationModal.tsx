@@ -10,7 +10,6 @@ interface MealPlanGenerationModalProps {
   onConfirm: (notes: string) => Promise<void>;
   isGenerating?: boolean;
 }
-
 export function MealPlanGenerationModal({
   isOpen,
   onClose,
@@ -85,4 +84,3 @@ export function MealPlanGenerationModal({
     </div>
   );
 }
-

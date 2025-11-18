@@ -14,7 +14,6 @@ export interface OnboardingDraft {
   workoutTimeMinutes?: number;
   workoutNotes?: string;
 }
-
 interface OnboardingState {
   draft: OnboardingDraft;
   currentStep: OnboardingStep;
@@ -22,7 +21,6 @@ interface OnboardingState {
   setCurrentStep: (step: OnboardingStep) => void;
   resetDraft: () => void;
 }
-
 const DEFAULT_DRAFT: OnboardingDraft = {
   workoutTimeMinutes: 60,
   workoutNotes: '',
