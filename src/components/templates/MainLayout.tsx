@@ -15,13 +15,14 @@ export function MainLayout({
 }: MainLayoutProps): React.ReactElement {
   const safeAreaTop = 'env(safe-area-inset-top, 0)';
   const safeAreaBottom = 'env(safe-area-inset-bottom, 0)';
+  const FULL_VIEWPORT_HEIGHT = '100dvh';
 
   return (
     <div 
       className="bg-background flex flex-col overflow-hidden"
       style={{
-        minHeight: '100vh',
-        height: '100dvh',
+        minHeight: FULL_VIEWPORT_HEIGHT,
+        height: FULL_VIEWPORT_HEIGHT,
       }}
     >
       <main 
