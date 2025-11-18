@@ -5,6 +5,77 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 let firebaseAppInstance = null;
 let messagingInstance = null;
 let cachedConfig = null;
+let persistedConfigPromise = null;
+
+const FCM_STORAGE = Object.freeze({
+  dbName: 'gigafit-fcm-sw',
+  storeName: 'firebase-config',
+  configKey: 'firebase-config',
+  version: 1,
+});
+const {
+  dbName: FCM_DB_NAME,
+  storeName: FCM_STORE_NAME,
+  configKey: FCM_CONFIG_KEY,
+  version: FCM_DB_VERSION,
+} = FCM_STORAGE;
+
+const isIndexedDBAvailable = typeof indexedDB !== 'undefined';
+
+const configDbPromise = isIndexedDBAvailable
+  ? new Promise((resolve, reject) => {
+      const request = indexedDB.open(FCM_DB_NAME, FCM_DB_VERSION);
+
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(FCM_STORE_NAME)) {
+          db.createObjectStore(FCM_STORE_NAME);
+        }
+      };
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    })
+  : null;
+
+const withConfigStore = async (mode, handler) => {
+  if (!configDbPromise) return null;
+
+  try {
+    const db = await configDbPromise;
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction(FCM_STORE_NAME, mode);
+      const store = transaction.objectStore(FCM_STORE_NAME);
+      const request = handler(store);
+
+      if (!request) {
+        resolve(null);
+        return;
+      }
+
+      transaction.oncomplete = () => resolve(request.result ?? null);
+      transaction.onabort = () => reject(transaction.error);
+      transaction.onerror = () => reject(transaction.error);
+    });
+  } catch (error) {
+    console.warn('[FCM SW] IndexedDB transaction failed:', error);
+    return null;
+  }
+};
+
+const persistFirebaseConfig = async (config) => {
+  if (!config) return null;
+
+  return withConfigStore('readwrite', (store) =>
+    store.put(config, FCM_CONFIG_KEY),
+  ).catch((error) => {
+    console.warn('[FCM SW] Failed to persist config:', error);
+    return null;
+  });
+};
+
+const readPersistedFirebaseConfig = async () =>
+  withConfigStore('readonly', (store) => store.get(FCM_CONFIG_KEY));
 
 const DEFAULT_ICON = '/icons/icon-192x192.png';
 
@@ -32,20 +103,30 @@ const ensureMessaging = (config) => {
       messagingInstance = firebase.messaging();
 
       messagingInstance.onBackgroundMessage((payload) => {
-        const title =
-          payload.notification?.title ||
-          payload.data?.title ||
-          'GigaFit';
-        const body =
-          payload.notification?.body ||
-          payload.data?.body ||
-          '';
+        const {
+          notification: notificationPayload = {},
+          data = {},
+        } = payload;
+        const {
+          title: notificationTitle,
+          body: notificationBody,
+          icon: notificationIcon,
+        } = notificationPayload;
+        const {
+          title: dataTitle,
+          body: dataBody,
+          jobId,
+          generationType,
+        } = data;
+
+        const title = notificationTitle || dataTitle || 'GigaFit';
+        const body = notificationBody || dataBody || '';
 
         self.registration.showNotification(title, {
           body,
-          icon: payload.notification?.icon || DEFAULT_ICON,
-          data: payload.data,
-          tag: payload.data?.jobId || payload.data?.generationType || undefined,
+          icon: notificationIcon || DEFAULT_ICON,
+          data,
+          tag: jobId || generationType || undefined,
         });
       });
     } catch (error) {
@@ -57,34 +138,66 @@ const ensureMessaging = (config) => {
   return messagingInstance;
 };
 
-self.addEventListener('install', (event) => {
+const hydrateConfigFromStorage = () => {
+  if (!persistedConfigPromise) {
+    persistedConfigPromise = readPersistedFirebaseConfig()
+      .then((storedConfig) => {
+        if (storedConfig && !cachedConfig) {
+          cachedConfig = storedConfig;
+          ensureMessaging(cachedConfig);
+        }
+        return storedConfig;
+      })
+      .catch((error) => {
+        console.warn('[FCM SW] Failed to read persisted config:', error);
+        return null;
+      });
+  }
+  return persistedConfigPromise;
+};
+
+hydrateConfigFromStorage();
+
+self.addEventListener('install', ({ waitUntil }) => {
   self.skipWaiting();
-  event.waitUntil(Promise.resolve());
+  waitUntil(Promise.resolve());
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+self.addEventListener('activate', ({ waitUntil }) => {
+  waitUntil(self.clients.claim());
 });
 
 self.addEventListener('message', (event) => {
-  if (!event.data || !event.data.type) return;
+  const { data } = event;
+  if (!data?.type) return;
 
-  if (event.data.type === 'FIREBASE_CONFIG') {
-    cachedConfig = event.data.payload;
+  if (data.type === 'FIREBASE_CONFIG') {
+    cachedConfig = data.payload;
     ensureMessaging(cachedConfig);
+    event.waitUntil(
+      persistFirebaseConfig(cachedConfig),
+    );
   }
 });
 
-self.addEventListener('push', () => {
-  if (!messagingInstance && cachedConfig) {
-    ensureMessaging(cachedConfig);
-  }
+self.addEventListener('push', ({ waitUntil }) => {
+  waitUntil(
+    (async () => {
+      if (!cachedConfig) {
+        cachedConfig = (await hydrateConfigFromStorage()) || null;
+      }
+      if (!messagingInstance && cachedConfig) {
+        ensureMessaging(cachedConfig);
+      }
+    })(),
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
+  const { notification } = event;
+  notification.close();
 
-  const destination = event.notification?.data?.url || '/';
+  const destination = notification?.data?.url || '/';
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
@@ -92,7 +205,7 @@ self.addEventListener('notificationclick', (event) => {
         if ('focus' in client) {
           client.postMessage({
             type: 'GENERATION_NOTIFICATION_CLICK',
-            payload: event.notification.data,
+            payload: notification.data,
           });
           return client.focus();
         }
