@@ -16,14 +16,14 @@ export function IOSInstallPrompt(): React.ReactElement | null {
   React.useEffect(() => {
     // Check if iOS Safari
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isInStandaloneMode = (window.navigator as Navigator & { standalone?: boolean }).standalone;
+    const isInStandaloneMode = (window.navigator as Navigator & { fullscreen?: boolean }).fullscreen;
     
     // Check if user dismissed recently (within 30 days)
     const dismissedAt = localStorage.getItem('ios-pwa-install-dismissed');
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
     const recentlyDismissed = dismissedAt && parseInt(dismissedAt, 10) > thirtyDaysAgo;
 
-    // Show if iOS Safari and not in standalone mode and not recently dismissed
+    // Show if iOS Safari and not in fullscreen mode and not recently dismissed
     if (isIOS && !isInStandaloneMode && !recentlyDismissed) {
       // Show after 5 seconds to not overwhelm user
       setTimeout(() => setIsVisible(true), 5000);

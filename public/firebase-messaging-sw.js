@@ -43,9 +43,6 @@ function initializeFirebase(config) {
 function setupBackgroundMessageHandler() {
   if (!messaging) return;
 
-  console.log('setupBackgroundMessageHandler',messaging.onBackgroundMessage);
-  
-
   messaging.onBackgroundMessage((payload) => {
     console.log('[FCM SW] Background message received:', payload);
 

@@ -4,7 +4,7 @@
   "description": "Your personal fitness and nutrition coach. Get customized workout plans, meal plans, and track your progress with expert guidance tailored just for you",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait-primary",
   "theme_color": "#000000",
   "background_color": "#ffffff",
@@ -73,5 +73,6 @@
       "url": "/statistics",
       "icons": [{ "src": "/android-chrome-192x192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "gcm_sender_id":"228631832664"
 }

@@ -22,9 +22,9 @@ interface PWAState {
 export function usePWA(): PWAState {
   const [installStatus, setInstallStatus] = useState<PWAInstallStatus | null>(null);
 
-  // Check if app is already installed (running in standalone mode)
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+  // Check if app is already installed (running in fullscreen mode)
+  const isStandalone = window.matchMedia('(display-mode: fullscreen)').matches ||
+    (window.navigator as Navigator & { fullscreen?: boolean }).fullscreen === true;
 
   // Determine if installable based on status
   const isInstallable = installStatus?.isInstallAllowed === true && !isStandalone;

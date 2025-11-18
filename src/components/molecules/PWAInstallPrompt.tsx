@@ -29,7 +29,7 @@ export function PWAInstallPrompt(): React.ReactElement | null {
   }, []);
 
   // Don't show if:
-  // - Already installed/standalone
+  // - Already installed/fullscreen
   // - Not installable
   // - User dismissed it
   // - Installation was cancelled or failed
