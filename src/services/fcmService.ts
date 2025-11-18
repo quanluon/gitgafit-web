@@ -199,13 +199,18 @@ class FCMService {
       return;
     }
 
+    // Check if Notification API is available
     if (!('Notification' in window)) {
+      console.warn('[FCM] Notification API not available');
       return;
     }
 
-    const permission = await Notification.requestPermission();
+    // Don't request permission here - let user interaction trigger it via modal
+    // This follows MDN best practices: only request permission on user action
+    const permission = Notification.permission;
     
     if (permission !== 'granted') {
+      console.log('[FCM] Notification permission not granted yet');
       return;
     }
 
@@ -216,23 +221,30 @@ class FCMService {
     }
 
     try {
+      // Register service worker first
       const registration = await this.registerServiceWorker();
       if (!registration) {
         return;
       }
 
+      // Wait for service worker to be ready before proceeding
+      await navigator.serviceWorker.ready;
+
+      // Send Firebase config to service worker
       await this.sendConfigToServiceWorker(registration);
 
+      // Get FCM token using the service worker registration
       const token = await getToken(messaging, {
         vapidKey,
         serviceWorkerRegistration: registration,
       });
+      
       if (!token) {
         console.warn('[FCM] Unable to retrieve FCM token.');
         return;
       }
 
-
+      // Skip if already initialized with the same token
       if (!forceRegister && token === this.currentToken && this.initialized) {
         this.subscribeToForegroundMessages();
         return;
@@ -242,6 +254,7 @@ class FCMService {
       const deviceId = this.ensureDeviceId();
       const platform = this.detectPlatform();
       
+      // Register token with backend
       try {
         await apiClient.post('/user/device-token', {
           deviceId,
@@ -251,23 +264,21 @@ class FCMService {
         // Reset failed flag on success
         this.initializationFailed = false;
       } catch (error: unknown) {
-        // Handle API errors gracefully
+        // Handle API errors gracefully following MDN error handling patterns
         const status = (error as { response?: { status?: number } })?.response?.status;
         if (status === 401 || status === 403) {
           console.warn('[FCM] Not authenticated - skipping token registration');
           // Don't mark as failed for auth errors - user might not be logged in yet
-          // Still allow FCM to work locally (foreground messages)
           this.initializationFailed = false;
         } else {
           // For other errors, log but don't throw - allow FCM to work locally
           console.warn('[FCM] Failed to register token with backend:', error);
-          // Don't mark as failed - allow retry on next auth
           this.initializationFailed = false;
         }
       }
 
-      // Mark as initialized even if backend registration failed
-      // FCM can still work for foreground messages
+      // Mark as initialized and subscribe to foreground messages
+      // Following MDN pattern for both push and foreground notifications
       this.initialized = true;
       this.subscribeToForegroundMessages();
     } catch (error) {
