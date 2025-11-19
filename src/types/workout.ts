@@ -45,6 +45,7 @@ export interface ExerciseLog {
   description?: Translatable;
   muscleGroup?: string;
   sets: ExerciseSet[];
+  calories?: number;
   notes?: string;
   videoUrl?: string;
 }
@@ -62,6 +63,7 @@ export interface TrainingSession {
   totalVolume?: number;
   totalSets?: number;
   duration?: number;
+  totalCalories?: number;
   notes?: string;
   createdAt: string;
   updatedAt: string;

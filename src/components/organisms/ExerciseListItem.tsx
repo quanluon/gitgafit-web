@@ -22,6 +22,9 @@ export function ExerciseListItem({
 
   const exerciseName = exercise.name[currentLang];
 
+  const formatWeightLabel = (weight: number): string =>
+    weight > 0 ? `${weight} kg` : t('training.bodyweightShort');
+
   return (
     <div
       className="bg-card border rounded-lg p-4 space-y-3 cursor-pointer hover:border-primary/50 transition-colors"
@@ -66,7 +69,12 @@ export function ExerciseListItem({
               >
                 <span className="text-muted-foreground">Set {index + 1}:</span>
                 <span className="font-semibold">
-                  {result.reps} {t('workout.reps')} × {result.weight} kg
+                  {result.reps} {t('workout.reps')}{' '}
+                  {result.weight > 0 ? (
+                    <>× {formatWeightLabel(result.weight)}</>
+                  ) : (
+                    <>• {t('training.bodyweightShort')}</>
+                  )}
                 </span>
               </div>
             ))}

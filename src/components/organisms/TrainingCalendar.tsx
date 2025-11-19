@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { Button } from '@atoms/Button';
 import { trainingService } from '@services/trainingService';
 import { TrainingSession } from '@/types/workout';
@@ -128,6 +128,7 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
           const daySessions = getSessionsForDate(day);
           const hasWorkout = daySessions.length > 0;
           const isCurrentDay = isToday(day);
+          const totalCalories = daySessions.reduce((sum, s) => sum + (s.totalCalories || 0), 0);
 
           return (
             <button
@@ -138,7 +139,7 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
               }}
               disabled={isLoading}
               className={`
-                aspect-square p-2 rounded-lg text-sm transition-all relative
+                aspect-square p-2 rounded-lg text-sm transition-all relative flex flex-col items-center justify-center
                 ${isCurrentDay ? 'ring-2 ring-primary font-bold' : ''}
                 ${hasWorkout ? 'bg-primary/10 hover:bg-primary/20' : 'hover:bg-accent'}
                 ${!hasWorkout && !isCurrentDay ? 'text-muted-foreground' : ''}
@@ -146,8 +147,16 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
             >
               <span className={isCurrentDay ? 'text-primary' : ''}>{day}</span>
               
-              {/* Training indicator dot */}
-              {hasWorkout && (
+              {/* Calories display */}
+              {hasWorkout && totalCalories > 0 && (
+                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex items-center gap-0.5">
+                  <Flame className="w-2.5 h-2.5 text-orange-500" />
+                  <span className="text-[10px] text-orange-500 font-medium">{totalCalories}</span>
+                </div>
+              )}
+              
+              {/* Training indicator dot (fallback if no calories) */}
+              {hasWorkout && totalCalories === 0 && (
                 <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
                   {daySessions.map((_, idx) => (
                     <div

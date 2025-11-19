@@ -1,7 +1,7 @@
 import { apiClient } from './api';
 import { ApiResponse } from '@/types/common';
 import { CustomPlanPayload, WorkoutPlan, WorkoutDay } from '@/types/workout';
-import { Goal, ExperienceLevel, DayOfWeek } from '@/types/enums';
+import { Goal, ExperienceLevel, DayOfWeek, TrainingEnvironment } from '@/types/enums';
 
 interface GeneratePlanRequest {
   goal: Goal;
@@ -12,6 +12,7 @@ interface GeneratePlanRequest {
   targetWeight?: number;
   workoutTimeMinutes?: number;
   notes?: string;
+  trainingEnvironment?: TrainingEnvironment;
 }
 
 interface JobResponse {

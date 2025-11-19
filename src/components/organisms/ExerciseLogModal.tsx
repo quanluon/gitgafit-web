@@ -50,6 +50,9 @@ export function ExerciseLogModal({
   const exerciseName = exercise.name[currentLang];
   const exerciseDescription = exercise.description[currentLang];
 
+  const formatWeightLabel = (weight: number): string =>
+    weight > 0 ? `${weight} kg` : t('training.bodyweightShort');
+
   const handleSetChange = (index: number, field: 'reps' | 'weight', value: string): void => {
     const newSets = [...sets];
     const numValue = field === 'weight' ? parseFloat(value) : parseInt(value);
@@ -183,7 +186,7 @@ export function ExerciseLogModal({
                   {/* Weight Input */}
                   <div className="space-y-1">
                     <Label htmlFor={`weight-${index}`} className="text-sm">
-                      {t('workout.weight')} <span className="text-destructive">*</span>
+                      {t('training.weightOptionalLabel')}
                     </Label>
                     <Input
                       id={`weight-${index}`}
@@ -192,7 +195,9 @@ export function ExerciseLogModal({
                       value={set.weight || ''}
                       onChange={(e): void => handleSetChange(index, 'weight', e.target.value)}
                       placeholder="0"
-                      className={`text-lg ${errors[`${index}-weight`] ? 'border-destructive focus:border-destructive' : ''}`}
+                      className={`text-lg ${
+                        errors[`${index}-weight`] ? 'border-destructive focus:border-destructive' : ''
+                      }`}
                     />
                     {errors[`${index}-weight`] && (
                       <p className="text-xs text-destructive font-medium">
@@ -223,7 +228,12 @@ export function ExerciseLogModal({
                         {t('workout.set')} {index + 1}:
                       </span>
                       <span className="font-medium">
-                        {set.reps} {t('workout.reps')} × {set.weight} kg
+                        {set.reps} {t('workout.reps')}{' '}
+                        {set.weight > 0 ? (
+                          <>× {formatWeightLabel(set.weight)}</>
+                        ) : (
+                          <>• {t('training.bodyweightShort')}</>
+                        )}
                       </span>
                     </div>
                   ) : null,

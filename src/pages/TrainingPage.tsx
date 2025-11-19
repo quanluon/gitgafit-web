@@ -31,7 +31,7 @@ interface ExerciseWithIndex extends Exercise {
 export function TrainingPage(): React.ReactElement {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
   const { language } = useLocaleStore();
   const { todaysWorkout } = useWorkoutStore();
   const { currentSession, clearSession, setCurrentSession } = useTrainingStore();
@@ -130,6 +130,19 @@ export function TrainingPage(): React.ReactElement {
   const currentLang = language as Language;
   const workoutFocus = todaysWorkout.focus[currentLang];
 
+  const loggedExercises = todaysWorkout.exercises
+    .map((exercise, index) => {
+      const key = `exercise_${index}`;
+      return {
+        key,
+        exercise,
+        sets: exerciseProgress[key] || [],
+      };
+    })
+    .filter((entry) => entry.sets && entry.sets.length > 0);
+
+  const totalLoggedSets = loggedExercises.reduce((sum, entry) => sum + entry.sets.length, 0);
+
   const handleExerciseClick = (exercise: Exercise, index: number): void => {
     setSelectedExercise({ ...exercise, index });
   };
@@ -171,6 +184,7 @@ export function TrainingPage(): React.ReactElement {
     try {
       // Update session on backend
       await trainingService.logExercise(currentSession._id, logData);
+      showSuccess(t('training.logSaved'));
       setSelectedExercise(null);
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -184,9 +198,15 @@ export function TrainingPage(): React.ReactElement {
 
     try {
       setIsCompleting(true);
-      await trainingService.completeSession(currentSession._id);
+      const completedSession = await trainingService.completeSession(currentSession._id);
       await indexedDBService.deleteTrainingSession(currentSession._id);
       clearSession();
+      
+      // Show calories burned
+      if (completedSession.totalCalories) {
+        showSuccess(t('training.caloriesBurned', { calories: completedSession.totalCalories }));
+      }
+      
       navigate(AppRoutePath.Root);
     } catch (err) {
       console.error('Failed to complete session:', err);
@@ -256,6 +276,41 @@ export function TrainingPage(): React.ReactElement {
             />
           );
         })}
+        {loggedExercises.length > 0 && (
+          <div className="border rounded-lg p-4 space-y-3 bg-card/50">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">{t('training.loggedSets')}</h3>
+              <span className="text-xs text-muted-foreground">
+                {t('training.loggedSetsCount', { count: totalLoggedSets })}
+              </span>
+            </div>
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+              {loggedExercises.map(({ key, exercise, sets }) => (
+                <div key={key} className="border rounded-md p-3 bg-background space-y-1">
+                  <div className="text-sm font-semibold">{exercise.name[currentLang]}</div>
+                  {sets.map((set, idx) => (
+                    <div
+                      key={`${key}-set-${idx}`}
+                      className="flex items-center justify-between text-xs text-muted-foreground"
+                    >
+                      <span>
+                        {t('workout.set')} {idx + 1}
+                      </span>
+                      <span className="font-medium text-foreground">
+                        {set.reps} {t('workout.reps')}{' '}
+                        {set.weight > 0 ? (
+                          <>× {set.weight} kg</>
+                        ) : (
+                          <>• {t('training.bodyweightShort')}</>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {/* Complete Button */}
         <div className="pt-4 space-y-3">
           <Button

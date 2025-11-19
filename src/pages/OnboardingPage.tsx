@@ -11,7 +11,14 @@ import { GenerationType, useGenerationStore } from '@store/generationStore';
 import { useGenerationJob } from '@/hooks/useGenerationJob';
 import { workoutService } from '@services/workoutService';
 import { userService } from '@services/userService';
-import { Goal, ExperienceLevel, DayOfWeek, Gender, ActivityLevel } from '@/types/enums';
+import {
+  Goal,
+  ExperienceLevel,
+  DayOfWeek,
+  Gender,
+  ActivityLevel,
+  TrainingEnvironment,
+} from '@/types/enums';
 import { UserProfile } from '@/types/user';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@atoms/Select';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
@@ -20,6 +27,7 @@ import { useOnboardingStore, OnboardingStep } from '@store/onboardingStore';
 type OnboardingForm = UserProfile & {
   workoutTimeMinutes?: number;
   workoutNotes?: string;
+  trainingEnvironment?: TrainingEnvironment;
 };
 
 export function OnboardingPage(): React.ReactElement {
@@ -51,14 +59,18 @@ export function OnboardingPage(): React.ReactElement {
     defaultValues: {
       ...draft,
       workoutTimeMinutes: draft.workoutTimeMinutes ?? 60,
+      trainingEnvironment:
+        draft.trainingEnvironment ??
+        user?.trainingEnvironment ??
+        TrainingEnvironment.FULL_GYM,
     },
   });
 
   const formData = watch();
   React.useEffect(() => {
     const subscription = watch((values) => {
-      const sanitizedScheduleDays = values.scheduleDays?.filter(
-        (day): day is DayOfWeek => Boolean(day),
+      const sanitizedScheduleDays = values.scheduleDays?.filter((day): day is DayOfWeek =>
+        Boolean(day),
       );
       updateDraft({
         ...values,
@@ -80,6 +92,7 @@ export function OnboardingPage(): React.ReactElement {
       if (user.age) setValue('age', user.age);
       if (user.gender) setValue('gender', user.gender);
       if (user.activityLevel) setValue('activityLevel', user.activityLevel);
+      if (user.trainingEnvironment) setValue('trainingEnvironment', user.trainingEnvironment);
       if (user.scheduleDays?.length > 0) {
         setValue('scheduleDays', user.scheduleDays);
       }
@@ -139,11 +152,46 @@ export function OnboardingPage(): React.ReactElement {
   ];
 
   const activityLevelOptions = [
-    { value: ActivityLevel.SEDENTARY, label: t('profile.sedentary'), description: t('profile.sedentaryDesc') },
-    { value: ActivityLevel.LIGHTLY_ACTIVE, label: t('profile.lightlyActive'), description: t('profile.lightlyActiveDesc') },
-    { value: ActivityLevel.MODERATELY_ACTIVE, label: t('profile.moderatelyActive'), description: t('profile.moderatelyActiveDesc') },
-    { value: ActivityLevel.VERY_ACTIVE, label: t('profile.veryActive'), description: t('profile.veryActiveDesc') },
-    { value: ActivityLevel.EXTREMELY_ACTIVE, label: t('profile.extremelyActive'), description: t('profile.extremelyActiveDesc') },
+    {
+      value: ActivityLevel.SEDENTARY,
+      label: t('profile.sedentary'),
+      description: t('profile.sedentaryDesc'),
+    },
+    {
+      value: ActivityLevel.LIGHTLY_ACTIVE,
+      label: t('profile.lightlyActive'),
+      description: t('profile.lightlyActiveDesc'),
+    },
+    {
+      value: ActivityLevel.MODERATELY_ACTIVE,
+      label: t('profile.moderatelyActive'),
+      description: t('profile.moderatelyActiveDesc'),
+    },
+    {
+      value: ActivityLevel.VERY_ACTIVE,
+      label: t('profile.veryActive'),
+      description: t('profile.veryActiveDesc'),
+    },
+    {
+      value: ActivityLevel.EXTREMELY_ACTIVE,
+      label: t('profile.extremelyActive'),
+      description: t('profile.extremelyActiveDesc'),
+    },
+  ];
+
+  const trainingEnvironmentOptions = [
+    {
+      value: TrainingEnvironment.FULL_GYM,
+      label: t('workout.trainingEnvironmentFullGym'),
+    },
+    {
+      value: TrainingEnvironment.LIMITED_GYM,
+      label: t('workout.trainingEnvironmentLimitedGym'),
+    },
+    {
+      value: TrainingEnvironment.BODYWEIGHT,
+      label: t('workout.trainingEnvironmentBodyweight'),
+    },
   ];
 
   const steps: OnboardingStep[] = ['goal', 'experience', 'body', 'schedule', 'summary'];
@@ -192,6 +240,7 @@ export function OnboardingPage(): React.ReactElement {
         gender: data.gender,
         activityLevel: data.activityLevel,
         scheduleDays: data.scheduleDays,
+        trainingEnvironment: data.trainingEnvironment,
       };
       const updatedUser = await userService.updateProfile(profilePayload);
       updateUser(updatedUser);
@@ -206,6 +255,7 @@ export function OnboardingPage(): React.ReactElement {
         targetWeight: data.targetWeight,
         workoutTimeMinutes: data.workoutTimeMinutes ?? 60,
         notes: data.workoutNotes?.trim() || undefined,
+        trainingEnvironment: data.trainingEnvironment,
       });
 
       // Start generation tracking in the floating bubble
@@ -216,6 +266,7 @@ export function OnboardingPage(): React.ReactElement {
         reset({
           workoutTimeMinutes: 60,
           workoutNotes: '',
+          trainingEnvironment: TrainingEnvironment.FULL_GYM,
         });
         // Navigate to home - user can continue using the app
         navigate('/');
@@ -378,44 +429,41 @@ export function OnboardingPage(): React.ReactElement {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="targetWeight">{t('onboarding.targetWeightLabel')}</Label>
-                <Input
-                  id="targetWeight"
-                  type="number"
-                  placeholder={user?.targetWeight?.toString() || '65'}
-                  {...register('targetWeight', {
-                    min: { value: 1, message: t('onboarding.targetWeightPositive') },
-                  })}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t('onboarding.targetWeightHelper')}
-                </p>
-                {errors.targetWeight && (
-                  <p className="text-sm text-destructive">{errors.targetWeight.message}</p>
-                )}
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="targetWeight">{t('onboarding.targetWeightLabel')}</Label>
+                  <Input
+                    id="targetWeight"
+                    type="number"
+                    placeholder={user?.targetWeight?.toString() || '65'}
+                    {...register('targetWeight', {
+                      min: { value: 1, message: t('onboarding.targetWeightPositive') },
+                    })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('onboarding.targetWeightHelper')}
+                  </p>
+                  {errors.targetWeight && (
+                    <p className="text-sm text-destructive">{errors.targetWeight.message}</p>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="age">{t('onboarding.ageLabel')} *</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  placeholder={user?.age?.toString() || '25'}
-                  {...register('age', {
-                    required: t('onboarding.ageRequired'),
-                    min: { value: 1, message: t('onboarding.agePositive') },
-                    max: { value: 120, message: t('onboarding.ageValid') },
-                  })}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t('onboarding.requiredForTDEE')}
-                </p>
-                {errors.age && (
-                  <p className="text-sm text-destructive">{errors.age.message}</p>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="age">{t('onboarding.ageLabel')} *</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder={user?.age?.toString() || '25'}
+                    {...register('age', {
+                      required: t('onboarding.ageRequired'),
+                      min: { value: 1, message: t('onboarding.agePositive') },
+                      max: { value: 120, message: t('onboarding.ageValid') },
+                    })}
+                  />
+                  <p className="text-xs text-muted-foreground">{t('onboarding.requiredForTDEE')}</p>
+                  {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+                </div>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="gender">{t('onboarding.genderLabel')} *</Label>
@@ -438,9 +486,7 @@ export function OnboardingPage(): React.ReactElement {
                       </Select>
                     )}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {t('onboarding.requiredForTDEE')}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t('onboarding.requiredForTDEE')}</p>
                   {errors.gender && (
                     <p className="text-sm text-destructive">{errors.gender.message}</p>
                   )}
@@ -461,8 +507,10 @@ export function OnboardingPage(): React.ReactElement {
                           {activityLevelOptions.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               <div>
-                                <div className="font-medium">{option.label}</div>
-                                <div className="text-xs text-muted-foreground">{option.description}</div>
+                                <div className="font-medium text-start">{option.label}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {option.description}
+                                </div>
                               </div>
                             </SelectItem>
                           ))}
@@ -470,9 +518,7 @@ export function OnboardingPage(): React.ReactElement {
                       </Select>
                     )}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {t('onboarding.requiredForTDEE')}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t('onboarding.requiredForTDEE')}</p>
                   {errors.activityLevel && (
                     <p className="text-sm text-destructive">{errors.activityLevel.message}</p>
                   )}
@@ -487,7 +533,13 @@ export function OnboardingPage(): React.ReactElement {
                   type="button"
                   onClick={nextStep}
                   className="flex-1"
-                  disabled={!formData.height || !formData.weight || !formData.age || !formData.gender || !formData.activityLevel}
+                  disabled={
+                    !formData.height ||
+                    !formData.weight ||
+                    !formData.age ||
+                    !formData.gender ||
+                    !formData.activityLevel
+                  }
                 >
                   {t('onboarding.continue')}
                 </Button>
@@ -603,7 +655,9 @@ export function OnboardingPage(): React.ReactElement {
                       {t('onboarding.summaryGender')}
                     </div>
                     <div className="font-semibold">
-                      {formData.gender ? genderOptions.find((o) => o.value === formData.gender)?.label : '-'}
+                      {formData.gender
+                        ? genderOptions.find((o) => o.value === formData.gender)?.label
+                        : '-'}
                     </div>
                   </div>
                   <div>
@@ -611,7 +665,10 @@ export function OnboardingPage(): React.ReactElement {
                       {t('onboarding.summaryActivity')}
                     </div>
                     <div className="font-semibold">
-                      {formData.activityLevel ? activityLevelOptions.find((o) => o.value === formData.activityLevel)?.label : '-'}
+                      {formData.activityLevel
+                        ? activityLevelOptions.find((o) => o.value === formData.activityLevel)
+                            ?.label
+                        : '-'}
                     </div>
                   </div>
                   <div className="col-span-2">
@@ -620,6 +677,18 @@ export function OnboardingPage(): React.ReactElement {
                     </div>
                     <div className="font-semibold">
                       {formData.scheduleDays?.length || 0} {t('onboarding.daysPerWeek')}
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <div className="text-sm text-muted-foreground">
+                      {t('onboarding.summaryEnvironment')}
+                    </div>
+                    <div className="font-semibold">
+                      {formData.trainingEnvironment
+                        ? trainingEnvironmentOptions.find(
+                            (o) => o.value === formData.trainingEnvironment,
+                          )?.label
+                        : '-'}
                     </div>
                   </div>
                 </div>
@@ -642,7 +711,7 @@ export function OnboardingPage(): React.ReactElement {
                             <SelectValue placeholder={t('workout.sessionDuration')} />
                           </SelectTrigger>
                           <SelectContent>
-                            {[30, 45, 60].map((duration) => (
+                            {[30, 45, 60, 90].map((duration) => (
                               <SelectItem key={duration} value={`${duration}`}>
                                 {duration} {t('workout.minutesSuffix')}
                               </SelectItem>
@@ -653,6 +722,35 @@ export function OnboardingPage(): React.ReactElement {
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       {t('workout.sessionDurationHelper')}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>{t('workout.trainingEnvironment')}</Label>
+                    <Controller
+                      control={control}
+                      name="trainingEnvironment"
+                      render={({ field }): React.ReactElement => (
+                        <Select
+                          value={field.value ?? TrainingEnvironment.FULL_GYM}
+                          onValueChange={(value): void =>
+                            field.onChange(value as TrainingEnvironment)
+                          }
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder={t('workout.trainingEnvironment')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {trainingEnvironmentOptions.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('workout.trainingEnvironmentHelper')}
                     </p>
                   </div>
                   <div className="md:col-span-2 space-y-2">

@@ -91,6 +91,10 @@ class FCMService {
     }
 
     try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+
       this.serviceWorkerRegistration = await navigator.serviceWorker.register(
         '/firebase-messaging-sw.js',
       );
@@ -112,9 +116,7 @@ class FCMService {
     }
   }
 
-  private async sendConfigToServiceWorker(
-    registration: ServiceWorkerRegistration,
-  ): Promise<void> {
+  private async sendConfigToServiceWorker(registration: ServiceWorkerRegistration): Promise<void> {
     if (this.configPosted) return;
 
     const postToWorker = (worker: ServiceWorker | null): boolean => {
@@ -139,7 +141,7 @@ class FCMService {
       try {
         await registration.update();
         const readyRegistration = await navigator.serviceWorker.ready;
-        
+
         if (readyRegistration.active) {
           if (postToWorker(readyRegistration.active)) {
             return;
@@ -238,7 +240,7 @@ class FCMService {
     // Don't request permission here - let user interaction trigger it via modal
     // This follows MDN best practices: only request permission on user action
     const permission = Notification.permission;
-    
+
     if (permission !== 'granted') {
       console.log('[FCM] Notification permission not granted yet');
       if (analytics) {
@@ -280,7 +282,7 @@ class FCMService {
         vapidKey,
         serviceWorkerRegistration: registration,
       });
-      
+
       if (!token) {
         console.warn('[FCM] Unable to retrieve FCM token.');
         if (analytics) {
@@ -306,7 +308,7 @@ class FCMService {
       this.currentToken = token;
       const deviceId = this.ensureDeviceId();
       const platform = this.detectPlatform();
-      
+
       // Register token with backend
       try {
         await apiClient.post('/user/device-token', {
@@ -355,7 +357,7 @@ class FCMService {
       // Following MDN pattern for both push and foreground notifications
       this.initialized = true;
       this.subscribeToForegroundMessages();
-      
+
       if (analytics) {
         logEvent(analytics, 'fcm_initialized', {
           platform,
@@ -408,4 +410,3 @@ class FCMService {
 }
 
 export const fcmService = new FCMService();
-

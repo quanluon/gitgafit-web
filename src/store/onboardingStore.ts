@@ -1,4 +1,4 @@
-import { DayOfWeek, ExperienceLevel, Goal } from '@/types/enums';
+import { DayOfWeek, ExperienceLevel, Goal, TrainingEnvironment } from '@/types/enums';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -13,6 +13,7 @@ export interface OnboardingDraft {
   scheduleDays?: DayOfWeek[];
   workoutTimeMinutes?: number;
   workoutNotes?: string;
+  trainingEnvironment?: TrainingEnvironment;
 }
 interface OnboardingState {
   draft: OnboardingDraft;
@@ -24,6 +25,7 @@ interface OnboardingState {
 const DEFAULT_DRAFT: OnboardingDraft = {
   workoutTimeMinutes: 60,
   workoutNotes: '',
+  trainingEnvironment: TrainingEnvironment.FULL_GYM,
 };
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -47,7 +49,7 @@ export const useOnboardingStore = create<OnboardingState>()(
     }),
     {
       name: 'onboarding-draft',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         draft: state.draft,
         currentStep: state.currentStep,
