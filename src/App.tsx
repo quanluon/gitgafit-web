@@ -250,6 +250,7 @@ function App(): React.ReactElement {
           style: {
             background: '#363636',
             color: '#fff',
+            marginTop:'20px'
           },
           success: {
             duration: 2000,
