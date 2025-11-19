@@ -10,12 +10,7 @@ let firebaseApp = null;
 let messaging = null;
 
 // Initialize Firebase with config from IndexedDB or message
-function initializeFirebase(config) {
-  if (!config) {
-    console.warn('[FCM SW] No firebase config available');
-    return false;
-  }
-
+function initializeFirebase() {
   try {
     if (!firebaseApp) {
       firebaseApp = firebase.initializeApp({
@@ -48,8 +43,6 @@ function setupBackgroundMessageHandler() {
   if (!messaging) return;
 
   messaging.onBackgroundMessage((payload) => {
-    console.log('[FCM SW] Background message received:', payload);
-
     const { notification, data } = payload || {};
 
     // Extract notification data
@@ -131,40 +124,13 @@ self.addEventListener('activate', (event) => {
 
       // Try to load config and initialize Firebase on activation
       try {
-        const config = await loadConfig();
-        if (config) {
-          initializeFirebase(config);
-          console.log('[FCM SW] Firebase initialized from stored config');
-        } else {
-          console.log('[FCM SW] No stored config found, waiting for config from app');
-        }
+        initializeFirebase();
+        console.log('[FCM SW] Firebase initialized from stored config');
       } catch (error) {
         console.warn('[FCM SW] Failed to load config on activation:', error);
       }
     })(),
   );
-});
-
-// Handle messages from the main app
-self.addEventListener('message', (event) => {
-  const { data } = event;
-
-  if (data?.type === 'FIREBASE_CONFIG') {
-    console.log('[FCM SW] Received Firebase config from app');
-    const config = data.payload;
-
-    // Initialize Firebase with the received config
-    if (initializeFirebase(config)) {
-      // Save config for future use (persist to IndexedDB)
-      event.waitUntil(
-        saveConfig(config).then(() => {
-          console.log('[FCM SW] Config saved and Firebase initialized');
-        }),
-      );
-    } else {
-      console.warn('[FCM SW] Failed to initialize Firebase with received config');
-    }
-  }
 });
 
 // Handle push events
@@ -177,22 +143,12 @@ self.addEventListener('push', (event) => {
         // Ensure Firebase is initialized before handling push
         if (!messaging || !firebaseApp) {
           console.log('[FCM SW] Firebase not initialized, loading config...');
-          const config = await loadConfig();
-          if (config) {
-            const initialized = initializeFirebase(config);
-            if (!initialized) {
-              console.error('[FCM SW] Failed to initialize Firebase for push event');
-              return;
-            }
-          } else {
-            console.warn('[FCM SW] No config available for push event - cannot process push');
+          const initialized = initializeFirebase();
+          if (!initialized) {
+            console.error('[FCM SW] Failed to initialize Firebase for push event');
             return;
           }
         }
-
-        // Firebase Messaging will handle the rest via onBackgroundMessage
-        // The push payload will be automatically processed by onBackgroundMessage
-        console.log('[FCM SW] Firebase ready, waiting for onBackgroundMessage to process');
       } catch (error) {
         console.error('[FCM SW] Error handling push:', error);
       }
@@ -241,12 +197,8 @@ self.addEventListener('notificationclick', (event) => {
 (async () => {
   try {
     const config = await loadConfig();
-    if (config) {
-      initializeFirebase(config);
-      console.log('[FCM SW] Firebase initialized from stored config on startup');
-    } else {
-      console.log('[FCM SW] No stored config found on startup, will wait for config from app');
-    }
+    initializeFirebase(config);
+    console.log('[FCM SW] Firebase initialized from stored config on startup');
   } catch (error) {
     console.warn('[FCM SW] Failed to load config on startup:', error);
   }
