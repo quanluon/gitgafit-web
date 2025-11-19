@@ -83,7 +83,7 @@ export function PlannerPage(): React.ReactElement {
   }, [selectedDay, currentPlan, setTodaysWorkout]);
 
   // Use hook to handle generation completion
-  useGenerationJob({
+  const { hasActiveGeneration: hasActiveWorkoutGeneration } =useGenerationJob({
     type: GenerationType.WORKOUT,
     onComplete: () => {
       void loadWorkoutPlan();
@@ -204,9 +204,9 @@ export function PlannerPage(): React.ReactElement {
                       variant="outline"
                       size="sm"
                       onClick={(): void => navigate(AppRoutePath.Onboarding)}
-                      disabled={quotaInfo?.isDepleted}
+                      disabled={quotaInfo?.isDepleted || hasActiveWorkoutGeneration}
                     >
-                      <RefreshCw className="mr-2 h-4 w-4" />
+                      <RefreshCw className={`mr-2 h-4 w-4 ${hasActiveWorkoutGeneration ? 'animate-spin' : ''}`} />
                       {t('common.regenerate')}
                       {quotaDisplay && (
                         <div className="ml-1 text-xs text-muted-foreground">{quotaDisplay}</div>

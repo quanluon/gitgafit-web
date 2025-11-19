@@ -207,6 +207,22 @@
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced"
   },
+  "workoutPreview": {
+    "title": "Your Personalized Workout Plan",
+    "subtitle": "Review your customized plan. You can regenerate if needed.",
+    "loading": "Loading plan...",
+    "missingProfile": "Missing user profile data. Please complete onboarding again.",
+    "planOverview": "Plan Overview",
+    "trainingDays": "Training Days",
+    "trainingDaysValue": "{{count}} days/week",
+    "totalExercises": "Total Exercises",
+    "weeklySchedule": "Weekly Schedule",
+    "exerciseCount": "{{count}} exercises",
+    "buttons": {
+      "regenerate": "Regenerate Plan",
+      "accept": "Accept & Continue"
+    }
+  },
   "subscription": {
     "title": "Subscription",
     "freePlan": "Free Plan",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Check } from 'lucide-react';
 import { Button } from '@atoms/Button';
@@ -9,14 +9,18 @@ import { Language, DayOfWeek } from '@/types/enums';
 import { useLocaleStore } from '@store/localeStore';
 import { AppRoutePath } from '@/routes/paths';
 import { RedirectToOnboardingModal } from '@organisms/RedirectToOnboardingModal';
+import { useTranslation } from 'react-i18next';
 
 export function WorkoutPreviewPage(): React.ReactElement {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { language } = useLocaleStore();
   const { user } = useAuthStore();
   const { currentPlan, setCurrentPlan } = useWorkoutStore();
   const [error, setError] = useState<string>('');
   const [showRedirectModal, setShowRedirectModal] = useState<boolean>(false);
+  const currentLang = language as Language;
+  
 
   useEffect(() => {
     // Load current plan if not in store
@@ -34,9 +38,24 @@ export function WorkoutPreviewPage(): React.ReactElement {
     loadPlan();
   }, [currentPlan, navigate, setCurrentPlan]);
 
+
+  const dayLabels = useMemo<Record<DayOfWeek, string>>(
+    () => ({
+      [DayOfWeek.MONDAY]: t('common.days.monday'),
+      [DayOfWeek.TUESDAY]: t('common.days.tuesday'),
+      [DayOfWeek.WEDNESDAY]: t('common.days.wednesday'),
+      [DayOfWeek.THURSDAY]: t('common.days.thursday'),
+      [DayOfWeek.FRIDAY]: t('common.days.friday'),
+      [DayOfWeek.SATURDAY]: t('common.days.saturday'),
+      [DayOfWeek.SUNDAY]: t('common.days.sunday'),
+    }),
+    [t],
+  );
+
+
   const handleRegenerate = async (): Promise<void> => {
     if (!user?.goal || !user?.experienceLevel || !user?.scheduleDays) {
-      setError('Missing user profile data. Please complete onboarding again.');
+      setError(t('workoutPreview.missingProfile'));
       return;
     }
     // Navigate to onboarding to start background generation
@@ -50,11 +69,10 @@ export function WorkoutPreviewPage(): React.ReactElement {
   if (!currentPlan) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading plan...</p>
+        <p className="text-muted-foreground">{t('workoutPreview.loading')}</p>
       </div>
     );
   }
-  const currentLang = language as Language;
 
   const dayOrder: DayOfWeek[] = [
     DayOfWeek.MONDAY,
@@ -70,16 +88,19 @@ export function WorkoutPreviewPage(): React.ReactElement {
     return dayOrder.indexOf(a.dayOfWeek) - dayOrder.indexOf(b.dayOfWeek);
   });
 
+  const totalExercises = useMemo(
+    () => currentPlan.schedule.reduce((sum, day) => sum + day.exercises.length, 0),
+    [currentPlan.schedule],
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b stickyyy top-0 bg-background z-10">
         <div className="max-w-4xl mx-auto p-4">
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold">Your Personalized Workout Plan</h1>
-            <p className="text-muted-foreground">
-              Review your customized plan. You can regenerate if needed.
-            </p>
+            <h1 className="text-2xl font-bold">{t('workoutPreview.title')}</h1>
+            <p className="text-muted-foreground">{t('workoutPreview.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -92,28 +113,28 @@ export function WorkoutPreviewPage(): React.ReactElement {
         )}
         {/* Plan Overview */}
         <div className="bg-card border rounded-lg p-6 space-y-3">
-          <h2 className="font-semibold">Plan Overview</h2>
+          <h2 className="font-semibold">{t('workoutPreview.planOverview')}</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">Training Days</p>
-              <p className="font-semibold">{currentPlan.schedule.length} days/week</p>
+              <p className="text-muted-foreground">{t('workoutPreview.trainingDays')}</p>
+              <p className="font-semibold">
+                {t('workoutPreview.trainingDaysValue', { count: currentPlan.schedule.length })}
+              </p>
             </div>
             <div>
-              <p className="text-muted-foreground">Total Exercises</p>
-              <p className="font-semibold">
-                {currentPlan.schedule.reduce((sum, day) => sum + day.exercises.length, 0)}
-              </p>
+              <p className="text-muted-foreground">{t('workoutPreview.totalExercises')}</p>
+              <p className="font-semibold">{totalExercises}</p>
             </div>
           </div>
         </div>
 
         {/* Weekly Schedule */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold">Weekly Schedule</h2>
+          <h2 className="text-xl font-bold">{t('workoutPreview.weeklySchedule')}</h2>
 
           {sortedSchedule.map((day) => {
             const focus = day.focus[currentLang];
-            const dayName = day.dayOfWeek.charAt(0).toUpperCase() + day.dayOfWeek.slice(1);
+            const dayName = dayLabels[day.dayOfWeek];
 
             return (
               <div key={day.dayOfWeek} className="bg-card border rounded-lg p-4 space-y-3">
@@ -123,7 +144,7 @@ export function WorkoutPreviewPage(): React.ReactElement {
                     <p className="text-sm text-muted-foreground">{focus}</p>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {day.exercises.length} exercises
+                    {t('workoutPreview.exerciseCount', { count: day.exercises.length })}
                   </div>
                 </div>
 
@@ -163,11 +184,11 @@ export function WorkoutPreviewPage(): React.ReactElement {
             onClick={handleRegenerate}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Regenerate Plan
+            {t('workoutPreview.buttons.regenerate')}
           </Button>
           <Button className="flex-1" onClick={handleAccept}>
             <Check className="h-4 w-4 mr-2" />
-            Accept & Continue
+            {t('workoutPreview.buttons.accept')}
           </Button>
         </div>
       </div>

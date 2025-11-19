@@ -206,6 +206,22 @@
     "levelIntermediate": "Trung bình",
     "levelAdvanced": "Nâng cao"
   },
+  "workoutPreview": {
+    "title": "Kế hoạch tập luyện cá nhân của bạn",
+    "subtitle": "Xem nhanh kế hoạch tùy chỉnh, bạn có thể tạo lại nếu cần.",
+    "loading": "Đang tải kế hoạch...",
+    "missingProfile": "Thiếu dữ liệu hồ sơ. Vui lòng hoàn tất onboarding.",
+    "planOverview": "Tổng quan kế hoạch",
+    "trainingDays": "Số buổi tập",
+    "trainingDaysValue": "{{count}} buổi/tuần",
+    "totalExercises": "Tổng số bài tập",
+    "weeklySchedule": "Lịch tập theo tuần",
+    "exerciseCount": "{{count}} bài",
+    "buttons": {
+      "regenerate": "Tạo lại kế hoạch",
+      "accept": "Chấp nhận & tiếp tục"
+    }
+  },
   "subscription": {
     "title": "Gói đăng ký",
     "freePlan": "Gói miễn phí",
