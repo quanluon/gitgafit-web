@@ -4,6 +4,8 @@ import { User } from '@/types/user';
 import { useLocaleStore } from './localeStore';
 import { Language } from '@/types/enums';
 import { fcmService } from '@/services/fcmService';
+import { setAnalyticsUser, clearAnalyticsUser } from '@/services/firebase';
+import { errorTracking, ErrorSeverity } from '@/services/errorTracking';
 
 interface AuthState {
   token: string | null;
@@ -42,7 +44,15 @@ export const useAuthStore = create<AuthState>()(
         // Initialize FCM only when authenticated
         if (token) {
           void fcmService.initMessaging(true).catch((error) => {
-            console.warn('[AuthStore] FCM initialization failed:', error);
+            errorTracking.logError(error, ErrorSeverity.MEDIUM, { source: 'fcm_init', action: 'setAuth' });
+          });
+        }
+
+        // Set analytics user
+        if (user._id) {
+          setAnalyticsUser(user._id, {
+            email: user.email,
+            language: user.language,
           });
         }
       },
@@ -61,7 +71,7 @@ export const useAuthStore = create<AuthState>()(
         // Initialize FCM only when authenticated
         if (token) {
           void fcmService.initMessaging(true).catch((error) => {
-            console.warn('[AuthStore] FCM initialization failed:', error);
+            errorTracking.logError(error, ErrorSeverity.MEDIUM, { source: 'fcm_init', action: 'setTokens' });
           });
         }
       },
@@ -78,6 +88,9 @@ export const useAuthStore = create<AuthState>()(
         }
         // Reset language to default (en)
         useLocaleStore.getState().setLanguage(Language.EN);
+
+        // Clear analytics user
+        clearAnalyticsUser();
 
         void fcmService.cleanupToken();
       },
@@ -102,7 +115,7 @@ export const useAuthStore = create<AuthState>()(
       }),
       // On rehydrate, ensure isAuthenticated matches token presence (Android WebView fix)
       onRehydrateStorage: () => {
-        return (state) => {
+        return (state): void => {
           if (state) {
             // Sync isAuthenticated with token presence after hydration
             const hasToken = !!state.token;
@@ -120,7 +133,7 @@ export const useAuthStore = create<AuthState>()(
                   state.isAuthenticated = true;
                 }
               } catch (error) {
-                console.warn('Failed to restore tokens from localStorage backup:', error);
+                errorTracking.logError(error, ErrorSeverity.LOW, { source: 'token_restore' });
               }
             }
 

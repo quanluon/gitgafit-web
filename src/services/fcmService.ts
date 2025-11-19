@@ -1,6 +1,7 @@
 import { getMessaging, getToken, isSupported, Messaging, onMessage } from 'firebase/messaging';
 import { apiClient } from './api';
-import { firebaseConfig } from './firebase';
+import { firebaseConfig, analytics } from './firebase';
+import { logEvent } from 'firebase/analytics';
 
 type DevicePlatform = 'ios' | 'android' | 'web' | 'unknown';
 
@@ -55,6 +56,12 @@ class FCMService {
     const supported = await isSupported().catch(() => false);
     if (!supported) {
       console.warn('[FCM] Messaging not supported in this browser.');
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'messaging_not_supported',
+          error_message: 'Firebase Messaging not supported in this browser',
+        });
+      }
       return null;
     }
     if (!this.messaging) {
@@ -70,6 +77,12 @@ class FCMService {
       !('serviceWorker' in navigator)
     ) {
       console.warn('[FCM] Service workers are not supported in this environment.');
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'service_worker_not_supported',
+          error_message: 'Service workers are not supported in this environment',
+        });
+      }
       return null;
     }
 
@@ -81,9 +94,20 @@ class FCMService {
       this.serviceWorkerRegistration = await navigator.serviceWorker.register(
         '/firebase-messaging-sw.js',
       );
+      if (analytics) {
+        logEvent(analytics, 'fcm_service_worker_registered', {
+          scope: this.serviceWorkerRegistration.scope,
+        });
+      }
       return this.serviceWorkerRegistration;
     } catch (error) {
       console.error('[FCM] Failed to register messaging service worker:', error);
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'service_worker_registration_failed',
+          error_message: error instanceof Error ? error.message : String(error),
+        });
+      }
       return null;
     }
   }
@@ -202,6 +226,12 @@ class FCMService {
     // Check if Notification API is available
     if (!('Notification' in window)) {
       console.warn('[FCM] Notification API not available');
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'notification_api_not_available',
+          error_message: 'Notification API not available in this browser',
+        });
+      }
       return;
     }
 
@@ -211,12 +241,24 @@ class FCMService {
     
     if (permission !== 'granted') {
       console.log('[FCM] Notification permission not granted yet');
+      if (analytics) {
+        logEvent(analytics, 'fcm_permission_status', {
+          permission_status: permission,
+          message: 'Notification permission not granted yet',
+        });
+      }
       return;
     }
 
     const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
     if (!vapidKey) {
       console.warn('[FCM] Missing VITE_FIREBASE_VAPID_KEY. Push notifications disabled.');
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'missing_vapid_key',
+          error_message: 'VITE_FIREBASE_VAPID_KEY environment variable is missing',
+        });
+      }
       return;
     }
 
@@ -241,12 +283,23 @@ class FCMService {
       
       if (!token) {
         console.warn('[FCM] Unable to retrieve FCM token.');
+        if (analytics) {
+          logEvent(analytics, 'fcm_error', {
+            error_type: 'token_retrieval_failed',
+            error_message: 'Unable to retrieve FCM token',
+          });
+        }
         return;
       }
 
       // Skip if already initialized with the same token
       if (!forceRegister && token === this.currentToken && this.initialized) {
         this.subscribeToForegroundMessages();
+        if (analytics) {
+          logEvent(analytics, 'fcm_already_initialized', {
+            message: 'FCM already initialized with same token',
+          });
+        }
         return;
       }
 
@@ -263,16 +316,37 @@ class FCMService {
         });
         // Reset failed flag on success
         this.initializationFailed = false;
+        if (analytics) {
+          logEvent(analytics, 'fcm_token_registered', {
+            platform,
+            device_id: deviceId,
+            success: true,
+          });
+        }
       } catch (error: unknown) {
         // Handle API errors gracefully following MDN error handling patterns
         const status = (error as { response?: { status?: number } })?.response?.status;
         if (status === 401 || status === 403) {
           console.warn('[FCM] Not authenticated - skipping token registration');
+          if (analytics) {
+            logEvent(analytics, 'fcm_error', {
+              error_type: 'token_registration_unauthorized',
+              error_message: 'Not authenticated - skipping token registration',
+              status_code: status,
+            });
+          }
           // Don't mark as failed for auth errors - user might not be logged in yet
           this.initializationFailed = false;
         } else {
           // For other errors, log but don't throw - allow FCM to work locally
           console.warn('[FCM] Failed to register token with backend:', error);
+          if (analytics) {
+            logEvent(analytics, 'fcm_error', {
+              error_type: 'token_registration_failed',
+              error_message: error instanceof Error ? error.message : String(error),
+              status_code: status,
+            });
+          }
           this.initializationFailed = false;
         }
       }
@@ -281,9 +355,23 @@ class FCMService {
       // Following MDN pattern for both push and foreground notifications
       this.initialized = true;
       this.subscribeToForegroundMessages();
+      
+      if (analytics) {
+        logEvent(analytics, 'fcm_initialized', {
+          platform,
+          success: true,
+        });
+      }
     } catch (error) {
       console.error('[FCM] Failed to initialize messaging:', error);
       this.initializationFailed = true;
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'initialization_failed',
+          error_message: error instanceof Error ? error.message : String(error),
+          fatal: true,
+        });
+      }
       throw error;
     }
   }
@@ -294,8 +382,20 @@ class FCMService {
 
     try {
       await apiClient.delete(`/user/device-token/${deviceId}`);
+      if (analytics) {
+        logEvent(analytics, 'fcm_token_removed', {
+          device_id: deviceId,
+          success: true,
+        });
+      }
     } catch (error) {
       console.warn('[FCM] Failed to remove device token:', error);
+      if (analytics) {
+        logEvent(analytics, 'fcm_error', {
+          error_type: 'token_removal_failed',
+          error_message: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
 
     this.currentToken = null;

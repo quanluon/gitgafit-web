@@ -18,11 +18,15 @@ function initializeFirebase(config) {
 
   try {
     if (!firebaseApp) {
-      if (firebase?.apps?.length) {
-        firebaseApp = firebase.apps[0];
-      } else {
-        firebaseApp = firebase.initializeApp(config);
-      }
+      firebaseApp = firebase.initializeApp({
+        apiKey: 'AIzaSyC8_2OdgQcuJn7nBOffaDnq937cvrZGOkI',
+        authDomain: 'gigafit-e5df3.firebaseapp.com',
+        projectId: 'gigafit-e5df3',
+        storageBucket: 'gigafit-e5df3.firebasestorage.app',
+        messagingSenderId: '228631832664',
+        appId: '1:228631832664:web:f428e3e046d4678f59422d',
+        measurementId: 'G-Q84X4TDHTJ',
+      });
       console.log('[FCM SW] Firebase app initialized');
     }
 
@@ -120,9 +124,24 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   console.log('[FCM SW] Activating...');
   event.waitUntil(
-    self.clients.claim().then(() => {
+    (async () => {
+      // Claim clients first
+      await self.clients.claim();
       console.log('[FCM SW] Activated and claimed clients');
-    }),
+
+      // Try to load config and initialize Firebase on activation
+      try {
+        const config = await loadConfig();
+        if (config) {
+          initializeFirebase(config);
+          console.log('[FCM SW] Firebase initialized from stored config');
+        } else {
+          console.log('[FCM SW] No stored config found, waiting for config from app');
+        }
+      } catch (error) {
+        console.warn('[FCM SW] Failed to load config on activation:', error);
+      }
+    })(),
   );
 });
 
@@ -136,8 +155,14 @@ self.addEventListener('message', (event) => {
 
     // Initialize Firebase with the received config
     if (initializeFirebase(config)) {
-      // Save config for future use
-      event.waitUntil(saveConfig(config));
+      // Save config for future use (persist to IndexedDB)
+      event.waitUntil(
+        saveConfig(config).then(() => {
+          console.log('[FCM SW] Config saved and Firebase initialized');
+        }),
+      );
+    } else {
+      console.warn('[FCM SW] Failed to initialize Firebase with received config');
     }
   }
 });
@@ -149,17 +174,25 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     (async () => {
       try {
-        // Ensure Firebase is initialized
-        if (!messaging) {
+        // Ensure Firebase is initialized before handling push
+        if (!messaging || !firebaseApp) {
+          console.log('[FCM SW] Firebase not initialized, loading config...');
           const config = await loadConfig();
           if (config) {
-            initializeFirebase(config);
+            const initialized = initializeFirebase(config);
+            if (!initialized) {
+              console.error('[FCM SW] Failed to initialize Firebase for push event');
+              return;
+            }
           } else {
-            console.warn('[FCM SW] No config available for push event');
+            console.warn('[FCM SW] No config available for push event - cannot process push');
+            return;
           }
         }
 
         // Firebase Messaging will handle the rest via onBackgroundMessage
+        // The push payload will be automatically processed by onBackgroundMessage
+        console.log('[FCM SW] Firebase ready, waiting for onBackgroundMessage to process');
       } catch (error) {
         console.error('[FCM SW] Error handling push:', error);
       }
@@ -203,16 +236,20 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Try to load config on startup
+// Initialize config loading on service worker startup
+// This runs immediately when the script loads, before activate event
 (async () => {
   try {
     const config = await loadConfig();
     if (config) {
       initializeFirebase(config);
+      console.log('[FCM SW] Firebase initialized from stored config on startup');
+    } else {
+      console.log('[FCM SW] No stored config found on startup, will wait for config from app');
     }
   } catch (error) {
     console.warn('[FCM SW] Failed to load config on startup:', error);
   }
 })();
 
-console.log('[FCM SW] Service worker loaded');
+console.log('[FCM SW] Service worker script loaded');

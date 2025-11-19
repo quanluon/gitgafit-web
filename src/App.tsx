@@ -3,14 +3,19 @@ import { userService } from '@services/userService';
 import { useAuthStore } from '@store/authStore';
 import { useLocaleStore } from '@store/localeStore';
 import { Suspense, lazy, useEffect } from 'react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
 import { RouteLoadingFallback } from './components/molecules/RouteLoadingFallback';
 import { FeedbackWidget } from './components/organisms/FeedbackWidget';
+import { ErrorBoundary } from './components/organisms/ErrorBoundary';
 import { useGenerationNotifications } from './hooks/useGenerationNotifications';
+import { errorTracking, ErrorSeverity } from './services/errorTracking';
+import { setAnalyticsUser, clearAnalyticsUser } from './services/firebase';
+import { fcmService } from './services/fcmService';
+import { useTranslation } from 'react-i18next';
 import { AppRouteConfig, AppRoutePath } from './routes/paths';
 
 const HomePage = lazy(async () => {
@@ -76,6 +81,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }): React.Reac
 function App(): React.ReactElement {
   const { isAuthenticated, updateUser } = useAuthStore();
   const { setLanguage } = useLocaleStore();
+  const { t } = useTranslation();
 
   const appRoutes: AppRouteConfig[] = [
     { path: AppRoutePath.Login, element: <LoginPage /> },
@@ -150,18 +156,63 @@ function App(): React.ReactElement {
           if (user.language) {
             setLanguage(user.language as Language);
           }
+
+          // Set analytics user
+          if (user._id) {
+            setAnalyticsUser(user._id, {
+              email: user.email,
+              language: user.language,
+            });
+          }
+
+          // Request notification permission after login if not yet asked
+          if (typeof Notification !== 'undefined') {
+            const permission = Notification.permission;
+            // Directly request permission if it's 'default' (not yet asked)
+            if (permission === 'default') {
+              // Small delay to ensure user sees the app first
+              setTimeout(() => {
+                Notification.requestPermission()
+                  .then((result) => {
+                    if (result === 'granted') {
+                      toast.success(t('notification.permissionGranted'));
+                      // Initialize FCM after permission is granted
+                      void fcmService.initMessaging(true).catch((error) => {
+                        console.warn('[App] FCM initialization failed:', error);
+                        errorTracking.logError(error, ErrorSeverity.MEDIUM, { source: 'fcm_init_auto' });
+                      });
+                    } else if (result === 'denied') {
+                      // User denied - don't show error, just silently fail
+                      console.log('[App] Notification permission denied by user');
+                    } else {
+                      // 'default' - user dismissed
+                      console.log('[App] Notification permission dismissed by user');
+                    }
+                  })
+                  .catch((error) => {
+                    console.error('[App] Failed to request notification permission:', error);
+                    errorTracking.logError(error, ErrorSeverity.LOW, { source: 'notification_permission_auto' });
+                  });
+              }, 1000);
+            }
+          }
         } catch (error) {
-          console.error('Failed to fetch user profile:', error);
+          errorTracking.logError(error, ErrorSeverity.MEDIUM, { source: 'user_profile_fetch' });
           // If profile fetch fails, token might be invalid - clear auth
           if ((error as { response?: { status?: number } }).response?.status === 401) {
             useAuthStore.getState().clearAuth();
+            clearAnalyticsUser();
           }
         }
+      } else {
+        // Clear analytics user on logout
+        clearAnalyticsUser();
       }
     };
 
     initializeApp();
   }, [isAuthenticated, updateUser, setLanguage]);
+
 
   return (
     <>
@@ -191,27 +242,29 @@ function App(): React.ReactElement {
         }}
         gutter={8}
       />
-      <Router>
-        <Suspense fallback={<RouteLoadingFallback />}>
-          {/* PWA install prompts - shows when installable (Android/Chrome) */}
-          <PWAInstallPrompt />
-          {/* iOS Safari install instructions */}
-          <IOSInstallPrompt />
-          {/* Beta feedback widget */}
-          <FeedbackWidget />
-          <Routes>
-            {appRoutes.map(({ path, element, isProtected }) => (
-              <Route
-                key={path}
-                path={path}
-                element={
-                  isProtected ? <ProtectedRoute>{element}</ProtectedRoute> : element
-                }
-              />
-            ))}
-          </Routes>
-        </Suspense>
-      </Router>
+      <ErrorBoundary>
+        <Router>
+          <Suspense fallback={<RouteLoadingFallback />}>
+            {/* PWA install prompts - shows when installable (Android/Chrome) */}
+            <PWAInstallPrompt />
+            {/* iOS Safari install instructions */}
+            <IOSInstallPrompt />
+            {/* Beta feedback widget */}
+            <FeedbackWidget />
+            <Routes>
+              {appRoutes.map(({ path, element, isProtected }) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    isProtected ? <ProtectedRoute>{element}</ProtectedRoute> : element
+                  }
+                />
+              ))}
+            </Routes>
+          </Suspense>
+        </Router>
+      </ErrorBoundary>
     </>
   );
 }

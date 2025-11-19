@@ -37,5 +37,23 @@ export function logFeedbackEvent(eventName: string, params?: Record<string, unkn
     logEvent(analytics, eventName, params);
   }
 }
+
+export function setAnalyticsUser(userId: string, properties?: Record<string, unknown>): void {
+  if (analytics) {
+    // Log user login event with user ID and properties
+    logEvent(analytics, 'user_login', {
+      user_id: userId,
+      ...properties,
+    });
+  }
+}
+
+export function clearAnalyticsUser(): void {
+  if (analytics) {
+    // Log user logout event
+    logEvent(analytics, 'user_logout');
+  }
+}
+
 export { app, firestore, analytics };
 

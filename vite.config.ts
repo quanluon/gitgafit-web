@@ -5,11 +5,12 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: { allowedHosts: ['bore.pub'] },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Don't override firebase-messaging-sw.js - it's a custom service worker
+      injectRegister: 'script',
       includeAssets: [
         'favicon.ico',
         'favicon-16x16.png',

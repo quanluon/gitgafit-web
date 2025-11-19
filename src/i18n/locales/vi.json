@@ -121,15 +121,15 @@
     "passwordMinLength": "Mật khẩu phải có ít nhất 6 ký tự"
   },
   "notification": {
-    "permissionTitle": "Bật thông báo",
+    "permissionTitle": "Thông báo",
     "permissionMessage": "Nhận thông báo theo thời gian thực về tiến trình tạo kế hoạch tập luyện và bữa ăn của bạn.",
     "benefit1": "Nhận thông báo khi kế hoạch tập luyện sẵn sàng",
     "benefit2": "Nhận cảnh báo khi kế hoạch bữa ăn được tạo",
     "benefit3": "Cập nhật về kết quả quét InBody",
-    "allow": "Cho phép thông báo",
+    "allow": "Bật thông báo",
     "notNow": "Không phải bây giờ",
     "deniedMessage": "Thông báo đã bị tắt. Bạn có thể bật lại sau trong cài đặt trình duyệt.",
-    "permissionGranted": "Đã bật thông báo thành công!",
+    "permissionGranted": "Thông báo đã được bật",
     "permissionDenied": "Quyền thông báo bị từ chối. Bạn có thể bật lại trong cài đặt trình duyệt.",
     "permissionDismissed": "Quyền thông báo chưa được thiết lập",
     "initError": "Không thể khởi tạo thông báo",

@@ -10,12 +10,13 @@ import { SubscriptionCard } from '@organisms/SubscriptionCard';
 import { userService } from '@services/userService';
 import { useAuthStore } from '@store/authStore';
 import { MainLayout } from '@templates/MainLayout';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Bell, BellOff } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useToast } from '@/hooks/useToast';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { fcmService } from '@/services/fcmService';
 
 type CollapsibleSection = 'personal' | 'fitness' | 'schedule' | null;
 
@@ -27,6 +28,10 @@ export function ProfilePage(): React.ReactElement {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedSection, setExpandedSection] = useState<CollapsibleSection>(null);
   const [errorFields, setErrorFields] = useState<Set<string>>(new Set());
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'default',
+  );
+  const [isRequestingPermission, setIsRequestingPermission] = useState<boolean>(false);
 
   const {
     register,
@@ -159,6 +164,58 @@ export function ProfilePage(): React.ReactElement {
     }
   };
 
+  useEffect(() => {
+    // Check notification permission status on mount
+    if (typeof Notification !== 'undefined') {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  async function requestNotificationPermission(): Promise<void> {
+    if (typeof Notification === 'undefined') {
+      showError(t('notification.requestError'));
+      return;
+    }
+
+    setIsRequestingPermission(true);
+    try {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+
+      if (permission === 'granted') {
+        showSuccess(t('notification.permissionGranted'));
+        // Initialize FCM after permission is granted
+        try {
+          await fcmService.initMessaging(true);
+        } catch (error) {
+          console.warn('[ProfilePage] FCM initialization failed:', error);
+          // Don't show error to user - FCM will retry later
+        }
+      } else if (permission === 'denied') {
+        showError(t('notification.permissionDenied'));
+      } else {
+        // 'default' - user dismissed the prompt
+        showError(t('notification.permissionDismissed'));
+      }
+    } catch (error) {
+      console.error('[ProfilePage] Failed to request notification permission:', error);
+      showError(t('notification.requestError'));
+    } finally {
+      setIsRequestingPermission(false);
+    }
+  }
+
+  const getNotificationButtonText = (): string => {
+    switch (notificationPermission) {
+      case 'granted':
+        return t('notification.allow'); // "Allow Notifications" - can be used as "Enabled"
+      case 'denied':
+        return t('notification.allow'); // Still show "Allow" but it won't work
+      default:
+        return t('notification.allow');
+    }
+  };
+
   const goalOptions = [
     { value: Goal.MUSCLE_GAIN, label: t('profile.muscleGain') },
     { value: Goal.WEIGHT_LOSS, label: t('profile.weightLoss') },
@@ -239,6 +296,39 @@ export function ProfilePage(): React.ReactElement {
 
           {/* Subscription Card */}
           <SubscriptionCard />
+
+          {/* Notification Settings */}
+          {typeof Notification !== 'undefined' && (
+            <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
+              <div className="flex items-center gap-3 flex-1">
+                {notificationPermission === 'granted' ? (
+                  <Bell className="h-5 w-5 text-green-500" />
+                ) : (
+                  <BellOff className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div className="flex-1">
+                  <h3 className="font-semibold">{t('notification.permissionTitle')}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {notificationPermission === 'granted'
+                      ? t('notification.permissionGranted')
+                      : t('notification.permissionMessage')}
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={requestNotificationPermission}
+                disabled={notificationPermission === 'granted' || isRequestingPermission}
+                variant={notificationPermission === 'granted' ? 'outline' : 'default'}
+                size="sm"
+              >
+                {isRequestingPermission
+                  ? t('common.loading')
+                  : notificationPermission === 'granted'
+                    ? t('notification.allow')
+                    : getNotificationButtonText()}
+              </Button>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

@@ -122,15 +122,15 @@
     "passwordMinLength": "Password must be at least 6 characters"
   },
   "notification": {
-    "permissionTitle": "Enable Notifications",
+    "permissionTitle": "Notifications",
     "permissionMessage": "Stay updated with real-time notifications about your workout and meal plan generation progress.",
     "benefit1": "Get notified when your workout plans are ready",
     "benefit2": "Receive alerts when meal plans are generated",
     "benefit3": "Stay informed about InBody scan results",
-    "allow": "Allow Notifications",
+    "allow": "Enable Notifications",
     "notNow": "Not Now",
     "deniedMessage": "Notifications are disabled. You can enable them later in your browser settings.",
-    "permissionGranted": "Notifications enabled successfully!",
+    "permissionGranted": "Notifications are enabled",
     "permissionDenied": "Notification permission denied. You can enable it in your browser settings.",
     "permissionDismissed": "Notification permission not set",
     "initError": "Failed to initialize notifications",
