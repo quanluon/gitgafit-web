@@ -242,7 +242,7 @@ export function ExerciseLogModal({
             </div>
           )}
           {/* Save Button */}
-          <Button className="w-full sticky bottom-0 pb-1" size="lg" onClick={handleSave}>
+          <Button className="w-full stickyyy bottom-0 pb-1" size="lg" onClick={handleSave}>
             {t('workout.saveLog')}
           </Button>
         </div>
