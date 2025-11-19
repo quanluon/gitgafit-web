@@ -26,7 +26,7 @@ export function UpdateWeightModal({
   };
 
   return (
-    <div className="modal-overlay items-end sm:items-center">
+    <div className="modal-overlay">
       <div className="modal-container border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">{t('weight.updateTitle')}</h2>

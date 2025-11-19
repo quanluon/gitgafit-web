@@ -117,7 +117,7 @@ export function ExerciseLogModal({
   };
 
   return (
-    <div className="modal-overlay items-end sm:items-center">
+    <div className="modal-overlay">
       <div className="modal-container border w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-background border-b p-6 flex items-center justify-between">

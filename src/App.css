@@ -99,7 +99,7 @@
     bottom: 0;
     z-index: 50;
     display: flex;
-    align-items: center;
+    align-items: end;
     justify-content: center;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 1rem;
@@ -110,7 +110,7 @@
   .modal-container {
     width: 100%;
     max-width: 28rem;
-    max-height: 95vh;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
     background-color: hsl(var(--background));
@@ -123,7 +123,7 @@
       padding: 1rem;
     }
     .modal-container {
-      max-height: 90vh;
+      max-height: 80vh;
       border-radius: 0.5rem;
     }
   }
