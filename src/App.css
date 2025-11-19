@@ -26,32 +26,54 @@
     --radius: 0.5rem;
   }
 }
+
 @layer base {
   * {
     @apply border-border;
   }
-  
-  html {
+
+  /* Bỏ padding khỏi body và đảm bảo nó chiếm 100% màn hình */
+  html,
+  body {
     height: 100%;
+    /* Loại bỏ margin mặc định nếu có */
+    margin: 0;
   }
-  
+
   body {
     @apply bg-background text-foreground;
+    /* Giữ nguyên touch-action */
+    touch-action: pan-x pan-y;
+  }
+
+  #root {
+    /* Đảm bảo #root cũng chiếm 100% và là flex container chính */
     height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    /* ⚠️ Quan trọng: Áp dụng khoảng cách an toàn cho #root 
+       để nó bao bọc nội dung, và dùng box-sizing để nó vẫn chiếm 100%
+    */
+    /* Dùng biến env() với giá trị fallback là 0 */
     padding-top: env(safe-area-inset-top, 0);
     padding-right: env(safe-area-inset-right, 0);
     padding-bottom: env(safe-area-inset-bottom, 0);
     padding-left: env(safe-area-inset-left, 0);
-    /* Prevent zoom gestures while allowing panning */
-    touch-action: pan-x pan-y;
+
+    /* box-sizing: border-box: Giúp padding không làm tăng tổng chiều cao/rộng,
+       giữ cho #root vẫn fit 100% height. Tuy nhiên, nếu bạn muốn nội dung 
+       thực sự chỉ chiếm phần còn lại, bạn nên áp dụng padding này cho 
+       DIV BÊN TRONG #ROOT (xem bước 2).
+       
+       Nếu bạn áp dụng padding lên #root:
+       - Ưu điểm: Đơn giản.
+       - Nhược điểm: Chiều cao 100% có thể không hoàn hảo trên mọi thiết bị 
+                     hoặc cần CSS box-sizing: border-box;
+    */
+    box-sizing: border-box;
   }
-  
-  #root {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  
+
   /* Prevent iOS Safari from zooming on input focus */
   input[type="text"],
   input[type="number"],
@@ -61,35 +83,36 @@
   select {
     font-size: 16px !important;
   }
-  
+
   /* Smooth scrolling for forms */
   input:focus,
   textarea:focus,
   select:focus {
     scroll-margin-bottom: 150px;
   }
-  
+
   /* Allow scrolling in dialogs and nested containers */
   [role="dialog"],
   [data-radix-dialog-content],
   .scrollable {
     overflow-y: auto !important;
   }
-  
+
   /* Shimmer animation for progress bar */
   @keyframes shimmer {
     0% {
       transform: translateX(-100%);
     }
+
     100% {
       transform: translateX(100%);
     }
   }
-  
+
   .animate-shimmer {
     animation: shimmer 2s infinite;
   }
-  
+
   /* Common Modal Overlay - fits screen height, no margin top */
   .modal-overlay {
     position: fixed;
@@ -105,7 +128,7 @@
     padding: 1rem;
     overflow-y: auto;
   }
-  
+
   /* Modal container - fits screen height on mobile */
   .modal-container {
     width: 100%;
@@ -117,11 +140,12 @@
     border-radius: 0.5rem;
     overflow: hidden;
   }
-  
+
   @media (min-width: 640px) {
     .modal-overlay {
       padding: 1rem;
     }
+
     .modal-container {
       max-height: 80vh;
       border-radius: 0.5rem;
