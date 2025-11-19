@@ -123,48 +123,54 @@ export function TrainingCalendar({ onDayClick }: TrainingCalendarProps): React.R
           <div key={`empty-${index}`} className="aspect-square" />
         ))}
         {/* Days of month */}
-        {Array.from({ length: daysInMonth }).map((_, index) => {
+        {Array.from({ length: daysInMonth }, (_, index) => {
           const day = index + 1;
           const daySessions = getSessionsForDate(day);
           const hasWorkout = daySessions.length > 0;
           const isCurrentDay = isToday(day);
           const totalCalories = daySessions.reduce((sum, s) => sum + (s.totalCalories || 0), 0);
+          const indicatorCount = Math.min(daySessions.length, 3);
 
           return (
             <button
               key={day}
+              type="button"
               onClick={(): void => {
                 const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
                 onDayClick(date, daySessions);
               }}
               disabled={isLoading}
               className={`
-                aspect-square p-2 rounded-lg text-sm transition-all relative flex flex-col items-center justify-center
-                ${isCurrentDay ? 'ring-2 ring-primary font-bold' : ''}
-                ${hasWorkout ? 'bg-primary/10 hover:bg-primary/20' : 'hover:bg-accent'}
+                w-full min-h-[56px] sm:aspect-square px-2 py-2 sm:p-2 rounded-xl text-xs sm:text-sm transition-all
+                relative flex flex-col items-center justify-center touch-manipulation
+                ${isCurrentDay ? 'ring-2 ring-primary font-semibold bg-primary/5' : 'bg-card'}
+                ${hasWorkout ? 'border border-primary/30 hover:bg-primary/10' : 'border border-border hover:bg-accent/40'}
                 ${!hasWorkout && !isCurrentDay ? 'text-muted-foreground' : ''}
               `}
             >
-              <span className={isCurrentDay ? 'text-primary' : ''}>{day}</span>
-              
-              {/* Calories display */}
+              <span className={`text-base sm:text-lg ${isCurrentDay ? 'text-primary' : ''}`}>{day}</span>
+
               {hasWorkout && totalCalories > 0 && (
-                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex items-center gap-0.5">
-                  <Flame className="w-2.5 h-2.5 text-orange-500" />
-                  <span className="text-[10px] text-orange-500 font-medium">{totalCalories}</span>
+                <div className="mt-1 flex items-center gap-1 text-[10px] sm:text-xs text-orange-500 font-semibold">
+                  <Flame className="w-3 h-3" />
+                  <span>{totalCalories}</span>
                 </div>
               )}
-              
-              {/* Training indicator dot (fallback if no calories) */}
+
               {hasWorkout && totalCalories === 0 && (
-                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
-                  {daySessions.map((_, idx) => (
+                <div className="mt-1 flex items-center gap-0.5">
+                  {Array.from({ length: indicatorCount }, (_, idx) => (
                     <div
-                      key={idx}
-                      className="w-1 h-1 bg-primary rounded-full"
-                      title={`${daySessions.length} ${daySessions.length > 1 ? t('statistics.workouts') : t('statistics.workout')}`}
+                      key={`${day}-dot-${idx}`}
+                      className="w-1.5 h-1.5 bg-primary rounded-full"
+                      title={`${daySessions.length} ${
+                        daySessions.length > 1 ? t('statistics.workouts') : t('statistics.workout')
+                      }`}
                     />
                   ))}
+                  {daySessions.length > indicatorCount && (
+                    <span className="text-[10px] text-muted-foreground">+{daySessions.length - indicatorCount}</span>
+                  )}
                 </div>
               )}
             </button>
