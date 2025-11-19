@@ -17,6 +17,8 @@
     "refresh": "Refresh",
     "add": "Add",
     "optional": "optional",
+    "yes": "Yes",
+    "no": "No",
     "all": "All",
     "days": {
       "monday": "Mon",
@@ -586,7 +588,26 @@
     "workouts": "Workouts",
     "meals": "Meals",
     "progress": "Progress",
-    "appName": "GigaFit"
+    "appName": "GigaFit",
+    "recommendation": {
+      "clickToView": "Click to view training analysis",
+      "viewDetails": "View Details",
+      "metrics": "Key Metrics",
+      "metric": {
+        "weightChange7Days": "Weight Change (7 days)",
+        "weightSeries7Days": "Weight Trend (7 days)",
+        "totalWeightLogs": "Total Weight Logs",
+        "recentSessions": "Recent Sessions",
+        "totalCalories": "Total Calories",
+        "latestInbody": "Latest InBody",
+        "isFirstPlan": "First Workout Plan",
+        "weight_change": "Weight Change (7 days)",
+        "total_weight_logs": "Total Weight Logs",
+        "weight_series_last_7_entries": "Weight Trend (7 days)",
+        "recent_training_sessions": "Recent Sessions",
+        "total_calories_burned": "Total Calories"
+      }
+    }
   },
   "weight": {
     "updateTitle": "Update Weight",

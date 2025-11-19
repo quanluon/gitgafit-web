@@ -1,12 +1,11 @@
+import { useLocaleStore } from '@/store/localeStore';
+import { InbodyAnalysis, Translatable } from '@/types/inbody';
+import { Button } from '@atoms/Button';
+import { ChevronDown, ChevronUp, Image as ImageIcon, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { X, ChevronDown, ChevronUp, Image as ImageIcon } from 'lucide-react';
-import { Button } from '@atoms/Button';
-import { Translatable, InbodyAnalysis } from '@/types/inbody';
-import { useLocaleStore } from '@/store/localeStore';
-import { Language } from '@/types/enums';
 
 interface InbodyAnalysisModalProps {
   analysis: Translatable | InbodyAnalysis;
@@ -32,13 +31,12 @@ export function InbodyAnalysisModal({
   onClose,
 }: InbodyAnalysisModalProps): React.ReactElement {
   const { t } = useTranslation();
-  const { language } = useLocaleStore();
-  const currentLang = language as Language;
+  const { translate } = useLocaleStore();
   const [showImage, setShowImage] = useState<boolean>(false);
 
   const renderContent = (): React.ReactElement => {
     if (isStructuredAnalysis(analysis)) {
-      const current = analysis[currentLang] || analysis.vi || analysis.en;
+      const current = translate(analysis);
 
       return (
         <div className="space-y-6">
@@ -86,7 +84,7 @@ export function InbodyAnalysisModal({
       );
     }
     // Fallback to old string format
-    const analysisText = analysis[currentLang] || analysis.vi || analysis.en || '';
+    const analysisText = translate(analysis, '');
     return (
       <div className="prose prose-sm max-w-none dark:prose-invert">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{analysisText}</ReactMarkdown>

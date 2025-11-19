@@ -17,4 +17,5 @@ export * from './SubscriptionDetailsModal';
 export * from './MealPlanGenerationModal';
 export * from './FeedbackModal';
 export * from './FeedbackWidget';
+export * from './TrainingRecommendationModal';
 

@@ -1,8 +1,7 @@
 import { MealPlannerSkeleton } from '@/components/molecules';
 import { useGenerationJob } from '@/hooks/useGenerationJob';
 import { useToast } from '@/hooks/useToast';
-import { Translatable } from '@/types';
-import { DayOfWeek, Language, MealType } from '@/types/enums';
+import { DayOfWeek, MealType } from '@/types/enums';
 import { DailyMealPlan, Meal, MealPlan } from '@/types/meal';
 import { Button } from '@atoms/Button';
 import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
@@ -21,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 export function MealPlannerPage(): React.ReactElement {
   const { t } = useTranslation();
   const { showSuccess, showError } = useToast();
-  const { language } = useLocaleStore();
+  const { translate } = useLocaleStore();
   const { user } = useAuthStore();
 
   const { startGeneration } = useGenerationStore();
@@ -113,18 +112,11 @@ export function MealPlannerPage(): React.ReactElement {
     }
   };
 
-  const currentLang = language as Language;
-
   const mealTypeLabels: Record<MealType, string> = {
     [MealType.BREAKFAST]: t('meal.breakfast'),
     [MealType.LUNCH]: t('meal.lunch'),
     [MealType.DINNER]: t('meal.dinner'),
     [MealType.SNACK]: t('meal.snack'),
-  };
-
-  const translateText = (value?: Translatable, fallback: string = ''): string => {
-    if (!value) return fallback;
-    return value[currentLang] || value.en || value.vi || fallback;
   };
 
   const quotaDisplay = formatQuotaDisplay(GenerationType.MEAL);
@@ -378,10 +370,10 @@ export function MealPlannerPage(): React.ReactElement {
                                   className="flex items-start justify-between p-3 bg-secondary rounded-lg"
                                 >
                                   <div className="flex-1">
-                                    <p className="font-medium text-sm">{translateText(item.name)}</p>
+                                    <p className="font-medium text-sm">{translate(item.name)}</p>
                                     {item.description && (
                                       <p className="text-xs text-muted-foreground mt-1">
-                                        {translateText(item.description)}
+                                        {translate(item.description)}
                                       </p>
                                     )}
                                     <p className="text-xs text-muted-foreground mt-1">
@@ -394,11 +386,11 @@ export function MealPlannerPage(): React.ReactElement {
                                         </p>
                                         <ul className="space-y-1 text-[11px] text-muted-foreground">
                                           {item.components.map((component, componentIndex) => {
-                                            const componentNote = translateText(component.notes);
+                                            const componentNote = translate(component.notes);
                                             return (
                                               <li key={componentIndex} className="leading-relaxed">
                                                 <span className="text-foreground">
-                                                  {translateText(component.name)} ·{' '}
+                                                  {translate(component.name)} ·{' '}
                                                   <span className="font-medium">{component.quantity}</span>
                                                 </span>
                                                 {componentNote && (

@@ -1,22 +1,21 @@
+import { useGenerationJob } from '@/hooks/useGenerationJob';
+import { useToast } from '@/hooks/useToast';
+import { AppRoutePath } from '@/routes/paths';
+import { GenerationType } from '@/store/generationStore';
+import { useLocaleStore } from '@/store/localeStore';
+import { InbodyAnalysis, InbodyResult, InbodyStatus, Translatable } from '@/types/inbody';
+import { cn } from '@/utils/cn';
+import { Button } from '@atoms/Button';
+import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
+import { BodyPhotoTab } from '@organisms/BodyPhotoTab';
+import { InbodyAnalysisModal } from '@organisms/InbodyAnalysisModal';
+import { InBodyReportTab } from '@organisms/InBodyReportTab';
+import { inbodyService } from '@services/inbodyService';
+import { MainLayout } from '@templates/MainLayout';
+import dayjs from 'dayjs';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '@/hooks/useToast';
-import dayjs from 'dayjs';
-import { Button } from '@atoms/Button';
-import { MainLayout } from '@templates/MainLayout';
-import { inbodyService } from '@services/inbodyService';
-import { InbodyResult, InbodyStatus, InbodyAnalysis, Translatable } from '@/types/inbody';
 import { useNavigate } from 'react-router-dom';
-import { AppRoutePath } from '@/routes/paths';
-import { cn } from '@/utils/cn';
-import { useLocaleStore } from '@/store/localeStore';
-import { InbodyAnalysisModal } from '@organisms/InbodyAnalysisModal';
-import { Language } from '@/types/enums';
-import { InBodyReportTab } from '@organisms/InBodyReportTab';
-import { BodyPhotoTab } from '@organisms/BodyPhotoTab';
-import { useSubscriptionStats } from '@hooks/useSubscriptionStats';
-import { GenerationType } from '@/store/generationStore';
-import { useGenerationJob } from '@/hooks/useGenerationJob';
 
 type TabType = 'report' | 'photo';
 
@@ -25,11 +24,12 @@ export function InbodyPage(): React.ReactElement {
   const navigate = useNavigate();
   const { showError } = useToast();
   const { getQuotaInfo } = useSubscriptionStats();
-  const { language } = useLocaleStore();
-  const currentLang = language as Language;
+  const { translate } = useLocaleStore();
   const [results, setResults] = useState<InbodyResult[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>('report');
-  const [selectedAnalysis, setSelectedAnalysis] = useState<Translatable | InbodyAnalysis | null>(null);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<Translatable | InbodyAnalysis | null>(
+    null,
+  );
   const [selectedS3Url, setSelectedS3Url] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
@@ -220,14 +220,10 @@ export function InbodyPage(): React.ReactElement {
                               typeof analysis.en === 'string'
                             ) {
                               const translatable = analysis as Translatable;
-                              const text =
-                                translatable[currentLang] ||
-                                translatable.vi ||
-                                translatable.en ||
-                                '';
-                              return text.slice(0, 100) + (text.length > 100 ? '...' : '');
+                              const text = translate(translatable);
+                              return text?.slice(0, 100) + (text?.length > 100 ? '...' : '');
                             }
-                              // New format: Structured object
+                            // New format: Structured object
                             if (
                               typeof analysis === 'object' &&
                               'en' in analysis &&
@@ -236,12 +232,8 @@ export function InbodyPage(): React.ReactElement {
                               'body_composition_summary' in analysis.en
                             ) {
                               const structured = analysis as InbodyAnalysis;
-                              const summary =
-                                structured[currentLang]?.body_composition_summary ||
-                                structured.vi?.body_composition_summary ||
-                                structured.en?.body_composition_summary ||
-                                '';
-                              return summary.slice(0, 100) + (summary.length > 100 ? '...' : '');
+                              const summary = translate(structured)?.body_composition_summary || '';
+                              return summary?.slice(0, 100) + (summary?.length > 100 ? '...' : '');
                             }
                             return '';
                           })()}

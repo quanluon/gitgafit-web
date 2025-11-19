@@ -16,6 +16,8 @@
     "close": "Đóng",
     "refresh": "Làm mới",
     "optional": "tùy chọn",
+    "yes": "Có",
+    "no": "Không",
     "all": "Tất cả",
     "days": {
       "monday": "T2",
@@ -585,7 +587,26 @@
     "workouts": "Bài tập",
     "meals": "Bữa ăn",
     "progress": "Tiến độ",
-    "appName": "GigaFit"
+    "appName": "GigaFit",
+    "recommendation": {
+      "clickToView": "Kết quả phân tích tập luyện, mở để xem",
+      "viewDetails": "Xem chi tiết",
+      "metrics": "Chỉ số quan trọng",
+      "metric": {
+        "weightChange7Days": "Thay đổi cân nặng (7 ngày)",
+        "weightSeries7Days": "Xu hướng cân nặng (7 ngày)",
+        "totalWeightLogs": "Tổng số lần ghi cân",
+        "recentSessions": "Buổi tập gần đây",
+        "totalCalories": "Tổng calories",
+        "latestInbody": "InBody mới nhất",
+        "isFirstPlan": "Kế hoạch tập đầu tiên",
+        "weight_change": "Thay đổi cân nặng (7 ngày)",
+        "total_weight_logs": "Tổng số lần ghi cân",
+        "weight_series_last_7_entries": "Xu hướng cân nặng (7 ngày)",
+        "recent_training_sessions": "Buổi tập gần đây",
+        "total_calories_burned": "Tổng calories"
+      }
+    }
   },
   "weight": {
     "updateTitle": "Cập nhật cân nặng",

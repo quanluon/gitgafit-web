@@ -8,6 +8,19 @@ import {
   TrainingEnvironment,
 } from './enums';
 
+export interface LocalizedText<T = string> {
+  en: T;
+  vi: T;
+}
+
+export interface TrainingRecommendation {
+  generatedAt: string;
+  title: LocalizedText;
+  summary: LocalizedText;
+  metrics: Record<string, unknown>;
+  cta?: LocalizedText;
+}
+
 export interface User {
   _id: string;
   email: string;
@@ -22,6 +35,7 @@ export interface User {
   trainingEnvironment?: TrainingEnvironment;
   scheduleDays: DayOfWeek[];
   language: Language;
+  trainingRecommendation?: TrainingRecommendation;
   createdAt: string;
   updatedAt: string;
 }

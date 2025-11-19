@@ -55,9 +55,9 @@ export function WorkoutCard({
           className="w-full text-left p-3 rounded-lg border hover:border-primary/50 transition-colors"
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">View Exercise Details</span>
+            <span className="text-sm font-medium">{t('workout.viewDetails')}</span>
             <span className="text-xs text-muted-foreground">
-              {exerciseCount} exercises →
+              {exerciseCount} {t('workout.exercises')} →
             </span>
           </div>
         </button>
