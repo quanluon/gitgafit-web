@@ -18,13 +18,13 @@
     "optional": "tùy chọn",
     "all": "Tất cả",
     "days": {
-      "monday": "Thứ hai",
-      "tuesday": "Thứ ba",
-      "wednesday": "Thứ tư",
-      "thursday": "Thứ năm",
-      "friday": "Thứ sáu",
-      "saturday": "Thứ bảy",
-      "sunday": "Chủ nhật",
+      "monday": "T2",
+      "tuesday": "T3",
+      "wednesday": "T4",
+      "thursday": "T5",
+      "friday": "T6",
+      "saturday": "T7",
+      "sunday": "CN",
       "days": "ngày"
     },
     "time": {
@@ -592,13 +592,13 @@
     "full_body": "Toàn thân"
   },
   "days": {
-    "monday": "Thứ hai",
-    "tuesday": "Thứ ba",
-    "wednesday": "Thứ tư",
-    "thursday": "Thứ năm",
-    "friday": "Thứ sáu",
-    "saturday": "Thứ bảy",
-    "sunday": "Chủ nhật"
+    "monday": "T2",
+    "tuesday": "T3",
+    "wednesday": "T4",
+    "thursday": "T5",
+    "friday": "T6",
+    "saturday": "T7",
+    "sunday": "CN"
   },
   "errors": {
     "required": "Trường này bắt buộc",
