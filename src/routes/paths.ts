@@ -17,4 +17,5 @@ export interface AppRouteConfig {
   path: AppRoutePath;
   element: React.ReactElement;
   isProtected?: boolean;
+  fallback?: React.ReactElement;
 }

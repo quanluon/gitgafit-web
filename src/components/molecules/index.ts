@@ -8,4 +8,5 @@ export * from './StatCard';
 export * from './PublicLanguageSelector';
 export * from './LoadingSpinner';
 export * from './RouteLoadingFallback';
+export * from './PageSkeletons';
 

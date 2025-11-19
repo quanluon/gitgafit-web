@@ -1,3 +1,4 @@
+import { MealPlannerSkeleton } from '@/components/molecules';
 import { useGenerationJob } from '@/hooks/useGenerationJob';
 import { useToast } from '@/hooks/useToast';
 import { Translatable } from '@/types';
@@ -170,9 +171,7 @@ export function MealPlannerPage(): React.ReactElement {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
+        <MealPlannerSkeleton />
       </MainLayout>
     );
   }

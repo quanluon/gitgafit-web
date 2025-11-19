@@ -6,11 +6,24 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
+import {
+  AuthPageSkeleton,
+  DashboardSkeleton,
+  InbodySkeleton,
+  MealPlannerSkeleton,
+  OnboardingSkeleton,
+  PlannerSkeleton,
+  ProfileSkeleton,
+  RouteLoadingFallback,
+  StatisticsSkeleton,
+  TrainingSkeleton,
+  WorkoutPreviewSkeleton,
+} from './components/molecules';
 import { IOSInstallPrompt } from './components/molecules/IOSInstallPrompt';
 import { PWAInstallPrompt } from './components/molecules/PWAInstallPrompt';
-import { RouteLoadingFallback } from './components/molecules/RouteLoadingFallback';
 import { FeedbackWidget } from './components/organisms/FeedbackWidget';
 import { ErrorBoundary } from './components/organisms/ErrorBoundary';
+import { MainLayout } from './components/templates/MainLayout';
 import { useGenerationNotifications } from './hooks/useGenerationNotifications';
 import { errorTracking, ErrorSeverity } from './services/errorTracking';
 import { setAnalyticsUser, clearAnalyticsUser } from './services/firebase';
@@ -83,19 +96,32 @@ function App(): React.ReactElement {
   const { setLanguage } = useLocaleStore();
   const { t } = useTranslation();
 
+  const wrapWithLayout = (node: React.ReactElement): React.ReactElement => (
+    <MainLayout>{node}</MainLayout>
+  );
+
   const appRoutes: AppRouteConfig[] = [
-    { path: AppRoutePath.Login, element: <LoginPage /> },
-    { path: AppRoutePath.Register, element: <RegisterPage /> },
-    { path: AppRoutePath.Root, element: <HomePage />, isProtected: true },
-    { path: AppRoutePath.Onboarding, element: <OnboardingPage />, isProtected: true },
-    { path: AppRoutePath.WorkoutPreview, element: <WorkoutPreviewPage />, isProtected: true },
-    { path: AppRoutePath.Profile, element: <ProfilePage />, isProtected: true },
-    { path: AppRoutePath.Planner, element: <PlannerPage />, isProtected: true },
-    { path: AppRoutePath.Training, element: <TrainingPage />, isProtected: true },
-    { path: AppRoutePath.Statistics, element: <StatisticsPage />, isProtected: true },
-    { path: AppRoutePath.MealPlanner, element: <MealPlannerPage />, isProtected: true },
-    { path: AppRoutePath.Inbody, element: <InbodyPage />, isProtected: true },
+    { path: AppRoutePath.Login, element: <LoginPage />, fallback: <AuthPageSkeleton /> },
+    { path: AppRoutePath.Register, element: <RegisterPage />, fallback: <AuthPageSkeleton /> },
+    { path: AppRoutePath.Root, element: <HomePage />, isProtected: true, fallback: wrapWithLayout(<DashboardSkeleton />) },
+    { path: AppRoutePath.Onboarding, element: <OnboardingPage />, isProtected: true, fallback: <OnboardingSkeleton /> },
+    { path: AppRoutePath.WorkoutPreview, element: <WorkoutPreviewPage />, isProtected: true, fallback: <WorkoutPreviewSkeleton /> },
+    { path: AppRoutePath.Profile, element: <ProfilePage />, isProtected: true, fallback: wrapWithLayout(<ProfileSkeleton />) },
+    { path: AppRoutePath.Planner, element: <PlannerPage />, isProtected: true, fallback: wrapWithLayout(<PlannerSkeleton />) },
+    { path: AppRoutePath.Training, element: <TrainingPage />, isProtected: true, fallback: <TrainingSkeleton /> },
+    { path: AppRoutePath.Statistics, element: <StatisticsPage />, isProtected: true, fallback: wrapWithLayout(<StatisticsSkeleton />) },
+    { path: AppRoutePath.MealPlanner, element: <MealPlannerPage />, isProtected: true, fallback: wrapWithLayout(<MealPlannerSkeleton />) },
+    { path: AppRoutePath.Inbody, element: <InbodyPage />, isProtected: true, fallback: wrapWithLayout(<InbodySkeleton />) },
   ];
+
+  const withSuspense = (
+    element: React.ReactElement,
+    fallback?: React.ReactElement,
+    isProtected?: boolean,
+  ): React.ReactElement => {
+    const wrapped = <Suspense fallback={fallback ?? <RouteLoadingFallback />}>{element}</Suspense>;
+    return isProtected ? <ProtectedRoute>{wrapped}</ProtectedRoute> : wrapped;
+  };
   
   // Initialize FCM notifications
   useGenerationNotifications();
@@ -211,7 +237,7 @@ function App(): React.ReactElement {
     };
 
     initializeApp();
-  }, [isAuthenticated, updateUser, setLanguage]);
+  }, [isAuthenticated, updateUser, setLanguage, t]);
 
 
   return (
@@ -252,14 +278,8 @@ function App(): React.ReactElement {
             {/* Beta feedback widget */}
             <FeedbackWidget />
             <Routes>
-              {appRoutes.map(({ path, element, isProtected }) => (
-                <Route
-                  key={path}
-                  path={path}
-                  element={
-                    isProtected ? <ProtectedRoute>{element}</ProtectedRoute> : element
-                  }
-                />
+              {appRoutes.map(({ path, element, isProtected, fallback }) => (
+                <Route key={path} path={path} element={withSuspense(element, fallback, isProtected)} />
               ))}
             </Routes>
           </Suspense>

@@ -1,3 +1,4 @@
+import { StatisticsSkeleton } from '@/components/molecules';
 import { Award, ProgressStats, WeightHistory } from '@/types/analytics';
 import { TrainingSession } from '@/types/workout';
 import { Button } from '@atoms/Button';
@@ -81,9 +82,7 @@ export function StatisticsPage(): React.ReactElement {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
+        <StatisticsSkeleton/>
       </MainLayout>
     );
   }

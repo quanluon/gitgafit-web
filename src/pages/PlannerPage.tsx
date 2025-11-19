@@ -1,3 +1,4 @@
+import { PlannerSkeleton } from '@/components/molecules';
 import { useGenerationJob } from '@/hooks/useGenerationJob';
 import { useToast } from '@/hooks/useToast';
 import { AppRoutePath } from '@/routes/paths';
@@ -158,9 +159,7 @@ export function PlannerPage(): React.ReactElement {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
+        <PlannerSkeleton />
       </MainLayout>
     );
   }
@@ -210,9 +209,7 @@ export function PlannerPage(): React.ReactElement {
                       <RefreshCw className="mr-2 h-4 w-4" />
                       {t('common.regenerate')}
                       {quotaDisplay && (
-                        <div className="ml-1 text-xs text-muted-foreground">
-                          {quotaDisplay}
-                        </div>
+                        <div className="ml-1 text-xs text-muted-foreground">{quotaDisplay}</div>
                       )}
                     </Button>
                   </div>
