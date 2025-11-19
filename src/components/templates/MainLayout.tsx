@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BottomNavigation } from '@organisms/BottomNavigation';
 import { PWAInstallButton } from '@molecules/PWAInstallButton';
 
@@ -15,10 +15,20 @@ export function MainLayout({
 }: MainLayoutProps): React.ReactElement {
   const safeAreaTop = 'env(safe-area-inset-top, 0)';
   const safeAreaBottom = 'env(safe-area-inset-bottom, 0)';
-  const FULL_VIEWPORT_HEIGHT = '100dvh';
+  const FULL_VIEWPORT_HEIGHT = 'var(--app-height, 100dvh)';
+
+  useEffect(() => {
+    const setViewportHeight = (): void => {
+      document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+    };
+
+    setViewportHeight();
+    window.addEventListener('resize', setViewportHeight);
+    return () => window.removeEventListener('resize', setViewportHeight);
+  }, []);
 
   return (
-    <div 
+    <div
       className="bg-background flex flex-col overflow-hidden"
       style={{
         minHeight: FULL_VIEWPORT_HEIGHT,

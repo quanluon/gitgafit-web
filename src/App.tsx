@@ -237,7 +237,7 @@ function App(): React.ReactElement {
     };
 
     initializeApp();
-  }, [isAuthenticated, updateUser, setLanguage, t]);
+  }, [isAuthenticated, updateUser, setLanguage]);
 
 
   return (
