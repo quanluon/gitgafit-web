@@ -68,7 +68,7 @@ export function SubscriptionDetailsModal({
     <div className="modal-overlay">
       <div className="modal-container border">
         {/* Header */}
-        <div className={`${config.bgColor} p-4 border-b stickyyy top-0 flex items-center justify-between`}>
+        <div className={`${config.bgColor} p-4 border-b hello sticky top-0 flex items-center justify-between`}>
           <div className="flex items-center gap-3">
             <div className={`${config.color}`}>
               <Icon className="h-6 w-6" />

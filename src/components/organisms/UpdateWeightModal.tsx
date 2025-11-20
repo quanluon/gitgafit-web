@@ -37,7 +37,7 @@ export function UpdateWeightModal({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="weight">{t('workout.weight')}</Label>
+            <Label htmlFor="weight">{t('onboarding.weightLabel')}</Label>
             <Input
               id="weight"
               type="number"
